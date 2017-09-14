@@ -25,14 +25,14 @@ function LoginManager:init()
 	self:registerEnterBFgroundEvt();
     self:registerEnterExit();
 
-    local quickStartListener=cc.EventListenerCustom:create("quickStart",handler(self, self.startLogin))  
-    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(quickStartListener, 2)
+    local quickStartListener=cc.EventListenerCustom:create("quickStart",handler(self, self.quickStart))  
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(quickStartListener, 1)
 
     local accountLoginListener = cc.EventListenerCustom:create("accountLogin",handler(self, self.accountLogin))
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(accountLoginListener, 2)
 
     local exitListener = cc.EventListenerCustom:create("exit",handler(self, self.exit))
-    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(exitListener, 2)
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(exitListener, 3)
 end
 
 function LoginManager:onEnter()
@@ -119,8 +119,8 @@ end
 ---------------listener call--------------
 function LoginManager:quickStart()
     local isThirdSDK = FishGF.isThirdSdk();
-    local isUseThirdLogin = FishGF.isThirdSdkLogin();
-    if isThirdSdk and isUseThirdLogin then
+    local isUseThirdLogin = (isThirdSDK and FishGF.isThirdSdkLogin() or false);
+    if isUseThirdLogin then
         self.net:thirdSdkLogin(1);
     else
         local accountTab = FishGI.WritePlayerData:getEndData();
@@ -139,11 +139,11 @@ end
 
 function LoginManager:accountLogin()
     local isThirdSDK = FishGF.isThirdSdk();
-    local isUseThirdLogin = FishGF.isThirdSdkLogin();
-    if isThirdSdk and isUseThirdLogin then
+    local isUseThirdLogin = (isThirdSDK and FishGF.isThirdSdkLogin() or false);
+    if isUseThirdLogin then
         self.net:thirdSdkLogin(2);
     else
-        self.ui:openInputView();
+        self.view:openInputView();
     end
 end
 
@@ -159,8 +159,8 @@ end
 
 function LoginManager:exit()
     local isThirdSDK = FishGF.isThirdSdk()
-    local isUseThirdExit = FishGF.isThirdSdkExit()
-    if isThirdSDK and isUseThirdExit then
+    local isUseThirdExit = (isThirdSDK and FishGF.isThirdSdkExit() or false)
+    if isUseThirdExit then
         local closeCallback = function (jsons)
             local result = json.decode(jsons)
             if CHANNEL_ID == CHANNEL_ID_LIST.qihu or CHANNEL_ID == CHANNEL_ID_LIST.baidu then
