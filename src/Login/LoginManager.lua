@@ -8,20 +8,6 @@ function LoginManager.create()
 	return manager;
 end
 
-function LoginManager:onEnter()
-    if FishGI.isTestAccount then
-        local function callback(sender)
-        
-        end
-        FishGF.showMessageLayer(FishCD.MODE_MIN_OK_ONLY,FishGF.getChByIndex(800000312),callback);
-        --FishGF.showMessageLayer(FishCD.MODE_MIN_OK_ONLY,"测试号码已加入黑名单 无法进入游戏")
-        FishGI.isTestAccount = false;
-    end
-    print("show message")
-    local noDelList = {"doPaySDK"}
-    FishGF.clearSwallowLayer(noDelList)
-end
-
 function LoginManager:init()
     self.sceneName = "login"
 	--创建视图 创建网络
@@ -29,31 +15,62 @@ function LoginManager:init()
 	local loginLayer = require("Login/LoginLayer").create();
 	if loginNet ~= nil then
 		loginLayer:setNet(loginNet)
-		loginLayer:setName("loginLayer")
 	end
 
 	self:addChild(loginLayer);
 	self.view = loginLayer;
 	self.net = loginNet;
-    --FishGF.clearSwallowLayer()
     
-	self:registerEnterBFgroundEvt()
 
-    local function onNodeEvent(event )
-        if event == "enter" then
-            self:onEnter()
-        elseif event == "enterTransitionFinish" then
+	self:registerEnterBFgroundEvt();
+    self:registerEnterExit();
 
-        elseif event == "exit" then
-            self:onExit()
-        elseif event == "exitTransitionStart" then
+    local quickStartListener=cc.EventListenerCustom:create("quickStart",handler(self, self.startLogin))  
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(quickStartListener, 2)
 
-        elseif event == "cleanup" then
+    local accountLoginListener = cc.EventListenerCustom:create("accountLogin",handler(self, self.accountLogin))
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(accountLoginListener, 2)
 
+    local exitListener = cc.EventListenerCustom:create("exit",handler(self, self.exit))
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(exitListener, 2)
+end
+
+function LoginManager:onEnter()
+    --判断是否被封号 封号弹提示
+    if FishGI.isTestAccount then
+        local function callback(sender)
+        
         end
-
+        FishGF.showMessageLayer(FishCD.MODE_MIN_OK_ONLY,FishGF.getChByIndex(800000312),callback);
+        FishGI.isTestAccount = false;
     end
-    self:registerScriptHandler(onNodeEvent)
+
+    --清除遮挡层
+    local noDelList = {"doPaySDK"}
+    FishGF.clearSwallowLayer(noDelList)
+
+    --解决键盘输入看不到字的bug
+    if device.platform == "android" then
+        local luaBridge = require("cocos.cocos2d.luaj");
+        local javaClassName = "org.cocos2dx.lib.Cocos2dxEditBoxHelper";
+        local javaMethodName = "openKeyboard";
+        local javaParams = {
+            1001
+        }
+        local javaMethodSig = "(I)V";
+        local ok = luaBridge.callStaticMethod(javaClassName, javaMethodName, javaParams, javaMethodSig);
+    end
+
+    --移除监听器
+    FishGI.eventDispatcher:removeAllListener();
+    --屏幕常亮
+	if device.platform == "android" or device.platform == "ios" then
+		cc.Device:setKeepScreenOn(true);
+	end
+end
+
+function LoginManager:onExit()
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("startLogin");
 end
 
 function LoginManager:registerEnterBFgroundEvt()
@@ -68,7 +85,6 @@ function LoginManager:registerEnterBFgroundEvt()
 
     --进入后台
     local function onAppEnterBackground()
-        print("___LoginManager____back");
         self.isEnterBg = true
     end
 
@@ -80,7 +96,96 @@ function LoginManager:registerEnterBFgroundEvt()
 	
 end
 
-function LoginManager:decode()
+function LoginManager:registerEnterExit()
+
+    local function onNodeEvent(event )
+        if event == "enter" then
+            self:onEnter()
+        elseif event == "enterTransitionFinish" then
+
+        elseif event == "exit" then
+            self:onExit()
+        elseif event == "exitTransitionStart" then
+
+        elseif event == "cleanup" then
+
+        end
+    end
+    self:registerScriptHandler(onNodeEvent)
+end
+
+
+---------------listener call--------------
+function LoginManager:quickStart()
+    local isThirdSDK = FishGF.isThirdSdk();
+    local isUseThirdLogin = FishGF.isThirdSdkLogin();
+    if isThirdSdk and isUseThirdLogin then
+        self.net:thirdSdkLogin(1);
+    else
+        local accountTab = FishGI.WritePlayerData:getEndData();
+        local isVisitor = ((accountTab == nil or accountTab["isVisitor"] ~= nil) and true or false);
+        local password = accountTab["password"];
+        local account = accountTab["account"];
+        if isVisitor then
+            self.net:VisitorLogin();
+        else
+            if FishGF.checkAccount(account) and FishGF.checkPassword(password) then
+                self.net:loginByUserAccount(account, password);
+            end
+        end
+    end
+end
+
+function LoginManager:accountLogin()
+    local isThirdSDK = FishGF.isThirdSdk();
+    local isUseThirdLogin = FishGF.isThirdSdkLogin();
+    if isThirdSdk and isUseThirdLogin then
+        self.net:thirdSdkLogin(2);
+    else
+        self.ui:openInputView();
+    end
+end
+
+function LoginManager:sdkLogin(evt)
+    local data = evt._userdata;
+    local method = data.method;
+    local isThirdSDK = FishGF.isThirdSdk();
+    local isUseThirdLogin = FishGF.isThirdSdkLogin();
+    if isThirdSdk and isUseThirdLogin then
+        self.net:thirdSdkLogin(method);
+    end
+end
+
+function LoginManager:exit()
+    local isThirdSDK = FishGF.isThirdSdk()
+    local isUseThirdExit = FishGF.isThirdSdkExit()
+    if isThirdSDK and isUseThirdExit then
+        local closeCallback = function (jsons)
+            local result = json.decode(jsons)
+            if CHANNEL_ID == CHANNEL_ID_LIST.qihu or CHANNEL_ID == CHANNEL_ID_LIST.baidu then
+                local tag = tonumber(result.resultMsg)
+                if tag == 2 then
+                    os.exit(0);
+                end
+            else
+                local code = tonumber(result.resultCode)
+                if code == 0 then
+                    os.exit(0);
+                end
+            end
+        end
+        FishGI.GameCenterSdk:trySDKGameExit({}, closeCallback)
+    else
+        local function callback(sender)
+            local tag = sender:getTag()
+            if tag == 2 then
+                os.exit(0);
+            end
+        end   
+        FishGF.showExitMessage(FishGF.getChByIndex(800000139),callback)
+    end
+    
+
 end
 
 return LoginManager;

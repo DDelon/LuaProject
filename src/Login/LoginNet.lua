@@ -90,27 +90,43 @@ function LoginNet:loginByUserAccount(userName, password)
     end
 end
 
---[[
-* @brief 使用游客账号登录
-]]
+--使用游客账号登录
 function LoginNet:VisitorLogin()
-
-    -- 找到本地存储的游客账号
-    --local visitorUnname = cc.UserDefault:getInstance():getStringForKey("visitorUnname")
-    -- if visitorUnname ~= nil and visitorUnname ~= "" then
-    --     self:LoginByUnname( visitorUnname )
-    --     return
-    -- end
 
     local accountTab = FishGI.WritePlayerData:getEndData()
     if accountTab ~= nil and accountTab["account"] ~= "" and accountTab["isVisitor"] ~= nil then
-    	--FishGF.setAccountAndPassword("","",accountTab["isVisitor"])
         self:LoginByUnname( accountTab["account"] )
         return
     end
-
-    -- 没游客账号（分配）
     self:AllocNewUser()
+end
+
+function LoginNet:thirdSdkLogin(method)
+	local function loginResult(state, data)
+		FishGF.waitNetManager(false)
+		if state then
+			FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,"解析失败",nil)
+		else
+			local resultMsg = nil;
+			local ok, datatable = pcall(function() return loadstring(data)(); end)
+			if ok == false then
+				resultMsg = json.decode(data)
+			else
+				resultMsg = {}
+				resultMsg.data = datatable
+			end
+			local resultData = resultMsg.data
+			local valTab = {};
+			valTab.session = resultData.code
+			valTab.userid = resultData.id
+			valTab.serverip = resultData.ip
+			valTab.serverport = resultData.port
+			self:loginByThird(valTab);
+		end
+	end
+
+	FishGF.waitNetManager(true)
+    FishGI.GameCenterSdk:trySDKLogin({type = method},loginResult)
 end
 
 --[[
@@ -171,14 +187,6 @@ function LoginNet:OnLoginError(strMsg)
 	FishGF.pring("---OnLoginError---strMsg="..strMsg)
 	FishGF.waitNetManager(false,nil,"startConnect")
 	FishGI.isLogin = false
-    -- local function callback(sender)
-    --     local tag = sender:getTag()
-    --     if tag == 1 then
-    --         local curScene = cc.Director:getInstance():getRunningScene()
-    --         curScene.view:changeAccount();
-    --     end
-    -- end
-    -- FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,strMsg,callback)
     FishGF.createCloseSocketNotice(strMsg,"OnLoginError")
 end
 
