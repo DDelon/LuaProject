@@ -36,6 +36,16 @@ function LoginManager:init()
 end
 
 function LoginManager:onEnter()
+    FishGI.AudioControl:playLayerBgMusic()
+    FishGMF.setGameState(1)
+    FishGI.isLogin = false
+    FishGI.CIRCLE_COUNT = 0
+    FishGI.myData = nil
+    FishGI.isEnterBg = false
+    FishGI.FRIEND_ROOM_STATUS = 0
+    FishGI.FRIEND_ROOMID = nil
+    FishGI.IS_RECHARGE = 0
+
     --判断是否被封号 封号弹提示
     if FishGI.isTestAccount then
         local function callback(sender)

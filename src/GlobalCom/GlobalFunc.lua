@@ -3,6 +3,7 @@ cc.exports.FishGF = {}
 FishGF.DEBUG = true
 FishGF.debugLayer = nil;
 function FishGF.print(msg)
+    msg = "fish log:"..msg
     if FishGF.DEBUG then
         LuaCppAdapter:getInstance():debugLog(msg);
     else

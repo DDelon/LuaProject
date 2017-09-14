@@ -106,19 +106,6 @@ function LoginLayer:registerKeyboard()
 end
 
 function LoginLayer:onEnter( )
-    FishGI.isLogin = false
-    FishGI.AudioControl:playLayerBgMusic()
-    FishGI.CIRCLE_COUNT = 0
-    FishGMF.setGameState(1)
-    FishGI.myData = nil
-    FishGI.isEnterBg = false
-    FishGI.FRIEND_ROOM_STATUS = 0
-    FishGI.FRIEND_ROOMID = nil
-    FishGI.IS_RECHARGE = 0
-end
-
-function LoginLayer:setNet(net)
-    self.net = net;
 end
  
 function LoginLayer:onClickStart( sender )
