@@ -13,9 +13,6 @@ function LoginManager:init()
 	--创建视图 创建网络
 	local loginNet = require("Login/LoginNet").create();
 	local loginLayer = require("Login/LoginLayer").create();
-	if loginNet ~= nil then
-		loginLayer:setNet(loginNet)
-	end
 
 	self:addChild(loginLayer);
 	self.view = loginLayer;
