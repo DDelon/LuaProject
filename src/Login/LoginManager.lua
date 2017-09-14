@@ -26,11 +26,14 @@ function LoginManager:init()
     local quickStartListener=cc.EventListenerCustom:create("quickStart",handler(self, self.quickStart))  
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(quickStartListener, 1)
 
-    local accountLoginListener = cc.EventListenerCustom:create("accountLogin",handler(self, self.accountLogin))
-    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(accountLoginListener, 2)
+    local accountLoginListener=cc.EventListenerCustom:create("accountLogin",handler(self, self.accountLogin))  
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(accountLoginListener, 1)
+
+    local openAccountLoginListener = cc.EventListenerCustom:create("openAccountLogin",handler(self, self.openAccountLogin))
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(openAccountLoginListener, 1)
 
     local exitListener = cc.EventListenerCustom:create("exit",handler(self, self.exit))
-    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(exitListener, 3)
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(exitListener, 1)
 end
 
 function LoginManager:onEnter()
@@ -81,7 +84,7 @@ end
 
 function LoginManager:onExit()
     cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("quickStart");
-    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("accountLogin");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("openAccountLogin");
     cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("exit");
 end
 
@@ -125,8 +128,7 @@ function LoginManager:registerEnterExit()
     self:registerScriptHandler(onNodeEvent)
 end
 
-
----------------listener call--------------
+----------------------------------listener call--------------
 function LoginManager:quickStart()
     local isThirdSDK = FishGF.isThirdSdk();
     local isUseThirdLogin = (isThirdSDK and FishGF.isThirdSdkLogin() or false);
@@ -140,14 +142,24 @@ function LoginManager:quickStart()
         if isVisitor then
             self.net:VisitorLogin();
         else
-            if FishGF.checkAccount(account) and FishGF.checkPassword(password) then
-                self.net:loginByUserAccount(account, password);
-            end
+            local event = cc.EventCustom:new("accountLogin")
+            event._userdata = {account = account, password = password}
+            cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
         end
     end
 end
 
-function LoginManager:accountLogin()
+function LoginManager:accountLogin(evt)
+    local data = evt._userdata
+    local account = data.account;
+    local password = data.password;
+    if FishGF.checkAccount(account) and FishGF.checkPassword(password) then
+        FishGF.print("input account:"..account.." password:"..password);
+        self.net:loginByUserAccount(account, password);
+    end
+end
+
+function LoginManager:openAccountLogin()
     local isThirdSDK = FishGF.isThirdSdk();
     local isUseThirdLogin = (isThirdSDK and FishGF.isThirdSdkLogin() or false);
     if isUseThirdLogin then

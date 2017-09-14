@@ -124,7 +124,7 @@ function LoginLayer:onClickaccountstart( sender )
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,"服务器正在维护中!",nil);
         return;
     end
-    local event = cc.EventCustom:new("accountLogin")
+    local event = cc.EventCustom:new("openAccountLogin")
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
 end
 
