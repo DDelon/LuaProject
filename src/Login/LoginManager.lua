@@ -70,13 +70,14 @@ function LoginManager:onEnter()
 end
 
 function LoginManager:onExit()
-    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("startLogin");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("quickStart");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("accountLogin");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("exit");
 end
 
 function LoginManager:registerEnterBFgroundEvt()
     --进入前台
     local function onAppEnterForeground()
-        print("___LoginManager____enter");
         FishGI.AudioControl:playLayerBgMusic()
         if self.isEnterBg == false then
             return;
