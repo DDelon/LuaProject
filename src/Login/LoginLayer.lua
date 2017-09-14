@@ -61,7 +61,7 @@ function LoginLayer:onCreate(...)
         self.image_account_bg:setVisible(true)
     end
     
-    FishGI.myData = nil
+    
 
     if CHANNEL_ID == CHANNEL_ID_LIST.yyb then
         self.btn_wechat:setVisible(true)

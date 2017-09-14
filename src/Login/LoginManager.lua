@@ -9,6 +9,7 @@ function LoginManager.create()
 end
 
 function LoginManager:init()
+    FishGI.myData = nil
     self.sceneName = "login"
 	--创建视图 创建网络
 	local loginNet = require("Login/LoginNet").create();
@@ -34,7 +35,9 @@ end
 
 function LoginManager:onEnter()
     FishGI.AudioControl:playLayerBgMusic()
+    --设置游戏状态值
     FishGMF.setGameState(1)
+    --
     FishGI.isLogin = false
     FishGI.CIRCLE_COUNT = 0
     FishGI.myData = nil
