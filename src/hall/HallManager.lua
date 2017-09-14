@@ -16,21 +16,40 @@ end
 
 function HallManager:init(net)
     self.sceneName = "hall"
-    self:registerEnterBFgroundEvt()
 	self.scaleX_,self.scaleY_,self.scaleMin_  = FishGF.getCurScale()
-	
     self.view = require("hall/HallLayer").create();
 	self:addChild(self.view,1)
 
     self.loadingLayer = require("Loading/LoadingLayer").new()
     self:addChild(self.loadingLayer,FishCD.ORDER_LOADING)
     
-    --self:initLayer()
-    --self:initFriendLayer()
-    --self:initPlayerDataLayer()
-
 	self.net = net;
 	self.net:setView(self.view);
+
+    self:registerEnterExit();
+    self:registerEnterBFgroundEvt()
+	self:registerKeyboard();
+end
+
+function HallManager:registerKeyboard()
+    local function onKeyboardFunc(code, event)
+		if code == cc.KeyCode.KEY_BACK then
+
+            if FishGI.hallScene:getChildByTag(FishCD.TAG.RANK_WEB_TAG) ~= nil then
+                FishGI.hallScene:removeChildByTag(FishCD.TAG.RANK_WEB_TAG)
+            else
+    			FishGI.AudioControl:playEffect("sound/com_btn01.mp3")
+                self:buttonClicked("HallLayer", "exit")
+            end
+		end
+	end
+	local listener = cc.EventListenerKeyboard:create();
+	listener:registerScriptHandler(onKeyboardFunc, cc.Handler.EVENT_KEYBOARD_RELEASED);
+	local eventDispatcher = self:getEventDispatcher();
+	eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self);
+end
+
+function HallManager:registerEnterExit()
 
     local function onNodeEvent(event )
         if event == "enter" then
@@ -44,28 +63,19 @@ function HallManager:init(net)
         elseif event == "cleanup" then
 
         end
-
     end
     self:registerScriptHandler(onNodeEvent)
+end
 
-	local function onKeyboardFunc(code, event)
-		if code == cc.KeyCode.KEY_BACK then
+function HallManager:registerEnterBFgroundEvt()
+    self.isEnterBg = false
 
-            if FishGI.hallScene:getChildByTag(FishCD.TAG.RANK_WEB_TAG) ~= nil then
-                FishGI.hallScene:removeChildByTag(FishCD.TAG.RANK_WEB_TAG)
-            else
-    			FishGI.AudioControl:playEffect("sound/com_btn01.mp3")
-                self:buttonClicked("HallLayer", "exit")
-            end
+    local eventDispatcher = self:getEventDispatcher()
+    local forelistener = cc.EventListenerCustom:create("applicationWillEnterForeground", handler(self,self.onAppEnterForeground))
+    eventDispatcher:addEventListenerWithSceneGraphPriority(forelistener, self)
+    local backlistener = cc.EventListenerCustom:create("applicationDidEnterBackground", handler(self,self.onAppEnterBackground))
+    eventDispatcher:addEventListenerWithSceneGraphPriority(backlistener, self)
 
-            
-
-		end
-	end
-	local listener = cc.EventListenerKeyboard:create();
-	listener:registerScriptHandler(onKeyboardFunc, cc.Handler.EVENT_KEYBOARD_RELEASED);
-	local eventDispatcher = self:getEventDispatcher();
-	eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self);
 end
 
 --初始化层
@@ -79,8 +89,6 @@ function HallManager:firstInit( )
 end
 
 function HallManager:initLayer( )
-	-- self.view = require("hall/HallLayer").create();
-	-- self:addChild(self.view,1)
 
     FishGF.UpdataWechat()
 
@@ -277,8 +285,7 @@ function HallManager:initPlayerDataLayer( )
 end
 
 --加载进度条
-function HallManager:startLoad( isLoadData )
-    FishGF.print("------------------------startLoad-------------------------------------")
+function HallManager:startLoad()
     if self.loadingLayer == nil then
         self.loadingLayer = require("Loading/LoadingLayer").new()
         self:addChild(self.loadingLayer,FishCD.ORDER_LOADING)
@@ -298,8 +305,6 @@ function HallManager:startLoad( isLoadData )
         end
     end
     
-
---    FishGF.setLodingEnd()
 end
 
 function HallManager:getGameNetData( )
@@ -434,17 +439,6 @@ function HallManager:doAutoLogin(delayTime)
         cueScene:stopActionByTag(100000)
         cueScene:runAction(seq)
     end
-end
-
-function HallManager:registerEnterBFgroundEvt()
-    self.isEnterBg = false
-
-    local eventDispatcher = self:getEventDispatcher()
-    local forelistener = cc.EventListenerCustom:create("applicationWillEnterForeground", handler(self,self.onAppEnterForeground))
-    eventDispatcher:addEventListenerWithSceneGraphPriority(forelistener, self)
-    local backlistener = cc.EventListenerCustom:create("applicationDidEnterBackground", handler(self,self.onAppEnterBackground))
-    eventDispatcher:addEventListenerWithSceneGraphPriority(backlistener, self)
-
 end
 
 ------------------------------------------------------------------------------------------------------

@@ -93,12 +93,11 @@ function MainManager:createHallManager(valTab)
     local serverport = valTab.serverport;
 	--大厅场景最好等待网络正常连接成功后再转入大厅场景
 	local hallNet = require("hall/HallNet").create();
-    print("连接到大厅1111");
+    FishGF.print("connect to hall");
     if hallNet ~= nil then
         if hallNet:ConnectToHall(session,userid,serverip,serverport) then
             if FishGI.isEnterBg then
                 FishGF.print("createHallManager ---------HallManager-----00000---set-");
-                --FishGI.hallScene:release();
                 FishGI.hallScene:setNet(hallNet);
                 FishGI.isEnterBg = false;
             else
@@ -114,14 +113,6 @@ function MainManager:createHallManager(valTab)
                 end
             end
             
-
-            --[[if FishGI.hallScene ~= nil then
-                cc.Director:getInstance():popScene();
-                FishGI.hallScene:release();
-                FishGI.hallScene = nil;
-            end]]--
-            
-             print("连接到大厅2222");
         else
             print("连接到大厅失败 ConnectToHall");
         end
