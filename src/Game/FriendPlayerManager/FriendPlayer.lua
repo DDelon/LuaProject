@@ -111,7 +111,7 @@ function FriendPlayer:initWithData(val)
 
 
 	self.playerInfo.vip_level = FishGI.GameTableData:getVIPByCostMoney(self.playerInfo.vipExp).vip_level
-	self.playerInfo.grade = FishGMF.getLVByExp(self.playerInfo.gradeExp).level
+	self.playerInfo.grade = FishGI.GameTableData:getLVByExp(self.playerInfo.gradeExp).level
 
     self.cannon:setMultiple(self.playerInfo.currentGunRate)
     self:setScore(self.playerInfo.score)

@@ -77,7 +77,7 @@ function Forged:initView()
     --是否勾选结晶能量
     self.is_open_crystal_energy = self.spr_hook and self.spr_hook:isVisible() or false
     --获取所有锻造倍数配置
-    self.forgedDataTable = FishGMF.getForgedChangeData(920000029,920000046)
+    self.forgedDataTable = FishGI.GameTableData:getForgedChangeData(920000029,920000046)
     --设置当前倍数
     self:setMaxGunRate(1000)
     self:updateMaxGunRateView(self.max_gun_rate == 10000)

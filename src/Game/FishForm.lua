@@ -14,7 +14,6 @@ FishForm.RESOURCE_BINDING  = {
 function FishForm:onCreate( ... )
     self:openTouchEventListener()
     
-
     self.isFromLottery = false
     self:initData()
 
@@ -78,30 +77,20 @@ end
 
 function FishForm:initFishForm( curroomID )
     print("initFishForm")
-    local curRoomID = curroomID + 910000000
-
-    local dataTab = {}
-    dataTab.funName = "getRoomFish"
-    dataTab.curRoomID = curRoomID
-    local RoomFishArr = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
-    local count = RoomFishArr["count"]
+    local RoomFishArr = FishGI.GameTableData:getRoomfishTable(curroomID)
+    local count = #RoomFishArr
 
     self.fishList = {}
     self.specialFishList = {}
     
     for i=1,count do
-        local RoomFish = RoomFishArr[tostring(i)]
+        local RoomFish = RoomFishArr[i]
         if RoomFish == nil or RoomFish == "" then
             break
         end
-        local valtab ={}
-        valtab.fishID = tonumber(RoomFish["fish_id"])
-        valtab.show_score = tonumber(RoomFish["show_score"])
-        valtab.fish_type = tonumber(RoomFish["fish_type"])
-        local item = self:createFishItem(valtab)
-        
+        local item = self:createFishItem(RoomFish)
         self.scroll_fish_list:addChild(item)
-        if valtab.fish_type ~= 6 then
+        if RoomFish.fish_type ~= 6 then
             table.insert( self.fishList, item)
         else
             table.insert( self.specialFishList, item)
@@ -137,7 +126,7 @@ function FishForm:updataScrollView(listView,fishList,specialFishList)
 end
 
 function FishForm:createFishItem( valtab )
-    local fishID = valtab.fishID - 100000000
+    local fishID = valtab.fish_id - 100000000
     local show_score = valtab.show_score
     local fish_type = valtab.fish_type
     local item = require("ui/battle/fishform/uiformitem").create().root

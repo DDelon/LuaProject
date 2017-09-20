@@ -147,7 +147,7 @@ function LotteryLayer:initLayerByCoin( )
     for i=1,6 do
         local limitMin = FishGI.GameTableData:getRewardTable(i).limit
         local limitMax = nil 
-        if FishGI.GameTableData:getRewardTable(i + 1).limit ~= nil then
+        if FishGI.GameTableData:getRewardTable(i + 1) ~= nil then
             limitMax = FishGI.GameTableData:getRewardTable(i + 1).limit
         end
         if limitMax == nil or (self.allPoolCoin < limitMax and self.allPoolCoin >= limitMin) then

@@ -13,7 +13,7 @@ function Player:init(val)
     self.fishArrayId = 0
     self.playerInfo = val.playerInfo
     if self.playerInfo.gradeExp ~= nil then
-        self.playerInfo.grade = FishGMF.getLVByExp(self.playerInfo.gradeExp).level
+        self.playerInfo.grade = FishGI.GameTableData:getLVByExp(self.playerInfo.gradeExp).level
         print(self.playerInfo.playerId.."----self.playerInfo.gradeExp="..self.playerInfo.gradeExp.."------------self.playerInfo.grade="..self.playerInfo.grade)
     end
 
@@ -140,6 +140,7 @@ function Player:shootByDegree(degree)
                     return
                 end
                 dataTab.frameId = backData.frameId
+                --print("------------------------------------------------backData.frameId="..backData.frameId)
                 dataTab.bulletRate = backData.bulletRate
                 FishGI.bulletCount = FishGI.bulletCount +1
                 FishGI.eventDispatcher:dispatch("sendPlayerFire", dataTab);

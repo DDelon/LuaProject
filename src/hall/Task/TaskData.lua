@@ -98,11 +98,7 @@ function TaskData:create()
 end
 
 function TaskData:getDataCpp()
-    local dataTab = {}
-    dataTab.funName = "getTableByName"
-    dataTab.name = "task"
-    local taskinfos = LuaCppAdapter:getInstance():luaUseCppFun(dataTab).result
-    
+    local taskinfos = FishGI.GameTableData:getTaskTable()  
     for k,v2 in pairs(taskinfos) do
         for k,v in pairs(v2) do
             log(k,v)

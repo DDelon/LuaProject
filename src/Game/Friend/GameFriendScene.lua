@@ -121,6 +121,7 @@ end
 
 function GameFriendScene:onEnter()
     print("------GameScene:onEnter--")
+    FishGI.GameTableData:clearGameTable(3)
     FishGMF.setGameType(1)
     LuaCppAdapter:getInstance():exitGame()
     FishGMF.setGameState(3)
@@ -128,9 +129,6 @@ function GameFriendScene:onEnter()
     FishGI.FRIEND_ROOM_STATUS = 3
 
 	FishGI.shop = self.uiShopLayer;
-    local keyID = tostring(FishGI.curGameRoomID + 910000000)
-    local musicName = tostring(FishGI.GameConfig:getConfigData("room", keyID, "bg_music"));
-
     self:startLoad()
 
     FishGMF.clearRefreshData()
@@ -210,15 +208,8 @@ function GameFriendScene:onGameLoaded(data)
     self.uiMainLayer:onGameLoaded(data)
 
     if data.roomInfo.started then 
-        -- local tab = {}
-        -- tab.timelineIndex = data.roomInfo.timelineIndex
-        -- tab.frameId = data.roomInfo.frameId
-        -- tab.killedFishes = data.roomInfo.killedFishes
-        -- tab.bullets = data.roomInfo.bullets
         self:startGame(data.roomInfo)
     end 
-
-
 
 end
 

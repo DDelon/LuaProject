@@ -22,18 +22,8 @@ function LoginManager:init()
 
 	self:registerEnterBFgroundEvt();
     self:registerEnterExit();
-
-    local quickStartListener=cc.EventListenerCustom:create("quickStart",handler(self, self.quickStart))  
-    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(quickStartListener, 1)
-
-    local accountLoginListener=cc.EventListenerCustom:create("accountLogin",handler(self, self.accountLogin))  
-    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(accountLoginListener, 1)
-
-    local openAccountLoginListener = cc.EventListenerCustom:create("openAccountLogin",handler(self, self.openAccountLogin))
-    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(openAccountLoginListener, 1)
-
-    local exitListener = cc.EventListenerCustom:create("exit",handler(self, self.exit))
-    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(exitListener, 1)
+    self:registerListener();
+    
 end
 
 function LoginManager:onEnter()
@@ -83,6 +73,7 @@ function LoginManager:onEnter()
 end
 
 function LoginManager:onExit()
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("accountLogin");
     cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("quickStart");
     cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("openAccountLogin");
     cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("exit");
@@ -126,6 +117,20 @@ function LoginManager:registerEnterExit()
         end
     end
     self:registerScriptHandler(onNodeEvent)
+end
+
+function LoginManager:registerListener()
+    local quickStartListener=cc.EventListenerCustom:create("quickStart",handler(self, self.quickStart))  
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(quickStartListener, 1)
+
+    local accountLoginListener=cc.EventListenerCustom:create("accountLogin",handler(self, self.accountLogin))  
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(accountLoginListener, 1)
+
+    local openAccountLoginListener = cc.EventListenerCustom:create("openAccountLogin",handler(self, self.openAccountLogin))
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(openAccountLoginListener, 1)
+
+    local exitListener = cc.EventListenerCustom:create("exit",handler(self, self.exit))
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(exitListener, 1)
 end
 
 ----------------------------------listener call--------------

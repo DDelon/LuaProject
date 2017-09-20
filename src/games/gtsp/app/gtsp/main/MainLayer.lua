@@ -640,6 +640,9 @@ function MainLayer:showShopLayer()
         return
     end
     self.shop = SmallGamesGF.createShopLayer()
+    if self.shop == nil then
+        return
+    end
     self.shop:setPosition(DogGI.winSize.width/2, DogGI.winSize.height/2)
     self.shop:retain()
     self.shop:setCallbackEnter(function ( ... )

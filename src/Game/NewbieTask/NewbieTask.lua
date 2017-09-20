@@ -106,6 +106,11 @@ end
 function NewbieTask:refreshPropData()
     --self.spr_prop:initWithFile("common/prop/"..FishGI.GameConfig:getConfigData("item", tostring(200000000 + self.iPorpId), "res"))
     self.spr_prop:initWithFile("common/prop/"..FishGI.GameTableData:getItemTable(self.iPorpId).res)
+    if self.iPorpId == "1002" or self.iPorpId == "1003" then
+        self.spr_prop:setScale(0.8)
+    else
+        self.spr_prop:setScale(1)
+    end
     self.spr_prop_num:setString(tostring(self.iPropCount))
     self.text_desc:setString(self.strTaskDesc)
 end

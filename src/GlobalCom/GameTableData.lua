@@ -1,13 +1,15 @@
 local GameTableData = class("GameTableData",nil)
 
 GameTableData.gameTableList  = {  
-    { ["tableName"] = "item",           ["tableDataName"] = "itemAllData",      ["ifRemove"] = 0}, 
-    { ["tableName"] = "vip",            ["tableDataName"] = "vipTab",           ["ifRemove"] = 0},
-    { ["tableName"] = "cannonoutlook",  ["tableDataName"] = "cannonoutlookTab", ["ifRemove"] = 0},
+    { ["tableName"] = "item",           ["tableDataName"] = "itemAllData",      ["clearType"] = 0}, 
+    { ["tableName"] = "vip",            ["tableDataName"] = "vipTab",           ["clearType"] = 0},
+    { ["tableName"] = "cannonoutlook",  ["tableDataName"] = "cannonoutlookTab", ["clearType"] = 0},
+    { ["tableName"] = "recharge",       ["tableDataName"] = "rechargeTab",      ["clearType"] = 0},
+    { ["tableName"] = "task",           ["tableDataName"] = "taskTab",          ["clearType"] = 0},
 
-    { ["tableName"] = "skill",          ["tableDataName"] = "skillTab",         ["ifRemove"] = 1}, 
-    { ["tableName"] = "newtask",        ["tableDataName"] = "newtaskTab",       ["ifRemove"] = 1}, 
-    { ["tableName"] = "reward",         ["tableDataName"] = "rewardTab",        ["ifRemove"] = 1},
+    { ["tableName"] = "skill",          ["tableDataName"] = "skillTab",         ["clearType"] = 2}, 
+    { ["tableName"] = "newtask",        ["tableDataName"] = "newtaskTab",       ["clearType"] = 2}, 
+    { ["tableName"] = "reward",         ["tableDataName"] = "rewardTab",        ["clearType"] = 2},
 
 }
 
@@ -21,13 +23,75 @@ function GameTableData:init()
 
 end
 
---清除游戏数据
-function GameTableData:clearGameTable()
+--清除游戏数据 0 公用数据，1 大厅，2 普通场， 3 朋友场
+function GameTableData:clearGameTable(NoClearIndex)
     for k,v in pairs(self.gameTableList) do
-        if v.ifRemove == 1 then
+        if v.clearType ~= 0 and v.clearType ~= NoClearIndex then
             self[v.tableDataName] = nil
         end
     end
+end
+
+--日常任务数据
+function GameTableData:initTaskTable()
+    local back = FishGMF.getTableByName("task")
+    self.taskTab = back
+end
+function GameTableData:getTaskTable(index)
+    if self.taskTab == nil then
+        self:initTaskTable()
+    end
+    if index == nil then
+        return self.taskTab
+    end
+    index = tonumber(index)
+    return self.taskTab[index]
+end
+
+--商店道具数据
+function GameTableData:initRechargeTable()
+    local back = FishGMF.getTableByName("recharge")
+    self.rechargeTab = {}
+    for k,v in pairs(back) do
+        v.recharge_type = tonumber(v.recharge_type)
+        if self.rechargeTab[v.recharge_type] == nil then
+            self.rechargeTab[v.recharge_type] = {}
+        end
+        v.id = tonumber(v.id)
+        v.recharge = tonumber(v.recharge)
+        v.recharge_num = tonumber(v.recharge_num)
+        v.gift_num = tonumber(v.gift_num)
+        v.recharge_method = tonumber(v.recharge_method)
+        v.frist_change_enable = tonumber(v.frist_change_enable)
+        table.insert( self.rechargeTab[v.recharge_type],v)
+    end
+
+    --将除了鱼币水晶外的道具加入这2个列表中
+    for k,v in pairs(self.rechargeTab) do
+        local recharge_type = v.recharge_type
+        if k ~= 1 and k ~= 2 then
+            for k2,v2 in pairs(v) do
+                table.insert( self.rechargeTab[1],v2)
+                table.insert( self.rechargeTab[2],v2)
+            end
+        end
+    end
+
+    for k,v in pairs(self.rechargeTab) do
+        FishGF.sortByKey(v,"recharge_num",1)
+    end
+
+    local a = 1
+end
+function GameTableData:getRechargeTable(index)
+    if self.rechargeTab == nil then
+        self:initRechargeTable()
+    end
+    if index == nil then
+        return self.rechargeTab
+    end
+    index = tonumber(index)
+    return self.rechargeTab[index]
 end
 
 --炮类型数据
@@ -304,6 +368,53 @@ function GameTableData:getNewtaskTable(index)
     end
     index = tonumber(index)
     return self.newtaskTab[index]
+end
+
+--==========================================================================================--
+--==============================--实时获取，不需要缓存数据--==================================--
+--==========================================================================================--
+
+--得到鱼表
+function GameTableData:getRoomfishTable(roomId)
+    local back = FishGMF.getTableByName("roomfish")
+    local resultMap = {}
+    roomId = tonumber(roomId) + 910000000
+    for k,v in pairs(back) do
+        if tonumber(v.room_id) == roomId then
+            if v.show_score == nil or v.show_score == "" then
+                v.show_score = 0
+            end
+            v.id = tonumber(v.id)
+            v.room_id = tonumber(v.room_id)
+            v.fish_id = tonumber(v.fish_id)
+            v.show_score = tonumber(v.show_score)
+            v.fish_type = tonumber(v.fish_type)
+            table.insert( resultMap,v )
+        end
+    end
+    FishGF.sortByKey(resultMap,"id",1)
+    return resultMap
+end
+
+--得到等級
+function GameTableData:getLVByExp(gradeExp)
+    local dataTab = {}
+    dataTab.funName = "getLVByExp"
+    dataTab.gradeExp = gradeExp
+    local gradeData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
+    return gradeData
+end
+
+--获取当前锻造数据
+function GameTableData:getForgedChangeData(id, endId)
+    local dataTab = {}
+    dataTab.funName = "getForgedChangeData"
+    dataTab.id = tostring(id)
+    if endId ~= nil then
+        dataTab.endId = tostring(endId)
+    end
+    local gunData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab);
+    return gunData
 end
 
 return GameTableData;

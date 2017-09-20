@@ -1,7 +1,7 @@
 local SkillBase = import("Game.Skill.NormalSkill.SkillBase")
 local SkillLock = class("SkillLock",SkillBase)
 
-SkillLock.touchDisTime  = 0.7  --手动切换目标间隔
+SkillLock.touchDisTime  = 0.5  --手动切换目标间隔
 SkillLock.chainCount  = 8  --锁链点个数
 function SkillLock:ctor(...)
 

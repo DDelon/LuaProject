@@ -73,56 +73,9 @@ function Shop:initView()
     self.cellW = cellCountSize.width / self.cell_h_count
     self.cellH = cellCountSize.height / self.cell_v_count
 
-    --数据初始化
-    self.payItem = nil;
-    self.recharge = nil
-    local dataTab = {}
-    dataTab.funName = "getShopData"
-    local recharge = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
-    --整理数据
-    local newData = {}
-    newData["1"] = {}
-    newData["2"] = {}
-    for k,val in pairs(recharge) do
-        local count = val["count"]
-        if k ~= "1" and k ~= "2" then     
-            for i=1,count do
-                newData["1"][tostring(i)] = val[tostring(i)]
-                newData["2"][tostring(i)] = val[tostring(i)]   
-                newData["1"]["count"] = count
-                newData["2"]["count"] = count
-            end
-        end
-    end
+    self:initFishCoinScroll(FishGI.GameTableData:getRechargeTable(1))
+    self:initCrystalScroll(FishGI.GameTableData:getRechargeTable(2))
 
-    for k,val in pairs(recharge) do
-        local count = val["count"]
-        if k == "1" or k == "2" then
-            local oldCount = newData[k]["count"]
-            if oldCount ~= nil then
-                for i=oldCount+1,count+oldCount do
-                    newData[k][tostring(i)] = val[tostring(i - oldCount)]             
-                end
-                newData[k]["count"] = count+oldCount
-            end
-
-        end
-    end
-    recharge = newData
-
-    self.recharge = recharge
-    for key,val in pairs(recharge) do
-        --鱼币    
-        if key == "1" then
-            --平台id
-
-            self:initFishCoinScroll(val) 
-        --水晶
-        elseif key == "2" then                                                   
-            self:initCrystalScroll(val) 
-        end
-    end
-    
     local function scrollviewEvent(sender,eventType)
         if eventType==ccui.ScrollviewEventType.scrollToBottom then
            --print("滚动到底部噢")
@@ -185,9 +138,9 @@ function Shop:updatePropList()
 end
 
 function Shop:initFishCoinScroll(valTab)
-    local count = valTab["count"]
+    local count = #valTab
     for i=1,count do
-        local data = valTab[tostring(i)]
+        local data = valTab[i]
         local shopItem = require("Shop/Shopitem").create()
         data.platformId = 287;
         shopItem:setItemData(data)
@@ -198,9 +151,9 @@ function Shop:initFishCoinScroll(valTab)
 end
 
 function Shop:initCrystalScroll(valTab)
-    local count = valTab["count"]
+    local count = #valTab
     for i=1,count do
-        local data = valTab[tostring(i)]
+        local data = valTab[i]
         local shopItem = require("Shop/Shopitem").create()
         data.platformId = 288;
         shopItem:setItemData(data)

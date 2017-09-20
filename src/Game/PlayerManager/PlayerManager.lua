@@ -290,20 +290,35 @@ end
 function PlayerManager:PlayerNewVIP(valTab)
 	local playerId = valTab.playerId;
 	local vipExp = valTab.vipExp;
-	local backData = FishGMF.getAndSetPlayerData(playerId,true,"vipExp",vipExp)
+	local backData = FishGI.GameTableData:getVIPByCostMoney(vipExp)
+	--local backData = FishGMF.getAndSetPlayerData(playerId,true,"vipExp",vipExp)
 	if backData == nil then
 		print("----PlayerNewVIP----backData == nil------")
 		return
 	end
-
+	backData.vipExp = vipExp
     local vip_level = backData["vip_level"]
     local player = self:getPlayerByPlayerId(playerId)
+	if player == nil then
+		FishGF.print("----PlayerNewVIP----player == nil------"..playerId)
+		return
+	end
+	
     player.playerInfo.vipExp = vipExp
-    player.playerInfo.vip_level = vip_level
+    player.playerInfo.vip_level = backData.vip_level
+    player.playerInfo.extra_sign = backData.extra_sign
+    player.playerInfo.next_All_money = backData.next_All_money
+    player.playerInfo.daily_items_reward = backData.daily_items_reward
 
     if self.selfIndex == nil or self.selfIndex ~= playerId then
     	return
     end
+
+    FishGI.myData.vipExp = costMoney
+    FishGI.myData.vip_level = backData.vip_level
+    FishGI.myData.extra_sign = backData.extra_sign
+    FishGI.myData.next_All_money = backData.next_All_money
+    FishGI.myData.daily_items_reward = backData.daily_items_reward    
 
     --更新商店
     FishGI.gameScene.uiShopLayer:upDataLayer(backData)
@@ -494,7 +509,7 @@ function PlayerManager:OnGetPlayerInfo(valTab)
 	local player = self:getPlayerByPlayerId(playerId)
 
 	playerInfo.vip_level = FishGI.GameTableData:getVIPByCostMoney(playerInfo.vipExp).vip_level
-	playerInfo.grade = FishGMF.getLVByExp(playerInfo.gradeExp).level
+	playerInfo.grade = FishGI.GameTableData:getLVByExp(playerInfo.gradeExp).level
 
     local data = {}
     data.nickName = playerInfo.nickName      

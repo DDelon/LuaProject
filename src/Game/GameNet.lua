@@ -79,6 +79,12 @@ function GameNet:OnJMsg(msg)
     
     local ptr = msg:ReadData(0)
     local data, typeName = jmsg.decodeBinary(proto, ptr)
+
+    if self.isWaitLoaded == nil and  typeName ~= "MSGS2CGameStatus" then
+        return
+    end
+    self.isWaitLoaded = false
+
     --log("typeName= " .. typeName)
     self.isRecv = true;
     self.isSend = false;
@@ -580,11 +586,12 @@ function GameNet:OnFishGroupNotify(data)
 
     local function clearFunc()
         if FishGI.gameScene.isFishCome then
-                FishGI.gameScene.isFishCome = false;
-                return;
-            end
+            FishGI.gameScene.isFishCome = false;
+            return;
+        end
         FishGI.GameEffect:fishGroupCome()
         LuaCppAdapter:getInstance():fishAccelerateOut();
+        
     end
     FishGF.delayExcute(14-FishCD.FISH_GROUP_COMING_CLEAR_TIME, clearFunc)
 end

@@ -1632,22 +1632,26 @@ function FishGF.enterGameCommon(  )
     local storeProductData = {}
     local dataTab = {}
     dataTab.funName = "getShopData"
-    local rechargeData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)["1"]
-    for i=1,rechargeData.count do
-        local index = tostring(i)
-        storeProductData[i] = clone(SmallGamesGI.StoreProductData)
-        storeProductData[i].id = rechargeData[index].id
-        storeProductData[i].name = rechargeData[index].recharge_name
-        storeProductData[i].num = rechargeData[index].recharge_num
-        storeProductData[i].image = rechargeData[index].recharge_res
-        storeProductData[i].recharge_res = rechargeData[index].recharge_num
-        storeProductData[i].frist_charge = rechargeData[index].frist_change_enable
-        storeProductData[i].gift_num = rechargeData[index].gift_num
-        storeProductData[i].price = rechargeData[index].recharge
-        storeProductData[i].type = rechargeData[index].recharge_type
+    local rechargeData = FishGI.GameTableData:getRechargeTable(1)
+    local index = 1
+    for i=1,#rechargeData do
+        if rechargeData[i].recharge_type == 1 or rechargeData[i].recharge_type == 2 then
+            storeProductData[index] = clone(SmallGamesGI.StoreProductData)
+            storeProductData[index].id = rechargeData[i].id
+            storeProductData[index].name = rechargeData[i].recharge_name
+            storeProductData[index].num = rechargeData[i].recharge_num
+            storeProductData[index].image = rechargeData[i].recharge_res
+            storeProductData[index].recharge_res = rechargeData[i].recharge_num
+            storeProductData[index].frist_charge = rechargeData[i].frist_change_enable
+            storeProductData[index].gift_num = rechargeData[i].gift_num
+            storeProductData[index].price = rechargeData[i].recharge
+            storeProductData[index].type = rechargeData[i].recharge_type            
+            index = index + 1
+        end
+
     end
     storeProductDatas["1"] = storeProductData
-    storeProductData.count = rechargeData.count
+    storeProductData.count = index -1
     storeProductDatas.count = 1
     SmallGamesGF.setStoreProductData(storeProductDatas)
 end

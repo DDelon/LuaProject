@@ -321,6 +321,7 @@ function HallManager:onEnter( )
     FishGF.waitNetManager(false,nil,"exitGame")
     FishGI.AudioControl:playLayerBgMusic()
 	FishGI.shop = self.uiShopLayer;
+    FishGI.GameTableData:clearGameTable(1)
     self:disposeExit()
     
 end
@@ -840,15 +841,16 @@ end
 
 --更新vip相关数据
 function HallManager:upDataVIPData( costMoney )
-    local vipData = FishGMF.getAndSetPlayerData(FishGI.myData.playerId,true,"vipExp",costMoney)
+    local vipData = FishGI.GameTableData:getVIPByCostMoney(costMoney)
+    vipData.vipExp = costMoney
     FishGI.myData.vipExp = costMoney
     FishGI.myData.vip_level = vipData.vip_level
     FishGI.myData.extra_sign = vipData.extra_sign
     FishGI.myData.next_All_money = vipData.next_All_money
-    FishGI.myData.daily_items_reward = vipData.daily_items_reward
+    FishGI.myData.daily_items_reward = vipData.daily_items_reward    
 
     --更新vip相关界面
-    self:upDataVIPView(FishGI.myData)
+    self:upDataVIPView(vipData)
 
 end
 

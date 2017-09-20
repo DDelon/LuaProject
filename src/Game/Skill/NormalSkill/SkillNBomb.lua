@@ -444,6 +444,7 @@ end
 
 --收到申请核弹结果
 function SkillNBomb:NBombUseResult(data)
+    local scaleX_,scaleY_,scaleMin_  = FishGF.getCurScale();
     local data = data._usedata
     if self.propId ~= data.nPropID then
         return
@@ -472,7 +473,7 @@ function SkillNBomb:NBombUseResult(data)
 
     local function delayKillFishes(param)
         if param.chairId == FishGI.gameScene.playerManager:getMyChairId() then
-            local touchBeginPos = cc.p(param.pointX, param.pointY);
+            local touchBeginPos = cc.p(param.pointX*scaleX_, param.pointY*scaleY_);
             local fishesTab = LuaCppAdapter:getInstance():getNBombKilledFishes(self.bombLv, touchBeginPos);
             local data = {}
             data.sendType = "sendNBombBalst"
@@ -484,7 +485,7 @@ function SkillNBomb:NBombUseResult(data)
     end
 
     --坐标适配
-    local scaleX_,scaleY_,scaleMin_  = FishGF.getCurScale();
+    
     local pos = cc.p(data.pointX*scaleX_, data.pointY*scaleY_);
     if FishGI.gameScene.playerManager:isAcross(FishGI.gameScene.playerManager:getMyChairId(), chairId) then
         self:launchNBomb(cc.p(FishCD.WIN_SIZE.width-pos.x, FishCD.WIN_SIZE.height-pos.y), delayKillFishes, data);

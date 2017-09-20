@@ -37,11 +37,9 @@ end
 
 function LoginNode:onClickOK( sender )
     self:hideLayer() 
-
     local event = cc.EventCustom:new("accountLogin")
     event._userdata = {account = self.tf_account:getString(), password = self.tf_password:getString()}
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
-
 end
 
 function LoginNode:setAccountData( accountTab )

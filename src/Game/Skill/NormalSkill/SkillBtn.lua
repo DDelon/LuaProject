@@ -12,7 +12,7 @@ SkillBtn.RESOURCE_BINDING  = {
     ["num_bg"]       = { ["varname"] = "num_bg" },   
     ["fnt_count"]    = { ["varname"] = "fnt_count" },   
     ["fnt_price"]    = { ["varname"] = "fnt_price" },   
- 
+    ["spr_price"]    = { ["varname"] = "spr_price" },
 }
 
 function SkillBtn:onCreate( ... )
@@ -132,29 +132,31 @@ end
 
 --设置道具个数
 function SkillBtn:setSkillByTag( val )
+    self.spr_price:setVisible(false)
     local tag = val.propId
     local count = val.propCount
     local price = val.price
-    local fnt_count = self.fnt_count
-    local fnt_price = self.fnt_price
-    local num_bg = self.num_bg
-    local showWidth = num_bg:getContentSize().width
-    fnt_count:setString(count)
-    FishGF.isScaleByCount(fnt_count,count,fnt_count:getContentSize().width,showWidth)
+    local showWidth = self.num_bg:getContentSize().width
+    self.fnt_count:setString(count)
+    FishGF.isScaleByCount(self.fnt_count,count,self.fnt_count:getContentSize().width,showWidth)
     if price ~= nil then
         self.price = price
-        fnt_price:setString(price)
-        local width2 = 34*0.74*fnt_price:getScale() + fnt_price:getContentSize().width
-        FishGF.isScaleByCount(fnt_price,price,width2,showWidth)
+        self.fnt_price:setString(price)
+        -- local width2 = 34*0.74*self.fnt_price:getScale() + self.fnt_price:getContentSize().width
+        -- FishGF.isScaleByCount(self.fnt_price,price,width2,showWidth)
     end
     if count <=0 then
-        num_bg:setVisible(true)
-        fnt_price:setVisible(true)
-        fnt_count:setVisible(false)
+        self.num_bg:setVisible(true)
+        self.fnt_price:setVisible(true)
+        self.fnt_count:setVisible(false)
+        if self.price > 999 then
+            self.spr_price:setVisible(true)
+            self.fnt_price:setVisible(false)
+        end
     else
-        num_bg:setVisible(false)
-        fnt_price:setVisible(false)
-        fnt_count:setVisible(true)
+        self.num_bg:setVisible(false)
+        self.fnt_price:setVisible(false)
+        self.fnt_count:setVisible(true)
     end
 end
 

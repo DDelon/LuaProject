@@ -53,6 +53,17 @@ function cannon:onCreate(...)
     --self:setMultiple(1)
 
     self:openTouchEventListener()
+
+    local loopkb = require("ui/battle/skill/uiskill_kb_2").create()
+
+    self.loopkbEffect = loopkb.root
+    self.loopkbEffect.animation = loopkb["animation"]
+    self.loopkbEffect:runAction(loopkb["animation"])
+    self.loopkbEffect.animation:play("loopkb", true);
+    self.loopkbEffect:setTag(12345)
+    self.loopkbEffect:setPositionY(self.spr_circle:getPositionY())
+    self.loopkbEffect:setVisible(false)
+    self:addChild(self.loopkbEffect, -1);
     
 end
 
@@ -111,6 +122,7 @@ end
 
 function cannon:playEffectAni(effectId)
     if effectId == FishCD.SKILL_TAG_VIOLENT then
+        self.loopkbEffect:setVisible(false)
         local beginkb = require("ui/battle/skill/uiskill_kb_1").create()
         local kbBeginEffect = beginkb.root
         kbBeginEffect.animation = beginkb["animation"]
@@ -123,15 +135,7 @@ function cannon:playEffectAni(effectId)
             if frameEventName:getEvent() == "end" then
                 kbBeginEffect:removeFromParent();
 
-                local loopkb = require("ui/battle/skill/uiskill_kb_2").create()
-
-                local loopkbEffect = loopkb.root
-                loopkbEffect.animation = loopkb["animation"]
-                loopkbEffect:runAction(loopkb["animation"])
-                loopkbEffect.animation:play("loopkb", true);
-                loopkbEffect:setTag(12345)
-                loopkbEffect:setPositionY(self.spr_circle:getPositionY())
-                self:addChild(loopkbEffect, -1);
+                self.loopkbEffect:setVisible(true)
             end
         end
         kbBeginEffect["animation"]:clearFrameEventCallFunc()
@@ -143,7 +147,7 @@ end
 
 function cannon:endEffectAni(effectId)
     if effectId == FishCD.SKILL_TAG_VIOLENT then
-        self:removeChildByTag(12345)
+        self.loopkbEffect:setVisible(false)
     end
 end
 

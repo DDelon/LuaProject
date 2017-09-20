@@ -93,6 +93,7 @@ function GameScene:registerEnterBFgroundEvt()
         self.uiSkillView:upDateUserTime(FishGI.enterBackTime)
         FishGI.AudioControl:playLayerBgMusic()
         self:cancelAutoFire()
+        self.isFishCome = true;
 
         print("enter back second:"..FishGI.enterBackTime);
     end
@@ -315,6 +316,7 @@ end
 
 function GameScene:onEnter( )
     print("------GameScene:onEnter--")
+    FishGI.GameTableData:clearGameTable(2)
     FishGMF.setGameType(0)
     LuaCppAdapter:getInstance():exitGame()
     FishGMF.setGameState(3)
@@ -324,8 +326,6 @@ function GameScene:onEnter( )
     FishGI.FRIEND_ROOMID = nil
 
 	FishGI.shop = self.uiShopLayer;
-    local keyID = tostring(FishGI.curGameRoomID + 910000000)
-    local musicName = tostring(FishGI.GameConfig:getConfigData("room", keyID, "bg_music"));
     FishGI.hallScene.net.isEnterRoom = false;
 
     self:startLoad()
@@ -339,15 +339,6 @@ function GameScene:onEnter( )
 end
 
 function GameScene:onExit( )
-
-    -- local data =  {}
-    -- data.funName = "setFishState"
-    -- data.state = 1
-    -- LuaCppAdapter:getInstance():luaUseCppFun(data);
-    
-    --FishGI.myData.props = nil
-
-    
     print("GameScene:onExit( )")
     FishGI.isAutoFire = false
     FishGMF.clearRefreshData()
@@ -373,7 +364,7 @@ function GameScene:startGame(data)
     local killedFishTab = data.killedFishes;
     --call fish 
     local calledFishesTab = data.calledFishes;
-    if calledFishesTab == {} then calledFishesTab = nil end
+    --if calledFishesTab == {} then calledFishesTab = nil end
     
     local isInFreeze = data.isInFreeze
     local fishGroupComing = data.fishGroupComing
@@ -420,7 +411,6 @@ function GameScene:startGame(data)
     end);
 
     FishGI.eventDispatcher:registerCustomListener("FishGroupCome", self, function(valTab) 
-        self.isFishCome = true;
         LuaCppAdapter:getInstance():fishGroupCome(valTab);
     end);
 

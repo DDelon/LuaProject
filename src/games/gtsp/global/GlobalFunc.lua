@@ -46,7 +46,7 @@ function SmallGamesGF.isGcsdkChannel( channelId )
 end
 
 function SmallGamesGF.getHallVerison()
-    return SmallGamesGI.appVersion
+    return string.format( "%d.%d.%d", SmallGamesGI.appVersion[1], SmallGamesGI.appVersion[2], SmallGamesGI.appVersion[3] )
 end
 
 -- 获取游戏src文件目录
@@ -189,11 +189,6 @@ function SmallGamesGF.getViewTag( viewName )
     return SmallGamesGI.appViewListTag[viewName]
 end
 
--- 获取界面文件目录
-function SmallGamesGF.getViewFileDir( viewType )
-    return viewType[SmallGamesGI.appConfigsIndex.FilePath]
-end
-
 -- 创建大厅
 function SmallGamesGF.createHallManager(valTab)
     local session = valTab.session;
@@ -290,6 +285,7 @@ end
 
 -- 开始游戏
 function SmallGamesGF.start(lobbyName, appName)
+    SmallGamesGI.appVersion = require(SmallGamesCD.rootSrcPath..".version")
     SmallGamesGI.lobbyName = lobbyName
     SmallGamesGI.lobbyNameLower = string.lower( lobbyName )
     if appName == nil then
@@ -309,13 +305,17 @@ function SmallGamesGF.start(lobbyName, appName)
         if appConfigs[k] == nil then
             appConfigs[k] = {}
         end
-        table.insert( appConfigs[k], string.format("%s.%s.%s", SmallGamesGI.appSrcPath, SmallGamesGI.appName, SmallGamesGF.getViewFileDir(v)) )
+        for i,j in ipairs(v) do
+            table.insert( appConfigs[k], string.format("%s.%s.%s", SmallGamesGI.appSrcPath, SmallGamesGI.appName, j) )
+        end
     end
     for k, v in pairs(SmallGamesGI.appConfigs) do
         if appConfigs[k] == nil then
             appConfigs[k] = {}
         end
-        table.insert( appConfigs[k], string.format("%s.%s", SmallGamesGI.commonSrcPath, SmallGamesGF.getViewFileDir(v)) )
+        for i,j in ipairs(v) do
+            table.insert( appConfigs[k], string.format("%s.%s", SmallGamesGI.commonSrcPath, j) )
+        end
     end
     SmallGamesGI.myAppLast = SmallGamesGI.myApp
     SmallGamesGI.lastScene = SmallGamesGI.curScene
@@ -593,6 +593,9 @@ end
 
 -- 创建商城界面
 function SmallGamesGF.createShopLayer()
+    if SmallGamesGI.lobbyName == SmallGamesGI.lobbyList.Xyx then
+        return
+    end
     return SmallGamesGF.createView(SmallGameApp.ShopLayer)
 end
 

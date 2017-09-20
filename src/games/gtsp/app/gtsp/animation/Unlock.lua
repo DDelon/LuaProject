@@ -18,6 +18,8 @@ function Unlock:onCreate()
     remove[#remove + 1] = cc.CallFunc:create(function ( ... )
         self:removeFromParent()
     end)
+    local path = SmallGamesGF.getCurAppResPath("sound/lvup_02.mp3")
+    AudioEngine.playEffect(path)
 
     self:runAction(transition.sequence(remove))
 end

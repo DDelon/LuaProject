@@ -74,7 +74,7 @@ end
 
 --设置等级
 function PlayerInfo:setGrade( gradeExp )
-    local gradeData = FishGMF.getLVByExp(gradeExp)
+    local gradeData = FishGI.GameTableData:getLVByExp(gradeExp)
 
     local str = "LV"..gradeData.level.."("..gradeData.expCur.."/"..gradeData.expNext..")"
     self.text_grade:setString(str)

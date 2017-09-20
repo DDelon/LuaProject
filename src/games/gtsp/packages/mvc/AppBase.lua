@@ -12,10 +12,6 @@ function AppBase:ctor(configs_, defaultScene)
         dump(self.configs_, "AppBase configs")
     end
 
-    if CC_SHOW_FPS then
-        cc.Director:getInstance():setDisplayStats(true)
-    end
-
     -- event
     self:onCreate()
 end

@@ -10,10 +10,11 @@ ChildGameUpdate.RESOURCE_BINDING  = {
     ["text_message"]   = { ["varname"] = "text_message" },    
     ["text_status"]    = { ["varname"] = "text_status" },  
     ["text_sizeper"]   = { ["varname"] = "text_sizeper" },
+    ["text_version"]   = { ["varname"] = "text_version" },
     
 }
 
-function ChildGameUpdate:ctor( )
+function ChildGameUpdate:ctor()
     ChildGameUpdate.super.ctor(self)
     self:setItemVisible(false)
     self.spr_bar_light:setScaleY(0);
@@ -25,6 +26,11 @@ end
 
 function ChildGameUpdate:onCreate( ... )
 
+end
+
+function ChildGameUpdate:setVersion(version)
+    local versionStr = table.concat(version, ".");
+    self.text_version:setString(versionStr)
 end
 
 function ChildGameUpdate:openTips(time)
@@ -46,6 +52,7 @@ function ChildGameUpdate:setItemVisible(isVisible)
 
     if isVisible then
         self.text_status:setString("资源下载中......");
+        self.spr_bar_light:setAnchorPoint(cc.p(1, 0.5));
     else
         self.text_status:setString("正在检测最新版本......");
     end

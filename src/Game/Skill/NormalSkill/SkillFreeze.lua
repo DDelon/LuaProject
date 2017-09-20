@@ -65,10 +65,7 @@ function SkillFreeze:startMyFreeze( valTab)
 
     self:freezeEffect()
 
-    local data =  {}
-    data.funName = "setFishState"
-    data.state = 4
-    LuaCppAdapter:getInstance():luaUseCppFun(data);
+    FishGMF.setFishState(4)
     
 end
 
@@ -83,10 +80,7 @@ function SkillFreeze:otherFreezeStart( valTab)
     local newCrystal = valTab.newCrystal
     
     self:freezeEffect()
-    local data =  {}
-    data.funName = "setFishState"
-    data.state = 4
-    LuaCppAdapter:getInstance():luaUseCppFun(data);
+    FishGMF.setFishState(4)
 
     --更新水晶
     FishGMF.upDataByPropId(playerId,FishCD.PROP_TAG_02,newCrystal)
@@ -108,10 +102,7 @@ function SkillFreeze:gameStartFreeze( valTab)
     self.freezeBg:setVisible(true)
     self.freezeBg:setOpacity(255)
 
-    local data =  {}
-    data.funName = "setFishState"
-    data.state = 5
-    LuaCppAdapter:getInstance():luaUseCppFun(data);
+    FishGMF.setFishState(5)
 
 end
 
@@ -134,10 +125,7 @@ end
 --结束冰冻
 function SkillFreeze:endFreeze( valTab )
     self.freezeBg:runAction(cc.FadeTo:create(0.3,0))
-    local data =  {}
-    data.funName = "setFishState"
-    data.state = 1
-    LuaCppAdapter:getInstance():luaUseCppFun(data);
+    FishGMF.setFishState(1)
 end
 
 return SkillFreeze;

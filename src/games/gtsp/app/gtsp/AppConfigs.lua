@@ -8,6 +8,7 @@ SmallGameApp.PayChannelList = "PayChannelList"
 SmallGameApp.appPathConfigs = {
     main = "main",
     shop = "shop."..SmallGamesGI.lobbyNameLower,
+    shop_common = "shop.common",
 }
 
 SmallGameApp.appConfigs = {
@@ -16,12 +17,15 @@ SmallGameApp.appConfigs = {
     },
     ShopLayer = {
         SmallGameApp.appPathConfigs.shop,
+        SmallGameApp.appPathConfigs.shop_common,
     },
     ShopItem = {
         SmallGameApp.appPathConfigs.shop,
+        SmallGameApp.appPathConfigs.shop_common,
     },
     PayChannelList = {
         SmallGameApp.appPathConfigs.shop,
+        SmallGameApp.appPathConfigs.shop_common,
     },
 }
 

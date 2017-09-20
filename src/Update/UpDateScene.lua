@@ -31,6 +31,7 @@ end
 
 function UpDateScene:initUIWithChildGame()
 	self.view = require("Update/hotUpdate/ChildGameUpdate").create();
+	self.view:setVersion(self.version)
 	self:addChild(self.view);
 
 
@@ -164,7 +165,12 @@ function UpDateScene:showUpdateDialog(evt)
                 if tag == 2 then
                     func()
 				else
-					os.exit(0);
+					if self.appid == "263" or self.appid == "264" then
+						os.exit(0);
+					else
+						cc.Director:getInstance():popScene()
+						FishGI.hallScene:doAutoLogin()
+					end
                 end
 			end
 			FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,"您当前网络环境为非WIFI模式，是否使用流量继续下载更新资源？",callback);

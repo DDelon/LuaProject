@@ -8,8 +8,6 @@ local function initGame(rootSrcPath, rootResPath)
 
     -- 加载全局配置
     require(SmallGamesCD.rootSrcPath..".global.GlobalInstance")
-
-    SmallGamesGI.appVersion = "1.1.1"
 end
 
 return initGame
