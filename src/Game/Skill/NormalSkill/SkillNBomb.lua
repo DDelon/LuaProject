@@ -365,9 +365,9 @@ end
 function SkillNBomb:onChoseState(islight)
     self.btn:setTouchEnabled(not islight)
     if islight then
-        self.btn.parentClasss:setState(1)
+        self.btn.parentClasss:setState(2)
     else
-        self.btn.parentClasss:setState(0)
+        self.btn.parentClasss:setState(1)
     end
 end
 

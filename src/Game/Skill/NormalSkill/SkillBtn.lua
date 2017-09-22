@@ -21,7 +21,7 @@ function SkillBtn:onCreate( ... )
 
 end
 
-function SkillBtn:initBtn( propId ,index)
+function SkillBtn:initBtn( propId ,index,allCount)
     self:initBtnState(propId)
     self.btn_skill:setTag(propId)
 
@@ -30,32 +30,42 @@ function SkillBtn:initBtn( propId ,index)
         print("----initWithFile is faile------")
     end    
 
+    self:initLight(propId,index,allCount)
+
+    self:initProgressTimer()
+
+end
+
+--初始化光圈
+function SkillBtn:initLight(propId,index,allCount )
     self.node_light_1:stopAllActions()
     self.node_light_1:runAction(self.node_light_1.animation)
-
-    if index == 0 then
-        self.node_light_1.animation:play("doplay", true)
-    else
-        local dis = 55
-        local seq = cc.Sequence:create(cc.DelayTime:create(index*dis/60),cc.CallFunc:create(function ( ... )
-            local sequence = cc.Sequence:create(
+    local disTime = 55/60
+    local allDelayTime = disTime*allCount
+    if allCount == 1 then
+        allDelayTime = allDelayTime + 1
+    end
+    
+    local allAct = function ( ... )
+        local sequence = cc.Sequence:create(
+            cc.DelayTime:create(allDelayTime),
             cc.CallFunc:create(function ( ... )
                 self.node_light_1.animation:play("doplay", false);
-            end),
-            cc.DelayTime:create(4*dis/60))
-            local action = cc.RepeatForever:create(sequence)
-            self:runAction(action)
-        end)) 
-        self:runAction(seq)
+            end))
+        local action = cc.RepeatForever:create(sequence)
+        self.node_light_1:runAction(action)
     end
+
+    local nowDelayTime = index*disTime
+    local seq = cc.Sequence:create(cc.DelayTime:create(nowDelayTime),cc.CallFunc:create(function ( ... )
+        allAct()
+    end))
+    self.node_light_1:runAction(seq)
     
     --要先停止原先变形的动画，再播放最新的动画
     self.node_light_2:stopAllActions()
     self.node_light_2:runAction(self.node_light_2.animation)
     self.node_light_2.animation:play("doplay", true);
-
-    self:initProgressTimer()
-
 end
 
 --阴影进度条
@@ -83,11 +93,12 @@ function SkillBtn:getProgressTimer( )
 end
 
 function SkillBtn:initBtnState( propId )
-    if propId == 3 or propId == 4 or propId == 5 or propId == 17 then
-        self:setState(1)
-    elseif propId == 14 or propId == 6 or propId == 15 or propId == 16 then
-        self:setState(0)
-    end
+    self:setState(1)
+    -- if propId == 3 or propId == 4 or propId == 5 or propId == 17 then
+    --     self:setState(1)
+    -- elseif propId == 14 or propId == 6 or propId == 15 or propId == 16 then
+    --     self:setState(0)
+    -- end
 end
 
 function SkillBtn:getBtn(  )

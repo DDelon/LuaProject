@@ -121,6 +121,8 @@ end
 
 function GameFriendScene:onEnter()
     print("------GameScene:onEnter--")
+    FishGI.CommonLayer:addLayerToParent(self.uiMainLayer,self)
+
     FishGI.GameTableData:clearGameTable(3)
     FishGMF.setGameType(1)
     LuaCppAdapter:getInstance():exitGame()
@@ -128,7 +130,6 @@ function GameFriendScene:onEnter()
     FishGI.SERVER_STATE = 0
     FishGI.FRIEND_ROOM_STATUS = 3
 
-	FishGI.shop = self.uiShopLayer;
     self:startLoad()
 
     FishGMF.clearRefreshData()

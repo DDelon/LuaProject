@@ -111,7 +111,7 @@ function MessageDialog:onClickCallback( sender )
     --tag值  0为小背景的确定，  1为中背景的确定，2为中背景的确定，3为中背景的取消
     local tag = sender:getTag()
     if tag == 0 or tag == 1 or tag == 2 or tag == 3 then
-        self:hideLayer(true,true) 
+        self:hideLayer(true,false) 
     end
 
 end

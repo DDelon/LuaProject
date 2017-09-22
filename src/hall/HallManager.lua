@@ -111,27 +111,6 @@ function HallManager:initLayer( )
     self.uiExchange:setVisible(false)   
     self.uiExchange:setScale(self.scaleMin_)
 
-    --商店
-    self.uiShopLayer = require("Shop/Shop").create()
-    self.uiShopLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiShopLayer,FishCD.ORDER_LAYER_TRUE)
-    self.uiShopLayer:setVisible(false)   
-    self.uiShopLayer:setScale(self.scaleMin_)
-
-    --月卡
-    self.uiMonthcard = require("hall/Monthcard/Monthcard").create()
-    self.uiMonthcard:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,330*self.scaleY_))
-    self:addChild(self.uiMonthcard,FishCD.ORDER_LAYER_TRUE)
-    self.uiMonthcard:setVisible(false)   
-    self.uiMonthcard:setScale(self.scaleMin_)
-
-    --VIP特权
-    self.uiVipRight = require("VipRight/VipRight").create()
-    self.uiVipRight:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiVipRight,FishCD.ORDER_LAYER_TRUE)
-    self.uiVipRight:setVisible(false)
-    self.uiVipRight:setScale(self.scaleMin_)
-
     --签到
     self.uiCheck = require("hall/Check/Check").create()
     self.uiCheck:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
@@ -318,9 +297,10 @@ end
 
 function HallManager:onEnter( )
     print("------------HallLayer:onEnter--")
+    FishGI.CommonLayer:addLayerToParent(self)
     FishGF.waitNetManager(false,nil,"exitGame")
     FishGI.AudioControl:playLayerBgMusic()
-	FishGI.shop = self.uiShopLayer;
+	
     FishGI.GameTableData:clearGameTable(1)
     self:disposeExit()
     

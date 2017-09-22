@@ -3,7 +3,6 @@ cc.exports.FishGF = {}
 FishGF.DEBUG = true
 FishGF.debugLayer = nil;
 function FishGF.print(msg)
-    msg = "fish log:"..msg
     if FishGF.DEBUG then
         LuaCppAdapter:getInstance():debugLog(msg);
     else
@@ -237,18 +236,8 @@ function FishGF.changePropUnitByID(propId,propCount,isCh)
 end
 
 --大厅中通过id得到道具的目标点 
-function FishGF.getHallPropAimByID(ID)
-    local scaleX_,scaleY_,scaleMin_  = FishGF.getCurScale()
-    local pos = cc.p(0,0)
-    if ID == 1 then
-        pos = cc.p(617.55*scaleX_,677.88*scaleY_)
-    elseif ID == 2 then
-        pos = cc.p(927.51*scaleX_,681.43*scaleY_)
-    else
-        pos = cc.p(66.26*scaleX_,71*scaleY_)
-    end
-
-    return pos
+function FishGF.getHallPropAimByID(propId)
+    return FishGI.hallScene.view:getHallPropAimByID(propId)
 end
 
 --显示系统消息提示框
@@ -257,19 +246,12 @@ function FishGF.showMessageLayer(messageType,strMsg,callback,scene,strHook)
     if curScene == nil or type(curScene) == "number" then
         return
     end
-    
-    local noticeType = curScene:getChildByName("MessageDialog")
-    if noticeType == nil then
-        noticeType = require("Message/MessageDialog").create()
-        noticeType:setData(messageType,strMsg,callback,strHook)
-        noticeType:setName("MessageDialog")
-        curScene:addChild(noticeType,FishCD.ORDER_SYSTEM_MESSAGE)
-        noticeType:showLayer() 
-        noticeType:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    else
-        noticeType:setData(messageType,strMsg,callback,strHook)
-        if not noticeType["isShow"] then
-            noticeType:showLayer() 
+    local uiNoticeLayer = FishGI.CommonLayer:getComLayer("uiNoticeLayer")
+    if uiNoticeLayer ~= nil then
+        uiNoticeLayer:setData(messageType,strMsg,callback,strHook)
+        local isShow = uiNoticeLayer["isShow"]
+        if isShow == nil or isShow == false then
+            uiNoticeLayer:showLayer() 
         end
     end
 end
@@ -280,18 +262,12 @@ function FishGF.showExitMessage(strMsg,callback)
     if curScene == nil or type(curScene) == "number" then
         return
     end
-    local ExitMessage = curScene:getChildByName("ExitMessage")
-    if ExitMessage == nil then
-        ExitMessage = require("Message/MessageDialog").create()
-        ExitMessage:setData(FishCD.MODE_MIDDLE_OK_CLOSE,strMsg,callback)
-        ExitMessage:setName("ExitMessage")
-        curScene:addChild(ExitMessage,FishCD.ORDER_SYSTEM_MESSAGE+1)
-        ExitMessage:showLayer() 
-        ExitMessage:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    else
-        ExitMessage:setData(FishCD.MODE_MIDDLE_OK_CLOSE,strMsg,callback)
-        if not ExitMessage["isShow"] then
-            ExitMessage:showLayer() 
+    local uiExitNotice = FishGI.CommonLayer:getComLayer("uiExitNotice")
+    if uiExitNotice ~= nil then
+        uiExitNotice:setData(FishCD.MODE_MIDDLE_OK_CLOSE,strMsg,callback)
+        local isShow = uiExitNotice["isShow"]
+        if isShow == nil or isShow == false then
+            uiExitNotice:showLayer() 
         end
     end
 end
@@ -574,71 +550,16 @@ function FishGF.getRotateDegreeRadians(dstPos, srcPos)
     return degree, radians;
 end
 
-function FishGF.strSplit(str, sign)
-    local front = 1;
-    local back = 1;
-    local len = string.len(str);
-    local resultTab = {};
-    while true do
-        back = string.find(str, sign, front);
-        local val = string.sub(str,front,back-1);
-        if back == nil then
-            back = 0
-        end
-        front = back+1;
-        table.insert(resultTab, val);
-        if front >= len then
-            break;
-        end
-    end
-    return resultTab;
-end
-
+--裁剪 "0,0,0;0,0,0;"格式的字符窜
 function FishGF.strToVec3(str)
-    local front = 1;
-    local back = 1;
-    local len = string.len(str);
     local pointTab = {};
-
-
-    while true do
-        back = string.find(str, ",", front);
-        local valx = string.sub(str,front,back-1);
-        front = back+1;
-        back = string.find(str, ",", front);
-        local valy = string.sub(str,front,back-1);
-        front = back+1;
-        back = string.find(str, ";", front);
-        local valz = string.sub(str,front,back-1);
-        front = back+1;
-        table.insert(pointTab, cc.vec3(tonumber(valx), tonumber(valy), tonumber(valz)));
-        if back >= len then
-            break;
+    local arr1 = string.split(str,";")
+    for i,v in ipairs(arr1) do
+        local arr2 = string.split(v,",")
+        if #arr2 >1 then
+            table.insert(pointTab, cc.vec3(tonumber(arr2[1]), tonumber(arr2[2]), tonumber(arr2[3])));
         end
     end
-    
-    return pointTab;
-end
-function FishGF.strToVec2(str)
-    local front = 1;
-    local back = 1;
-    local len = string.len(str);
-    local pointTab = {};
-
-
-    while true do
-        back = string.find(str, ",", front);
-        local valx = string.sub(str,front,back-1);
-        front = back+1;
-        back = string.find(str, ";", front);
-        local valy = string.sub(str,front,back-1);
-        front = back+1;
-        table.insert(pointTab, cc.p(tonumber(valx), tonumber(valy)));
-        if back >= len then
-            break;
-        end
-    end
-
     return pointTab;
 end
 
@@ -773,32 +694,6 @@ function FishGF.getFormatTimeBySeconds(seconds)
 
     local time = string.format("%02d:%02d:%02d",clock,minute,second)
     return time;
-end
-
-function FishGF.getPosWithDirectTag(directTag)
-    if directTag == cc.exports.Direct.LEFT_DOWN then
-        --左下
-        return cc.p(cc.exports.gameSceneInstance.visibleSize.width/4, cc.exports.gameSceneInstance.visibleSize.height*0.1);
-    elseif directTag == cc.exports.Direct.RIGHT_DOWN then
-        --右下
-        return cc.p(cc.exports.gameSceneInstance.visibleSize.width*3/4, cc.exports.gameSceneInstance.visibleSize.height*0.1);
-    elseif directTag == cc.exports.Direct.LEFT_UP then
-        --左上
-        return cc.p(cc.exports.gameSceneInstance.visibleSize.width/4, cc.exports.gameSceneInstance.visibleSize.height*0.9);
-    elseif directTag == cc.exports.Direct.RIGHT_UP then
-        --右上
-        return cc.p(cc.exports.gameSceneInstance.visibleSize.width*3/4, cc.exports.gameSceneInstance.visibleSize.height*0.9);
-    end
-end
-
-function FishGF.coordinateTransform(pos, isTransform)
-    local winSize = cc.Director:getInstance():getWinSize();
-    if isTransform then
-        return cc.vec3(tonumber(winSize.width-pos.x), tonumber(winSize.height-pos.y), tonumber(pos.z));
-    else
-        return cc.vec3(tonumber(pos.x), tonumber(pos.y), tonumber(pos.z));
-    end
-    
 end
 
 --延时执行
@@ -1100,6 +995,9 @@ function FishGF.isRechargeSucceed(newData)
 
     local myFishIcon = FishGMF.getPlayerPropData(newData.playerId,FishCD.PROP_TAG_01).realCount
     local myCrystal = FishGMF.getPlayerPropData(newData.playerId,FishCD.PROP_TAG_02).realCount
+    if FishGI.myData == nil then
+        return true
+    end
     local myLeftMonthCardDay = FishGI.myData.leftMonthCardDay
 
     if myFishIcon ~= fishIcon or myCrystal ~= crystal or myLeftMonthCardDay ~= leftMonthCardDay then
@@ -1534,131 +1432,38 @@ function FishGF.openPortraitWebView(url, title)
     end
 end
 
-function FishGF.enterGameCommon(  )
+function FishGF.enterGameCommon( gameName )
     FishGI.isExitRoom = true
     FishGI.exitType = 1000
     FishGI.hallScene.net:dealloc()
-
-    require("games.gtsp.ConstantDef")("games/gtsp", "games/gtsp")
-    local function callbackUpdateLobbyData( appId, appKey, gameId )
+    local function updateLobbyData(appId, appKey, gameId)
         APP_ID = appId
         APP_KEY = appKey
         GAME_ID = gameId
         URLKEY = APP_ID .. APP_KEY .. APP_ID
     end
-    SmallGamesGF.setLobbyData(FishGI.SYSTEM_STATE, APP_ID, APP_KEY, GAME_ID, CHANNEL_ID, FishGI.WebUserData:GetWXShareAppId(), callbackUpdateLobbyData)
-    SmallGamesGF.setLobbyLoginData(FishGI.serverConfig, FishGI.loginScene.net.loginType, FishGI.loginScene.net.strLoginUserName, 
-        FishGI.loginScene.net.userName, FishGI.loginScene.net.password, FishGI.loginScene.net.thirdLoginInfo)
-
-    local luaPayData = {
-        android = {
-            common = {
-                className = "com.weile.pay.PayApi",
-                methodName = "doPay",
-                methonCallbackResult = "addScriptListener",
-            },
-            list = {
-                Alipay = nil,
-                Wechat = nil,
-                UnionPay = nil,
-                Apple = nil,
-                Gcsdk = nil,
-            },
-        },
-        ios = {
-            common = {
-                className = "AppController",
-                methodName = "doPay",
-            },
-            list = {
-                Alipay = nil,
-                Wechat = nil,
-                UnionPay = nil,
-                Apple = nil,
-                Gcsdk = nil,
-            },
-        },
-        gcsdk = {
-            common = {
-                className = "com.weile.gcsdk.GameCenterBase",
-                methodName = "doPayForProduct",
-                methonCallbackResult = "addScriptListener",
-            },
-            list = {
-                baidu = nil,
-                huawei = nil,
-                jinli = nil,
-                lenvo = nil,
-                mi = nil,
-                oppo = nil,
-                qihu = nil,
-                vivo = nil,
-                yyb = nil,
-            },
-        },
+    local lobbyData = {
+        game_conf = "SmallGames."..gameName..".GameConf",
+        app_id = APP_ID,
+        app_key = APP_KEY,
+        game_id = GAME_ID,
+        channel_id = CHANNEL_ID,
+        system_status = FishGI.SYSTEM_STATE,
+        wechat_appid = FishGI.WebUserData:GetWXShareAppId(),
+        callbackUpdateLobbyData = updateLobbyData,
+        server_config = FishGI.serverConfig,
+        login_type = FishGI.loginScene.net.loginType,
+        guest_name = FishGI.loginScene.net.strLoginUserName,
+        user_name = FishGI.loginScene.net.userName,
+        user_pass = FishGI.loginScene.net.password,
+        thirdlogin_info = FishGI.loginScene.net.thirdLoginInfo,
     }
-    local luaShareData = {
-        android = {
-            common = {
-                className = "com.weile.api.WXShareHelper",
-                methodName = "doShareToWX",
-                methonCallbackResult = "addScriptListener",
-            },
-            list = {
-                Alipay = nil,
-                Wechat = nil,
-                UnionPay = nil,
-                Apple = nil,
-                Gcsdk = nil,
-            },
-        },
-        ios = {
-            common = {
-                className = "AppController",
-                methodName = "doShareToWX",
-            },
-            list = {
-                Alipay = nil,
-                Wechat = nil,
-                UnionPay = nil,
-                Apple = nil,
-                Gcsdk = nil,
-            },
-        },
-    }
-    SmallGamesGF.setBottomCallData("cocos.cocos2d.luaj", "cocos.cocos2d.luaoc", luaPayData, luaShareData)
-
-    local storeProductDatas = {}
-    local storeProductData = {}
-    local dataTab = {}
-    dataTab.funName = "getShopData"
-    local rechargeData = FishGI.GameTableData:getRechargeTable(1)
-    local index = 1
-    for i=1,#rechargeData do
-        if rechargeData[i].recharge_type == 1 or rechargeData[i].recharge_type == 2 then
-            storeProductData[index] = clone(SmallGamesGI.StoreProductData)
-            storeProductData[index].id = rechargeData[i].id
-            storeProductData[index].name = rechargeData[i].recharge_name
-            storeProductData[index].num = rechargeData[i].recharge_num
-            storeProductData[index].image = rechargeData[i].recharge_res
-            storeProductData[index].recharge_res = rechargeData[i].recharge_num
-            storeProductData[index].frist_charge = rechargeData[i].frist_change_enable
-            storeProductData[index].gift_num = rechargeData[i].gift_num
-            storeProductData[index].price = rechargeData[i].recharge
-            storeProductData[index].type = rechargeData[i].recharge_type            
-            index = index + 1
-        end
-
-    end
-    storeProductDatas["1"] = storeProductData
-    storeProductData.count = index -1
-    storeProductDatas.count = 1
-    SmallGamesGF.setStoreProductData(storeProductDatas)
+    return lobbyData
 end
 
 function FishGF.enterGameGtsp(  )
-    FishGF.enterGameCommon()
-    SmallGamesGF.start(SmallGamesGI.lobbyList.Buyu, SmallGamesGI.appList.Gtsp)
+    local lobbyData = FishGF.enterGameCommon("gtsp")
+    require("games.gtsp.ConstantDef")("games.gtsp", "games/gtsp", "Buyu", "gtsp", lobbyData)
 end
 
 --龟兔赛跑 gtsp
@@ -1666,7 +1471,7 @@ function FishGF.checkUpdate(shortName)
     local info = require("VersionConfig")[shortName]
     local versionPath = cc.FileUtils:getInstance():getWritablePath().."/"..info.FILE_NAME.."version.lua"
     local isExistWritePath = cc.FileUtils:getInstance():isFileExist(versionPath)
-	local isExistLocalPath = cc.FileUtils:getInstance():isFileExist(info.FILE_NAME.."version.lua");
+	local isExistLocalPath = cc.FileUtils:getInstance():isFileExist(info.FILE_NAME.."version.lua")
     local version = info.VER
     if (isExist or isExistLocalPath) then version = require(info.FILE_NAME.."version.lua") end
     local hotScene = require("Update/UpDateScene").create(info.APP_ID..info.APP_KEY..info.APP_ID, info.APP_ID, info.CHANNEL_ID, version)

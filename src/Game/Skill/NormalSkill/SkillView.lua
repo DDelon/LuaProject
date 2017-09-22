@@ -27,11 +27,11 @@ SkillView.BOMB_LIST  = {
 
 --底部的按键
 SkillView.DOWN_LIST  = {
-    { ["varname"] = "btn_skill_3",["propId"] = 3,["index"] = 1}, 
-    { ["varname"] = "btn_skill_4",["propId"] = 4,["index"] = 2},
-    { ["varname"] = "btn_skill_5",["propId"] = 5,["index"] = 3},
-    { ["varname"] = "btn_skill_17",["propId"] = 17,["index"] = 4},
-    { ["varname"] = "btn_skill_14",["propId"] = 14,["index"] = 0},
+    { ["varname"] = "btn_skill_3",["propId"] = 3,["index"] = 1,["allCount"] = 4}, 
+    { ["varname"] = "btn_skill_4",["propId"] = 4,["index"] = 2,["allCount"] = 4},
+    { ["varname"] = "btn_skill_5",["propId"] = 5,["index"] = 3,["allCount"] = 4},
+    { ["varname"] = "btn_skill_17",["propId"] = 17,["index"] = 4,["allCount"] = 4},
+    { ["varname"] = "btn_skill_14",["propId"] = 14,["index"] = 1,["allCount"] = 1},
 }
 
 function SkillView:onCreate( ... )
@@ -99,7 +99,7 @@ function SkillView:onCreate( ... )
         local mode = require("Game/Skill/NormalSkill/SkillBtn")
         mode.RESOURCE_FILENAME = "ui/battle/skill/uiskillitem2"
         self[v.varname] = mode.new(self, self[v.varname])
-        self[v.varname]:initBtn(v.propId,v.index)
+        self[v.varname]:initBtn(v.propId,v.index,v.allCount)
         self[v.varname]:replayStateAct(v.propId)
         local btn = self[v.varname]:getBtn()
         btn.parentClasss = self[v.varname]

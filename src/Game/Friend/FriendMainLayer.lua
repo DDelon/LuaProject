@@ -148,32 +148,6 @@ function FriendMainLayer:initView()
     self.uiSelectCannon:setVisible(false)
     FishGI.gameScene.uiSelectCannon = self.uiSelectCannon
 
-    --商店
-    self.uiShopLayer = require("Shop/Shop").create()
-    self.uiShopLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiShopLayer,FishCD.ORDER_LAYER_TRUE)
-    self.uiShopLayer:setScale(self.scaleMin_)
-    self.uiShopLayer:setVisible(false)   
-    FishGI.gameScene.uiShopLayer = self.uiShopLayer
-
-    --VIP特权
-    self.uiVipRight = require("VipRight/VipRight").create()
-    self.uiVipRight:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiVipRight,FishCD.ORDER_LAYER_TRUE)
-    self.uiVipRight:setScale(self.scaleMin_)
-    self.uiVipRight:setVisible(false)
-    FishGI.gameScene.uiVipRight = self.uiVipRight
-
-    if not FishGI.isGetMonthCard then
-        --月卡
-        self.uiMonthcard = require("hall/Monthcard/Monthcard").create()
-        self.uiMonthcard:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-        self:addChild(self.uiMonthcard,FishCD.ORDER_LAYER_TRUE)
-        self.uiMonthcard:setScale(self.scaleMin_)
-        self.uiMonthcard:setVisible(false)
-        FishGI.gameScene.uiMonthcard = self.uiMonthcard
-    end 
-
     self.uiGameData:updateGameStatus(false)
 end
 

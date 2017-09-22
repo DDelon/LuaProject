@@ -27,8 +27,8 @@ function Exchange:onCreate( ... )
     self:openTouchEventListener()
     
     local data = tostring(FishGI.GameConfig:getConfigData("config", tostring(990000068), "data"));
-    local tab = FishGF.strSplit(data..";", ";")
-    if tab ~= nil then
+    local tab = string.split(data,";")
+    if #tab > 1 then
         self.aimCount = tonumber(tab[1])
         self.money = tonumber(tab[2])
         self.text_aim_count:setString("/"..FishGF.changePropUnitByID(FishCD.PROP_TAG_12,self.aimCount,true))

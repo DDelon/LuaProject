@@ -166,14 +166,14 @@ function VipRight:initRewardIsToken( daily_items_reward )
         return
     end
 
-    local propTab = FishGF.strSplit(daily_items_reward..";", ";")
+    local propTab = string.split(daily_items_reward, ";")
 
     self.text_notice_word:setVisible(false)
     self.node_proplist:setVisible(true)
 
     self.proplist = {}
     for i,val in ipairs(propTab) do
-        local propData = FishGF.strSplit(val..",", ",")
+        local propData = string.split(val, ",")
 
         local propId = tonumber(propData[1])
         local propCount = tonumber(propData[2])

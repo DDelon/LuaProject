@@ -158,13 +158,6 @@ function LoadingLayer:starPreload( callBacl )
             if value.loadtype == "plist" then
                 cc.SpriteFrameCache:getInstance():addSpriteFrames(value.prepath.."."..value.loadtype);
                 self.index =  self.index +1
-            elseif value.loadtype == "lua" then
-                local nametable = FishGF.strSplit(value.prepath.."/","/")
-                local tablename = nametable[#nametable]
-                if FishGI[tablename] == nil  then
-                    FishGI[tablename] = require(value.prepath).create();
-                end
-                self.index =  self.index +1
             elseif value.loadtype == "effect" then
                 FishGI.AudioControl:preloadEffect(value.prepath)
                 self.index =  self.index +1
@@ -220,7 +213,7 @@ function LoadingLayer:starPreload( callBacl )
                 end
             end
         end
-    end,0.02,false)    
+    end,0.01,false)    
 end
 
 function LoadingLayer:updataSliderLight()

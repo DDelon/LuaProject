@@ -2,7 +2,7 @@ cc.exports.FishGI = {}
 
 FishGI.eventDispatcher = require("Other/EventDispatcher").create()
 --0外网   1，内网无秘籍   2，内网有秘籍  3.外网225测试房间
-FishGI.SYSTEM_STATE = 2
+FishGI.SYSTEM_STATE = 0
 
 --MainManager instance
 FishGI.mainManagerInstance = require("MainManager").create();
@@ -23,6 +23,7 @@ FishGI.WebUserData = require("common/WebUserData");
 
 FishGI.FriendRoomManage = require("hall/FriendRoom/FriendRoomManage").new();
 FishGI.GameTableData = require("GlobalCom/GameTableData").create();
+FishGI.CommonLayer = require("GlobalCom/CommonLayer").create();
 
 --GameCenterSDK
 if FishGF.isThirdSdk() then

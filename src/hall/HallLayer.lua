@@ -442,4 +442,27 @@ function HallLayer:getBtnPosByIndex( index )
     return pos
 end
 
+--大厅中通过id得到道具的目标点 
+function HallLayer:getHallPropAimByID(propId)
+    local pos = cc.p(0,0)
+    local child = nil
+    local spr = nil
+    if propId == 1 then
+        spr = self.fnt_coin
+        child = self.image_coin_bg
+    elseif propId == 2 then
+        spr = self.fnt_diamond
+        child = self.image_diamond_bg
+    else
+        spr = self.node_btn_1
+        child = self.node_btn_1:getParent()
+    end
+    if child == nil then
+        return nil
+    end 
+    local pos = cc.p(spr:getPositionX(),spr:getPositionY())
+    pos = child:convertToWorldSpace(pos)
+    return pos
+end
+
 return HallLayer;

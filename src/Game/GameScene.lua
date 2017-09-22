@@ -93,7 +93,6 @@ function GameScene:registerEnterBFgroundEvt()
         self.uiSkillView:upDateUserTime(FishGI.enterBackTime)
         FishGI.AudioControl:playLayerBgMusic()
         self:cancelAutoFire()
-        self.isFishCome = true;
 
         print("enter back second:"..FishGI.enterBackTime);
     end
@@ -264,29 +263,6 @@ function GameScene:initUILayer()
     self.uiSelectCannon:setScale(self.scaleMin_)
     self.uiSelectCannon:setVisible(false)
 
-    --商店
-    self.uiShopLayer = require("Shop/Shop").create()
-    self.uiShopLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiShopLayer,FishCD.ORDER_LAYER_TRUE)
-    self.uiShopLayer:setVisible(false)   
-    self.uiShopLayer:setScale(self.scaleMin_)
-
-    --VIP特权
-    self.uiVipRight = require("VipRight/VipRight").create()
-    self.uiVipRight:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiVipRight,FishCD.ORDER_LAYER_TRUE)
-    self.uiVipRight:setVisible(false)
-    self.uiVipRight:setScale(self.scaleMin_)
-
-    if not FishGI.isGetMonthCard then      
-        --月卡
-        self.uiMonthcard = require("hall/Monthcard/Monthcard").create()
-        self.uiMonthcard:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,330*self.scaleY_))
-        self:addChild(self.uiMonthcard,FishCD.ORDER_LAYER_TRUE)
-        self.uiMonthcard:setVisible(false)
-        self.uiMonthcard:setScale(self.scaleMin_)
-    end
-
 end
 
 function GameScene:cancelAutoFire() 
@@ -316,6 +292,8 @@ end
 
 function GameScene:onEnter( )
     print("------GameScene:onEnter--")
+    FishGI.CommonLayer:addLayerToParent(self)
+
     FishGI.GameTableData:clearGameTable(2)
     FishGMF.setGameType(0)
     LuaCppAdapter:getInstance():exitGame()
@@ -325,7 +303,7 @@ function GameScene:onEnter( )
     FishGI.FRIEND_ROOM_STATUS = 0
     FishGI.FRIEND_ROOMID = nil
 
-	FishGI.shop = self.uiShopLayer;
+	
     FishGI.hallScene.net.isEnterRoom = false;
 
     self:startLoad()
@@ -349,6 +327,7 @@ function GameScene:onExit( )
     FishGI.eventDispatcher:removeAllListener();
 
     FishGF.waitNetManager(true,nil,"exitGame")
+
 end
 
 function GameScene:startGame(data)
@@ -411,6 +390,7 @@ function GameScene:startGame(data)
     end);
 
     FishGI.eventDispatcher:registerCustomListener("FishGroupCome", self, function(valTab) 
+        self.isFishCome = true;
         LuaCppAdapter:getInstance():fishGroupCome(valTab);
     end);
 

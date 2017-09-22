@@ -30,103 +30,7 @@ function SkillLock:initLock()
     self.startTime = 0
     self.touchStartTime = 0
 
-    self.lockNode = cc.Node:create()
-    self:addChild(self.lockNode,1)
-
-    --锁定目标的环
-    self.lockLoop = cc.Sprite:create("battle/effect/effect_lock_0.png")
-    self.lockNode:addChild(self.lockLoop)
-
-    --锁定的箭头
-    self.lockArrow = cc.Sprite:create("battle/effect/effect_lock_1.png")
-    self.lockNode:addChild(self.lockArrow)
-    self.lockNode:setVisible(false)
-
-    --锁链
-    self.chain = {}
-    for i=self.chainCount,1,-1 do
-        self.chain[i] = cc.Sprite:create("battle/effect/effect_lock_2.png")
-        self:addChild(self.chain[i],0)
-        self.chain[i]:setVisible(false)
-    end
-
-    self:initLockAct()
-
-end
-
---设置锁链是否可见
-function SkillLock:setLockSpr( isShow)
-    self.lockNode:setVisible(isShow)
-    for i=1,self.chainCount do
-        self.chain[i]:setVisible(isShow)
-    end
-end
-
---初始化锁链环运动
-function SkillLock:initLockAct()
-    --锁定目标的环运动
-    self.lockLoop:stopAllActions()
-    self.lockLoop:runAction(cc.RepeatForever:create(cc.RotateBy:create(4,360)))
-
-    --锁定的箭头运动
-    self.lockArrow:stopAllActions()
-    local seq = cc.Sequence:create(cc.ScaleTo:create(0.13,0.8),cc.ScaleTo:create(0.87,1))
-    self.lockArrow:runAction(cc.RepeatForever:create(seq))
-
-end
-
---设置锁链转换目标效果 
-function SkillLock:playLockChangeAim( )
-    print("------SkillLock:playLockChangeAim---------")
-
-    --锁定目标的箭头运动
-    self.lockArrow:stopAllActions()
-
-    self.lockArrow:setScale(1.8)
-    self.lockArrow:setOpacity(255*0.3)
-
-    local scaleAct1 = cc.ScaleTo:create(0.13,0.9)
-    local OpacityAct1 = cc.FadeTo:create(0.13,255)
-    local spawnAct1 = cc.Spawn:create(scaleAct1,OpacityAct1)
-
-    local act2 = cc.ScaleTo:create(0.03,1)
-    local rotate = cc.RotateBy:create(0.16,80)
-
-    local endAct = cc.CallFunc:create(function ( ... )
-        self:initLockAct()
-    end)
-    self.lockArrow:runAction(rotate)
-    self.lockArrow:runAction(cc.Sequence:create(spawnAct1,act2,endAct))
-
-
-    --锁定目标的环运动
-    --self.lockLoop:stopAllActions()
-    self.lockArrow:setScale(1.2)   
-    local LoopSeq = cc.Sequence:create(cc.ScaleTo:create(0.13,0.8),cc.ScaleTo:create(0.03,1))
-    self.lockLoop:runAction(LoopSeq)
-
-
-end
-
---锁链移动
-function SkillLock:upDataLockSprAct(aimPosX,aimPosY) 
-    if aimPosX <= 0 or aimPosY <= 0 or FishGI.isLock == false then
-        self:setLockSpr(false)
-        return 
-    end
-    self:setLockSpr(true)
-
-    local curPosInNode = self:convertToNodeSpace(cc.p(aimPosX,aimPosY))
-    self.lockNode:setPosition(cc.p(curPosInNode.x,curPosInNode.y))
-    local chairId  = FishGI.gameScene.playerManager:getMyChairId()
-    local startPosX = FishCD.aimPosTab[chairId].x*self.scaleX_
-    local startPosY = FishCD.aimPosTab[chairId].y*self.scaleY_
-    for i=1,self.chainCount do
-        local posX = startPosX + (aimPosX - startPosX)/(self.chainCount + 2)*(i+1)
-        local posY = startPosY + (aimPosY - startPosY)/(self.chainCount + 2)*(i+1)
-        local curPosInNode = self:convertToNodeSpace(cc.p(posX,posY))
-        self.chain[i]:setPosition(curPosInNode)
-    end
+    LuaCppAdapter:getInstance():setLuaNode(1,self,{});
 
 end
 
@@ -134,7 +38,7 @@ end
 function SkillLock:endLock( )
     print("over lock")
     FishGI.isLock = false
-    self:setLockSpr(false)
+    FishGMF.setLockData(FishGI.gameScene.playerManager.selfIndex,2,0,0)
 
     self.playerSelf = FishGI.gameScene.playerManager:getMyData()
     if self.playerSelf ~= nil then
@@ -142,8 +46,7 @@ function SkillLock:endLock( )
     end 
     self.touchStartTime = 0
     self.btn.parentClasss:setState(1)
-    --self:stopTimer()
-    self.playerSelf:setMyAimFish(0,0)
+
 end
 
 function SkillLock:onTouchBegan(touch, event) 
@@ -168,11 +71,10 @@ function SkillLock:onTouchBegan(touch, event)
             return true
         end
 
-        self:setCppAimFish(myPlayerId,timelineId,fishArrayId)
-        self:setMyAimFish(timelineId,fishArrayId)
+        FishGMF.setLockData(myPlayerId,3,timelineId,fishArrayId)
 
         --锁定目标变换
-        self:sendChangeAimFish()
+        self:sendChangeAimFish(timelineId,fishArrayId)
 
         return true
     end
@@ -194,13 +96,14 @@ function SkillLock:clickCallBack( )
     local timelineId = 0
     local fishArrayId = 0
     
-    if FishGI.isLock == false then
-        timelineId,fishArrayId = self:getLockFishByScore()
-    else
-        timelineId = self.timelineId
-        fishArrayId = self.fishArrayId
-    end
-
+    -- if FishGI.isLock == false then
+    --     timelineId,fishArrayId = self:getLockFishByScore()
+    -- else
+    --     timelineId = self.timelineId
+    --     fishArrayId = self.fishArrayId
+    -- end
+    timelineId,fishArrayId = self:getLockFishByScore()
+    
     if timelineId == nil then
         return 
     end
@@ -346,29 +249,25 @@ function SkillLock:startMyLock( valTab)
     end))
     delayAct:setTag(10006)
     self:runAction(delayAct)
-    
-    self:setCppAimFish(myPlayerId,self.tem_timelineId,self.tem_fishArrayId)
-    self:setMyAimFish(self.tem_timelineId,self.tem_fishArrayId)
 
     self.playerSelf.cannon.uiCannonChange:setAutoFire(false)
-    
-    local aimPos = self:getMyAimFishPos()
 
-    print("get aim posx:"..aimPos.x.." posy:"..aimPos.y);
+    local backData = FishGMF.setLockData(myPlayerId,1,self.tem_timelineId,self.tem_fishArrayId)
+    if backData.x == nil then
+        print("-----aimFish is no exit------")
+        return
+    end
+    --print("get aim posx:"..aimPos.x.." posy:"..aimPos.y);
     if self.playerSelf ~= nil then
-        if aimPos.x > 0 and  aimPos.y > 0 then
+        if backData.x > 0 and  backData.y > 0 then
             print("shoot to aim");
-            self.playerSelf:shoot(cc.p(aimPos.x,aimPos.y));
+            self.playerSelf:shoot(cc.p(backData.x,backData.y));
         end
     else
         print("player self is nil")
     end
 
-    if self.schedulerID == nil then
-       self.schedulerID = cc.Director:getInstance():getScheduler() :scheduleScriptFunc(function(dt)  
-           self:upDataLock(dt)
-       end,1/15,false) 
-    end
+    
 
 end
 
@@ -403,89 +302,17 @@ function SkillLock:startOtherLock(data )
     local playerId = data.playerId
     local timelineId = data.timelineId
     local fishArrayId = data.fishArrayId
-    self:setCppAimFish(playerId,timelineId,fishArrayId)
-
+    FishGMF.setLockData(playerId,3,timelineId,fishArrayId)
     --更新水晶
     FishGMF.upDataByPropId(playerId,2,data.newCrystal)
 end
 
-function SkillLock:upDataLock( dt )
-
-    --判断是否停止定时器
-    local bullerCount = 0
-    if FishGI.isLock == false then
-        local bullerCount = self:getLockBullet()
-        --锁定子弹个数为0，并且锁定时间完了
-        if bullerCount <= 0 then
-            if  self.schedulerID ~= nil then
-                cc.Director:getInstance():getScheduler():unscheduleScriptEntry(self.schedulerID )  
-                self.schedulerID = nil
-            end
-            self:setCppAimFish(FishGI.gameScene.playerManager.selfIndex,0,0)
-            self:setMyAimFish(0,0)
-        end
-    end
-
-    --超出屏幕或者鱼死亡，转换目标鱼
-    local sizeWin = cc.Director:getInstance():getWinSize()
-    local aimPos,state = self:getMyAimFishPos()
-    if aimPos == nil or state == FishCD.FishState.DEATH or
-        (aimPos.x <= 0 or aimPos.x >=sizeWin.width 
-            or aimPos.y <= 0 or aimPos.y >= sizeWin.height) then
-
-        --选择分数最高的鱼
-        local timelineId,fishArrayId = self:getLockFishByScore()
-        
-        if timelineId == 0 and fishArrayId == 0 then
-            --判断新鱼不存在，锁定图片隐藏，玩家停止射击
-            self:setLockSpr(false)
-            self.playerSelf = FishGI.gameScene.playerManager:getMyData()
-            if self.playerSelf ~= nil then
-                self.playerSelf:endShoot();
-            end
-            return
-        end
-
-        self:setCppAimFish(FishGI.gameScene.playerManager.selfIndex,timelineId,fishArrayId)
-        self:setMyAimFish(timelineId,fishArrayId)
-        self:sendChangeAimFish()
-
-    end
-
-    --道具移动
-    self:upDataLockSprAct(aimPos.x,aimPos.y)
-
-    if FishGI.isLock == false then
-        return
-    end
-
-    --发射子弹
-    self.playerSelf = FishGI.gameScene.playerManager:getMyData()
-    if self.playerSelf ~= nil then
-        local currentGunRate = self.playerSelf.playerInfo.currentGunRate
-        local maxGunRate = self.playerSelf.playerInfo.maxGunRate
-        if FishGI.FRIEND_ROOM_STATUS == 0 and currentGunRate > maxGunRate then
-            self.playerSelf:endShoot();
-            self.playerSelf:setRotateByPos(cc.p(aimPos.x,aimPos.y));
-            return
-        end
-        if self.playerSelf.isEnd == false and self.playerSelf.isShoot == false then
-            --self:setLockSpr(true)
-            self.playerSelf:shoot(cc.p(aimPos.x,aimPos.y));
-        else
-            self.playerSelf:shoot(cc.p(aimPos.x,aimPos.y));
-            self.playerSelf:setRotateByPos(cc.p(aimPos.x,aimPos.y));
-        end      
-    end
-
-end
-
 --发送自己改变目标鱼消息
-function SkillLock:sendChangeAimFish( )
+function SkillLock:sendChangeAimFish(timelineId, fishArrayId)
     local playerId = FishGI.gameScene.playerManager.selfIndex
     local data = {}
-    data.timelineId = self.timelineId
-    data.fishArrayId = self.fishArrayId
+    data.timelineId = timelineId
+    data.fishArrayId = fishArrayId
     local bulletCount,bullets = self:getLockBullet(playerId)
     data.bullets = bullets
     data.sendType = "change"
@@ -514,7 +341,7 @@ function SkillLock:bulletTargetChange(data )
     print("-0-OnBulletTargetChange----")
     local selfId = FishGI.gameScene.playerManager.selfIndex;
     if data.playerId ~= selfId then
-        self:setCppAimFish(data.playerId,data.timelineId,data.fishArrayId)
+        FishGMF.setLockData(data.playerId,3,data.timelineId,data.fishArrayId)
     end 
     
 end

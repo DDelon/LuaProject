@@ -226,7 +226,7 @@ function SkillTimeRevert:showSkillingLogo()
 end
 
 function SkillTimeRevert:hideSkillingLogo( ... )
-    self.btn.parentClasss:setState(0)
+    self.btn.parentClasss:setState(1)
 end
 
 function SkillTimeRevert:playStartAnimate(playerId, period, glodCount)

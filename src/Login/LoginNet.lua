@@ -18,6 +18,7 @@ function LoginNet.create()
 	else
 		return nil
 	end
+	
 end
 
 function LoginNet:init( )
@@ -32,8 +33,6 @@ end
 function LoginNet:initServerConfig()
 	self.serverIndex = 1;
 	self.autoLogin = false;
-	self.serverConfig = FishGI.serverConfig;
-
 end
 
 function LoginNet:updateAccountPass(account, password)
@@ -43,6 +42,7 @@ function LoginNet:updateAccountPass(account, password)
 end
 
 function LoginNet:DoAutoLogin()
+	print("-------------DoAutoLogin-------------")
 	self.autoLogin = true;
 	if self.loginType == FishCD.LOGIN_TYPE_BY_NAME then
 		--账号密码登录
@@ -58,23 +58,30 @@ function LoginNet:DoAutoLogin()
 end
 
 function LoginNet:startConnect()
-	if self.serverConfig ~= nil and table.maxn(self.serverConfig) > 0 then
+	if FishGI.serverConfig == nil or table.maxn(FishGI.serverConfig) == 0 then
+		print("服务器配置表为空");
+	else
+		print("--------------------------startConnect");
 		--弹出等待服务器返回的屏蔽层
 		if not FishGI.isLogin then
 			FishGF.waitNetManager(true,self.autoLogin and FishGF.getChByIndex(800000163) or nil,"startConnect")
 			FishGI.isLogin = true
 		end
-		local serverInfo = self.serverConfig[self.serverIndex];
-		FishGF.print("connect ip:"..serverInfo.url.." port:"..serverInfo.port)
+		local serverInfo = FishGI.serverConfig[self.serverIndex];
+		local isExist = cc.FileUtils:getInstance():isFileExist("accountlist.plist");
+		if FishGI.serverConfig["url"] ~= nil then
+			serverInfo.url = FishGI.serverConfig["url"];
+		end
+        print("server ip:"..serverInfo.url.." port:"..serverInfo.port);
 		self:Reconnect(serverInfo.url, serverInfo.port);
 	end
 end
 
 --通过账号密码登录
 function LoginNet:loginByUserAccount(userName, password)
+	FishGI.PLAYER_STATE = 1
     --检查用户名密码
     if userName ~= nil and password ~= nil and userName ~= "" and password ~= "" then
-		FishGI.PLAYER_STATE = 1
         self.loginType = FishCD.LOGIN_TYPE_BY_NAME;
         self.userName = userName;
         self.password = password;
@@ -83,43 +90,27 @@ function LoginNet:loginByUserAccount(userName, password)
     end
 end
 
---使用游客账号登录
+--[[
+* @brief 使用游客账号登录
+]]
 function LoginNet:VisitorLogin()
+
+    -- 找到本地存储的游客账号
+    --local visitorUnname = cc.UserDefault:getInstance():getStringForKey("visitorUnname")
+    -- if visitorUnname ~= nil and visitorUnname ~= "" then
+    --     self:LoginByUnname( visitorUnname )
+    --     return
+    -- end
+
     local accountTab = FishGI.WritePlayerData:getEndData()
     if accountTab ~= nil and accountTab["account"] ~= "" and accountTab["isVisitor"] ~= nil then
-        self:LoginByUnname(accountTab["account"])
+    	--FishGF.setAccountAndPassword("","",accountTab["isVisitor"])
+        self:LoginByUnname( accountTab["account"] )
         return
     end
+
+    -- 没游客账号（分配）
     self:AllocNewUser()
-end
-
---第三方sdk登录
-function LoginNet:thirdSdkLogin(method)
-	local function loginResult(state, data)
-		FishGF.waitNetManager(false, nil, "thirdStartConnect")
-		if state then
-			FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,"解析失败",nil)
-		else
-			local resultMsg = nil;
-			local ok, datatable = pcall(function() return loadstring(data)(); end)
-			if ok == false then
-				resultMsg = json.decode(data)
-			else
-				resultMsg = {}
-				resultMsg.data = datatable
-			end
-			local resultData = resultMsg.data
-			local valTab = {};
-			valTab.session = resultData.code
-			valTab.userid = resultData.id
-			valTab.serverip = resultData.ip
-			valTab.serverport = resultData.port
-			self:loginByThird(valTab);
-		end
-	end
-
-	FishGF.waitNetManager(true, FishGF.getChByIndex(800000163), "thirdStartConnect")
-    FishGI.GameCenterSdk:trySDKLogin({type = method},loginResult)
 end
 
 --[[
@@ -145,6 +136,7 @@ end
 * @param [in] strNickName 昵称
 ]]
 function LoginNet:AllocNewUser( strNickName)
+
     if strNickName == nil or strNickName =="" then
         if IS_REVIEW_MODE then
             strNickName = "mobile";
@@ -152,6 +144,7 @@ function LoginNet:AllocNewUser( strNickName)
             strNickName = Helper.GetDeviceUserName();
         end
     end
+
     self.loginType = FishCD.LOGIN_TYPE_ALLOC_USER;
     self.userName = strNickName;
     self:startConnect();
@@ -163,12 +156,30 @@ end
 ]]
 function LoginNet:AddRoleInfo(session,userfrom)
     assert(type(session)=="string" and #session==32,"无效的会话ID");
+    --cc.UserDefault:getInstance():setStringForKey("visitorUnname",session)    
     local AccountTab = {}
     AccountTab["account"] = session
     AccountTab["password"] = nil
     AccountTab["isVisitor"] = FishGF.getChByIndex(800000176)..string.sub(session,1,8)
     FishGI.WritePlayerData:upDataAccount(AccountTab)
 
+    --cc.UserDefault:getInstance():flush()
+end
+
+--登录失败提示
+function LoginNet:OnLoginError(strMsg)
+	FishGF.pring("---OnLoginError---strMsg="..strMsg)
+	FishGF.waitNetManager(false,nil,"startConnect")
+	FishGI.isLogin = false
+    -- local function callback(sender)
+    --     local tag = sender:getTag()
+    --     if tag == 1 then
+    --         local curScene = cc.Director:getInstance():getRunningScene()
+    --         curScene.view:changeAccount();
+    --     end
+    -- end
+    -- FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,strMsg,callback)
+    FishGF.createCloseSocketNotice(strMsg,"OnLoginError")
 end
 
 --第三方登陆接口
@@ -180,6 +191,7 @@ end
 
 -----------------------------------------------evt事件表-------------------------
 function evt.Initialize(login)
+	print("login initialize");
 	login:init()
 	--读取服务器配置表
 	login:initServerConfig();
@@ -187,50 +199,61 @@ function evt.Initialize(login)
 end
 
 function evt.OnConnect(login, connected)
-	local serverInfo = login.serverConfig[login.serverIndex];
+	print("login OnConnect");
 	if connected then
-		local serverInfo = login.serverConfig[login.serverIndex];
-		FishGF.print("connect server ip:"..serverInfo.url.." port:"..serverInfo.port.." success");
+		print("连接到服务器 index:"..login.serverIndex.."成功");
+
 	else
-		FishGF.print("connect server ip:"..serverInfo.url.." port:"..serverInfo.port.." fail");
-		local noDelList = {"doPaySDK"}
-		FishGF.clearSwallowLayer(noDelList)
-		local curScene = cc.Director:getInstance():getRunningScene();
-		FishGI.connectCount = FishGI.connectCount +1
-		if FishGI.connectCount < 5 then
-			--在大厅帮玩家登陆
-			FishGF.waitNetManager(true,nil,"startAllConnect")
-			local  seq = cc.Sequence:create(cc.DelayTime:create(0.8),cc.CallFunc:create(function ( ... )
-				FishGF.waitNetManager(false,nil,"startAllConnect")
-				FishGI.loginScene.net:DoAutoLogin()
-			end))
-			curScene:runAction(seq)
-			return 
-		end
-		if  FishGI.isLogin then
-			FishGI.isLogin = false
-			FishGI.connectCount = 0
-			FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000033),"LoginOnOnConnect")
+		if login.serverIndex < table.maxn(FishGI.serverConfig) then
+			print("尝试连接下一组服务器");
+			login.serverIndex = login.serverIndex+1;
+			login:startConnect();
+		else
+			local noDelList = {"doPaySDK"}
+        	FishGF.clearSwallowLayer(noDelList)
+			local curScene = cc.Director:getInstance():getRunningScene();
+    		local sceneName = curScene.sceneName
+			FishGI.connectCount = FishGI.connectCount +1
+			if FishGI.connectCount < 5 then
+				--在大厅帮玩家登陆
+				FishGF.waitNetManager(true,nil,"startAllConnect")
+				local  seq = cc.Sequence:create(cc.DelayTime:create(0.8),cc.CallFunc:create(function ( ... )
+					FishGF.waitNetManager(false,nil,"startAllConnect")
+					FishGI.loginScene.net:DoAutoLogin()
+				end))
+				curScene:runAction(seq)
+				return 
+			end
+			if  FishGI.isLogin then
+				FishGI.isLogin = false
+				FishGI.connectCount = 0
+				FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000033),"LoginOnOnConnect")
+			end
 		end
 	end
 end
 
 --登录服务器连接断开
 function evt.OnSocketClose(obj,nErrorCode)
+	print("login OnSocketClose")
 	FishGF.waitNetManager(false,nil,"startConnect")
 	FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000070),"LoginOnSocketClose")
 end
 
 --登录服务器检测版本应答 发送登录请求
 function evt.OnCheckVersion(obj,result)
+	print("login OnCheckVersion")
 	if not result then
 		return;
 	end
+	print("obj.loginType:"..obj.loginType)
 	if obj.loginType == FishCD.LOGIN_TYPE_BY_NAME then  
 		obj:DispatchLoginByName(true,obj.userName,obj.password);
 	elseif obj.loginType == FishCD.LOGIN_TYPE_BY_UNNAME then
+		printf(obj.strLoginUserName);
 		obj:DispatchLoginByUnName(IS_WEILE,obj.strLoginUserName);
 	elseif obj.loginType == FishCD.LOGIN_TYPE_ALLOC_USER then
+		print("OnCheckVersion:LOGIN_TYPE_ALLOC_USER")
 		strNickName = Helper.GetDeviceUserName();
 		obj:DispatchAllocUser(strNickName,1,IS_WEILE,APP_ID,CHANNEL_ID);
 	end
@@ -245,10 +268,12 @@ end
 * @param [in] serverport 大厅服务器端口
 ]]
 function evt.OnMsgLoginReply(obj,session,userid,serverip,serverport)
+	print("login OnMsgLoginReply")
 	local valTab = {}
 	valTab.session = session
 	valTab.userid = userid
 	valTab.serverip = serverip;
+	
 	valTab.serverport = serverport
 	FishGI.mainManagerInstance:createHallManager(valTab);
 end
@@ -259,9 +284,32 @@ end
 * @param [in] result 登录失败原因
 ]]
 function evt.OnMsgLoginFailed( obj,result)
+    print("login OnMsgLoginFailed")
+    local msgs= {"登录失败，账号或者密码错误",
+	"登录失败，账号或者密码错误",
+	"登录失败，帐号已经登录！",
+	"登录失败，该帐号已经绑定其它机器！",
+	"登录失败，该帐号被锁，请与管理员联系",
+	"登录失败，服务器忙，请稍后尝试！",
+	"登录失败，您尝试的错误次数太多，暂时无法登录",
+	"登录失败，您需要输入验证码!",
+	"登录失败，验证码已过期或者不存在",
+	"登录失败，验证码不正确"};
+	FishGF.print("login failed result:"..result);
+    print(msgs[result] or "登录失败，未知错误,请与管理员联系");
+	
     FishGF.waitNetManager(false,nil,"startConnect")
 	FishGI.isLogin = false
-	FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000034)..result,"OnMsgLoginFailed")
+    -- local function callback(sender)
+    --     local tag = sender:getTag()
+    --     if tag == 1 then
+    --         --FishGI.showLayerData:hideLayer(sender:getParent():getParent():getParent(),true) 
+    --         local curScene = cc.Director:getInstance():getRunningScene()
+    --         curScene.view:changeAccount();
+    --     end
+    -- end   
+    -- FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,msgs[result] or FishGF.getChByIndex(800000034)..result,callback) 
+	FishGF.createCloseSocketNotice(msgs[result] or FishGF.getChByIndex(800000034)..result,"OnMsgLoginFailed")
 end
 
 --[[
@@ -271,13 +319,15 @@ end
 * @param [in] session 游客会话id
 ]]
 function evt.OnMsgAllocRoleReply( obj,result,session )
-    if result == 0 then
+
+    if result and result>0 then
+        --GameApp:dispatchEvent(gg.Event.SHOW_MESSAGE_DIALOG,"游客登录失败，请稍后重试!")
+    else
         obj:AddRoleInfo(session);
         obj:LoginByUnname(session);
-	else
-		FishGF.print("alloc visitor account failure")
     end   
 end
+
 
 --[[
 * @breif 登录服务器附带消息
@@ -286,7 +336,7 @@ end
 * @param [in] msg 如果bUrl是true,则msg为网址，应该用浏览器打开，否则是消息内容
 ]]
 function evt.OnMsgLoginMessage(obj,bUrl,msg)
-    FishGF.print("login OnMsgLoginMessage")
+    print("login OnMsgLoginMessage")
 end
 
 return LoginNet;

@@ -108,6 +108,7 @@ function Player:shootByDegree(degree)
         local degree = degree
         
         local function fire()
+
             if self.isEnd then
                 self.isShoot = false;
                 self:stopAllActions();
@@ -124,8 +125,8 @@ function Player:shootByDegree(degree)
                 dataTab.playerId = self.playerInfo.playerId
                 dataTab.lifeTime = 0
                 dataTab.bulletId = dataTab.playerId..FishGI.bulletCount
-                dataTab.timelineId = self.timelineId
-                dataTab.fishArrayId = self.fishArrayId
+                -- dataTab.timelineId = self.timelineId
+                -- dataTab.fishArrayId = self.fishArrayId
                 dataTab.effectId = self.playerInfo.effectId;
                 dataTab.fireType = 1
 
@@ -140,13 +141,16 @@ function Player:shootByDegree(degree)
                     return
                 end
                 dataTab.frameId = backData.frameId
-                --print("------------------------------------------------backData.frameId="..backData.frameId)
+                print("------------------------------------------------backData.frameId="..backData.frameId)
+                if backData.lockDegree ~= nil then
+                    self.degree = backData.lockDegree
+                end
+                dataTab.timelineId = backData.timelineId
+                dataTab.fishArrayId = backData.fishArrayId
                 dataTab.bulletRate = backData.bulletRate
                 FishGI.bulletCount = FishGI.bulletCount +1
                 FishGI.eventDispatcher:dispatch("sendPlayerFire", dataTab);
 
-
-                
             end
         end
         self.degree = degree;
@@ -251,6 +255,11 @@ function Player:setRotateByPos(pos)
 end
 
 function Player:endShoot()
+    if FishGI.isLock then
+        self.isEnd = false;
+        return
+    end
+    
     if FishGI.isAutoFire then
         self.isEnd = false;
     else

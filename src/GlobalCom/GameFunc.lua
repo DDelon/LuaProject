@@ -94,6 +94,8 @@ function FishGMF.CppToLua(valTab)
         end 
     elseif typeName == "playBossRateChange" then
         FishGI.GameEffect:bossRateChange( dataTab)
+    elseif typeName == "sendChangeAimFish" then
+        FishGI.gameScene.uiSkillView.Skill_4:sendChangeAimFish(dataTab.timelineId, dataTab.fishArrayId)
     end
 
 end
@@ -487,7 +489,17 @@ function FishGMF.showGainCoinEffect(playerId, chairId,propId,propCount,dropCount
     LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
 end
 
-
+--设置锁定数据
+function FishGMF.setLockData(playerId,setType,timelineId,fishArrayId)
+    local dataTab = {}
+    dataTab.funName = "setLockData"
+    dataTab.playerId = playerId
+    dataTab.setType = setType
+    dataTab.timelineId = timelineId
+    dataTab.fishArrayId = fishArrayId
+    local backData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
+    return backData
+end
 
       
 

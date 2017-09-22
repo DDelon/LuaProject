@@ -37,9 +37,14 @@ end
 
 function LoginNode:onClickOK( sender )
     self:hideLayer() 
-    local event = cc.EventCustom:new("accountLogin")
-    event._userdata = {account = self.tf_account:getString(), password = self.tf_password:getString()}
-    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+    local account   = self.tf_account:getString()
+    local password   = self.tf_password:getString()
+
+    if FishGF.checkAccount(account) and FishGF.checkPassword(password) then
+        self:getParent().net:loginByUserAccount(account, password);
+    end
+
+    print("zhanghao"..account.."mima"..password)  
 end
 
 function LoginNode:setAccountData( accountTab )

@@ -20,6 +20,7 @@ function ChildGameUpdate:ctor()
     self.spr_bar_light:setScaleY(0);
     self.text_message:setString("")
     self.text_status_pos = cc.p(self.text_status:getPositionX(), self.text_status:getPositionY());
+    self.sliderScale = self.slider_loading:getScale()
 
     self:openTips(4)
 end
@@ -52,7 +53,6 @@ function ChildGameUpdate:setItemVisible(isVisible)
 
     if isVisible then
         self.text_status:setString("资源下载中......");
-        self.spr_bar_light:setAnchorPoint(cc.p(1, 0.5));
     else
         self.text_status:setString("正在检测最新版本......");
     end
@@ -70,23 +70,27 @@ function ChildGameUpdate:isCheckVer(isCheck)
 end
 
 function ChildGameUpdate:receiveData(cur,all,speed)
-    local str = math.floor(cur/1024).."/".. math.floor(all/1024).."KB"
     local percent = (cur/all)*100
+    local str = math.floor(cur/1024).."/".. math.floor(all/1024).."KB"
     self.slider_loading:setPercent(percent);
-    local curX = self.slider_loading:getSize().width;
-    self.spr_bar_light:setPositionX(curX*(percent/100));
-
     self.text_sizeper:setString(str)
 
-    local scaleY = self.slider_loading:getScale()
+    self:updataSliderLight()
+end
+
+function ChildGameUpdate:updataSliderLight()
+    local per = self.slider_loading:getPercent()
+    local scaleY = self.sliderScale
     local scaleDis = 3
-    if percent > 100-scaleDis then
-        scaleY = (100 - percent)/scaleDis*scaleY
+    if per > 100-scaleDis then
+        scaleY = (100 - per)/scaleDis*scaleY
     end
-    if percent <= scaleDis then
-        scaleY = percent/scaleDis*scaleY
+    if per <= scaleDis then
+        scaleY = per/scaleDis*scaleY
     end
 
+    local size = self.slider_loading:getContentSize()
+    self.spr_bar_light:setPositionX(size.width*per/100)
     self.spr_bar_light:setScale(scaleY)
 end
 

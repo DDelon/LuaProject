@@ -38,7 +38,7 @@ function SkillLeftView:initView()
         local mode = require("Game/Skill/NormalSkill/SkillBtn")
         mode.RESOURCE_FILENAME = "ui/battle/skill/uiskillitem1"
         node = mode.new(self, node)
-        node:initBtn(v,0)
+        node:initBtn(v,i,#self.BTN_ARR)
         local btn = node:getBtn()
         btn.parentClasss = node
         self["node_skill_left_"..(0+i)] = node
@@ -66,7 +66,7 @@ function SkillLeftView:initBtnByPropId(node,propId)
     if not spr_lock:initWithFile(name) then
         print("----initWithFile is faile------")
     end
-    node.parentClasss:setState(0)
+    node.parentClasss:setState(1)
 end
 
 function SkillLeftView:onClickOpen( sender )

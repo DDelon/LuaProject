@@ -61,7 +61,18 @@ function LoginLayer:onCreate(...)
         self.image_account_bg:setVisible(true)
     end
     
-    
+    FishGI.myData = nil
+
+    local function onKeyboardFunc(code, event)
+        if code == cc.KeyCode.KEY_BACK then
+            FishGI.AudioControl:playEffect("sound/com_btn01.mp3")
+            self:onClickClose(self.btn_close)
+        end
+    end
+    local listener = cc.EventListenerKeyboard:create();
+    listener:registerScriptHandler(onKeyboardFunc, cc.Handler.EVENT_KEYBOARD_RELEASED);
+    local eventDispatcher = self:getEventDispatcher();
+    eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self);
 
     if CHANNEL_ID == CHANNEL_ID_LIST.yyb then
         self.btn_wechat:setVisible(true)
@@ -88,24 +99,46 @@ function LoginLayer:onCreate(...)
         self.btn_retrieve:setVisible(false)
     end
 
-    self:registerKeyboard();
-end
-
-function LoginLayer:registerKeyboard()
-
-    local function onKeyboardFunc(code, event)
-        if code == cc.KeyCode.KEY_BACK then
-            FishGI.AudioControl:playEffect("sound/com_btn01.mp3")
-            self:onClickClose();
-        end
+    local isWifi = FishGF.isWifiConnect();
+    if isWifi then
+        print("---------------------------------wifi connect");
     end
-    local listener = cc.EventListenerKeyboard:create();
-    listener:registerScriptHandler(onKeyboardFunc, cc.Handler.EVENT_KEYBOARD_RELEASED);
-    local eventDispatcher = self:getEventDispatcher();
-    eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self);
 end
 
 function LoginLayer:onEnter( )
+    -- if FishGI.GAME_STATE ~= 2 then
+    --     FishGI.AudioControl:playLayerBgMusic()
+    -- end
+    FishGI.isLogin = false
+    FishGI.AudioControl:playLayerBgMusic()
+    FishGI.CIRCLE_COUNT = 0
+    FishGMF.setGameState(1)
+    FishGI.myData = nil
+    FishGI.isEnterBg = false
+    FishGI.FRIEND_ROOM_STATUS = 0
+    FishGI.FRIEND_ROOMID = nil
+    FishGI.IS_RECHARGE = 0
+
+    if device.platform == "android" then
+    local luaBridge = require("cocos.cocos2d.luaj");
+    local javaClassName = "org.cocos2dx.lib.Cocos2dxEditBoxHelper";
+    local javaMethodName = "openKeyboard";
+    local javaParams = {
+    1001
+    }
+    local javaMethodSig = "(I)V";
+    local ok = luaBridge.callStaticMethod(javaClassName, javaMethodName, javaParams, javaMethodSig);
+    end
+
+    --移除监听器
+    FishGI.eventDispatcher:removeAllListener();
+	if device.platform == "android" or device.platform == "ios" then
+		cc.Device:setKeepScreenOn(true);
+	end
+end
+
+function LoginLayer:setNet(net)
+    self.net = net;
 end
  
 function LoginLayer:onClickStart( sender )
@@ -114,8 +147,48 @@ function LoginLayer:onClickStart( sender )
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,"服务器正在维护中!",nil);
         return;
     end
-    local event = cc.EventCustom:new("quickStart")
-    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+    if FishGF.isThirdSdk() and FishGF.isThirdSdkLogin() then
+        local function loginResult(state, data)
+            log("loginResult")
+            log(state, data)
+            FishGF.waitNetManager(false);
+            if state then
+                FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,"解析失败",nil)
+            else
+                local resultMsg = nil;
+                local ok, datatable = pcall(function() return loadstring(data)(); end)
+                if ok == false then
+                    resultMsg = json.decode(data)
+                else
+                    resultMsg = {}
+                    resultMsg.data = datatable
+                end
+                local resultData = resultMsg.data
+                local valTab = {};
+                valTab.session = resultData.code
+                valTab.userid = resultData.id
+                valTab.serverip = resultData.ip
+                valTab.serverport = resultData.port
+                FishGI.loginScene.net:loginByThird(valTab);
+            end
+        end
+        print("third log----------------------------")
+        FishGF.waitNetManager(true)
+        FishGI.GameCenterSdk:trySDKLogin({type = 1},loginResult)
+        return
+    end
+
+    local accountTab = FishGI.WritePlayerData:getEndData()
+    if accountTab == nil or accountTab["isVisitor"] ~= nil then
+        log("isVisitor")
+        self.net:VisitorLogin()
+    else
+        local password = accountTab["password"]
+        local account = accountTab["account"]
+        if FishGF.checkAccount(account) and FishGF.checkPassword(password) then
+            self.net:loginByUserAccount(account, password);
+        end
+    end
 end
 
 function LoginLayer:onClickaccountstart( sender )
@@ -124,16 +197,39 @@ function LoginLayer:onClickaccountstart( sender )
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,"服务器正在维护中!",nil);
         return;
     end
-    local event = cc.EventCustom:new("openAccountLogin")
-    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
-end
+    if FishGF.isThirdSdk() and FishGF.isThirdSdkLogin() then
+        local function loginResult(state, data)
+            FishGF.waitNetManager(false)
+            if state then
+                FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,"解析失败",nil)
+            else
+                local resultMsg = nil;
+                local ok, datatable = pcall(function() return loadstring(data)(); end)
+                if ok == false then
+                    resultMsg = json.decode(data)
+                else
+                    resultMsg = {}
+                    resultMsg.data = datatable
+                end
+                local resultData = resultMsg.data
+                local valTab = {};
+                valTab.session = resultData.code
+                valTab.userid = resultData.id
+                valTab.serverip = resultData.ip
+                valTab.serverport = resultData.port
+                FishGI.loginScene.net:loginByThird(valTab);
+            end
+        end
+        FishGF.waitNetManager(true)
+        FishGI.GameCenterSdk:trySDKLogin({type = 2},loginResult)
+        return
+    end
 
-function LoginLayer:openInputView()
-    --打开输入账号密码弹出框
     local accountTab = FishGI.WritePlayerData:getEndData()
     if accountTab ~= nil then
         self.uiLoginNode:setAccountData(accountTab)
     end
+
     self.uiLoginNode:showLayer() 
 end
 
@@ -142,6 +238,7 @@ function LoginLayer:changeAccount( )
     if accountTab ~= nil then
         self.uiLoginNode:setAccountData(accountTab)
     end
+
     self.uiLoginNode:showLayer() 
 end
 
@@ -150,24 +247,108 @@ function LoginLayer:onClickopenlist( sender )
 end
 
 function LoginLayer:onClickClose( sender )
-    local event = cc.EventCustom:new("exit")
-    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+    if FishGF.isThirdSdk() and FishGF.isThirdSdkExit() then
+        local closeCallback = function ( jsons )
+            log("exit game:" .. jsons)
+            local result = json.decode(jsons)
+            if CHANNEL_ID == CHANNEL_ID_LIST.qihu or CHANNEL_ID == CHANNEL_ID_LIST.baidu then
+                local tag = tonumber(result.resultMsg)
+                if tag == 2 then
+                    os.exit(0);
+                end
+            else
+                local code = tonumber(result.resultCode)
+                if code == 0 then
+                    os.exit(0);
+                end
+            end
+        end
+
+        FishGI.GameCenterSdk:trySDKGameExit({}, closeCallback)
+
+        return
+    end
+
+    local function callback(sender)
+        local tag = sender:getTag()
+        if tag == 2 then
+            os.exit(0);
+        end
+    end   
+    FishGF.showExitMessage(FishGF.getChByIndex(800000139),callback)
 end
 
 function LoginLayer:onClickqq( sender )
-    local event = cc.EventCustom:new("sdkLogin")
-    event._userdata = {method = 1}
-    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+    print("--onClickqq---")
+
+    if FishGF.isThirdSdk() and 
+        FishGI.GameCenterSdkBase.ChannelInfoList[FishGI.GameCenterSdkBase.ChannelIdList[CHANNEL_ID]][FishGI.GameCenterSdkBase.ChannelInfoIndex.is_need_login] then
+        local function loginResult(state, data)
+            print("------------------------loginResult")
+            FishGF.waitNetManager(false);
+            if state then
+                FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,"解析错误！",nil)
+            else
+                local resultMsg = nil;
+                local ok, datatable = pcall(function() return loadstring(data)(); end)
+                if ok == false then
+                    resultMsg = json.decode(data)
+                else
+                    resultMsg = {}
+                    resultMsg.data = datatable
+                end
+                local resultData = resultMsg.data
+                local valTab = {};
+                valTab.session = resultData.code
+                valTab.userid = resultData.id
+                valTab.serverip = resultData.ip
+                valTab.serverport = resultData.port
+                FishGI.loginScene.net:loginByThird(valTab);
+            end
+        end
+        FishGI.GameCenterSdk:trySDKLogin({type = 1},loginResult)
+    end
+
+
 end
 
 function LoginLayer:onClickwechat( sender )
-    local event = cc.EventCustom:new("sdkLogin")
-    event._userdata = {method = 2}
-    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+    print("--onClickwechat---")
+
+
+    if FishGF.isThirdSdk() and 
+        FishGI.GameCenterSdkBase.ChannelInfoList[FishGI.GameCenterSdkBase.ChannelIdList[CHANNEL_ID]][FishGI.GameCenterSdkBase.ChannelInfoIndex.is_need_login] then
+        local function loginResult(state, data)
+            print("------------------------loginResult")
+            FishGF.waitNetManager(false);
+            if state then
+                FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,"解析错误！",nil)
+            else
+                local resultMsg = nil;
+                local ok, datatable = pcall(function() return loadstring(data)(); end)
+                if ok == false then
+                    resultMsg = json.decode(data)
+                else
+                    resultMsg = {}
+                    resultMsg.data = datatable
+                end
+                local resultData = resultMsg.data
+                local valTab = {};
+                valTab.session = resultData.code
+                valTab.userid = resultData.id
+                valTab.serverip = resultData.ip
+                valTab.serverport = resultData.port
+                FishGI.loginScene.net:loginByThird(valTab);
+            end
+        end
+        FishGI.GameCenterSdk:trySDKLogin({type = 2},loginResult)
+    end
 
 end
 
 function LoginLayer:onClickretrieve( sender )
+    print("--onClickretrieve---")
+    --FishGI.GameTableData:getRechargeTable(1)
     cc.Application:getInstance():openURL("http://ii.weile.com/forgot/password/");
 end
 
