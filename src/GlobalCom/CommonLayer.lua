@@ -122,7 +122,7 @@ function CommonLayer:addLayerToParent(parent,parent2)
     local curScene = cc.Director:getInstance():getRunningScene();
     local sceneName = curScene.sceneName
     local scenetype = 0
-    if sceneName == "login" then
+    if sceneName == "login" or sceneName == "UpDateScene" then
         scenetype = 0
     elseif sceneName == "hall" then
         scenetype = 1

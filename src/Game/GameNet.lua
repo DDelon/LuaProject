@@ -510,7 +510,12 @@ function GameNet:OnBulletTargetChange(data)
     if FishGI.SERVER_STATE == 0 then
         return;
     end
-    FishGI.eventDispatcher:dispatch("bulletTargetChange", data);
+--    FishGI.eventDispatcher:dispatch("bulletTargetChange", data);
+
+    local event = cc.EventCustom:new("bulletTargetChange")
+    event._usedata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
+
 end
 
 --玩家加钱

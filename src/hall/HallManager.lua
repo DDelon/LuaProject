@@ -163,6 +163,14 @@ end
 
 --初始化朋友场
 function HallManager:initFriendLayer( )
+    --创建面板
+    self.uiCreateLayer = require("hall/FriendRoom/CreateLayer").create()
+    self.uiCreateLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    self:addChild(self.uiCreateLayer,FishCD.ORDER_LAYER_TRUE)
+    self.uiCreateLayer:setVisible(false)   
+    self.uiCreateLayer:setScale(self.scaleMin_)
+
+
 	self.uiFriendRoom = require("hall/FriendRoom/FriendRoom").create();
 	self:addChild(self.uiFriendRoom,1)
 
@@ -630,7 +638,7 @@ function HallManager:upDataPlayerInfo( netData )
         self:upDataMonthCard()
 
         --是否签到
-        self:upDataCheck()
+        --self:upDataCheck()
 
         --是否普通抽奖
         self:upDataLoginDraw()

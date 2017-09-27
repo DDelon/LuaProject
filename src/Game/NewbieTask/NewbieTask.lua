@@ -3,8 +3,8 @@ local NewbieTask = class("NewbieTask", cc.load("mvc").ViewBase)
 NewbieTask.AUTO_RESOLUTION   = true
 NewbieTask.RESOURCE_FILENAME = "ui/battle/newbietask/uinewbietask"
 NewbieTask.RESOURCE_BINDING  = {
-    ["spr_deng_left"]           = { ["varname"] = "spr_deng_left" },
-    ["spr_deng_right"]          = { ["varname"] = "spr_deng_right" },
+--    ["spr_deng_left"]           = { ["varname"] = "spr_deng_left" },
+--    ["spr_deng_right"]          = { ["varname"] = "spr_deng_right" },
     ["spr_prop"]                = { ["varname"] = "spr_prop" },
     ["spr_prop_num"]            = { ["varname"] = "spr_prop_num" },
     ["text_desc"]               = { ["varname"] = "text_desc" },
@@ -96,8 +96,8 @@ function NewbieTask:setIfTaskExecuting(bTaskExecuting)
         bTaskExecuting = false
     end
     self.bTaskExecuting = bTaskExecuting
-    self.spr_deng_left:setVisible(bTaskExecuting)
-    self.spr_deng_right:setVisible(bTaskExecuting)
+--    self.spr_deng_left:setVisible(bTaskExecuting)
+--    self.spr_deng_right:setVisible(bTaskExecuting)
     self.text_desc:setVisible(bTaskExecuting)
     self.img_process_bg:setVisible(bTaskExecuting)
     self.btn_draw:setVisible(not bTaskExecuting)

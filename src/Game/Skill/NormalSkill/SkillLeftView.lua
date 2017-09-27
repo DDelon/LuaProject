@@ -8,11 +8,15 @@ SkillLeftView.RESOURCE_BINDING  = {
     ["node_skill_left_1"] = { ["varname"] = "node_skill_left_1" },   
     ["node_skill_left_2"] = { ["varname"] = "node_skill_left_2" },
     ["node_skill_left_3"] = { ["varname"] = "node_skill_left_3" },
+
+    ["node_open"] = { ["varname"] = "node_open" },
     
-    ["btn_triangle"]      = { ["varname"] = "btn_triangle" ,      ["events"]={["event"]="click",["method"]="onClickOpen"}},
+    ["panel_left"]        = { ["varname"] = "panel_left" },
+    ["node_skill"]        = { ["varname"] = "node_skill" },  
+
+    ["image_skill_bg"] = { ["varname"] = "image_skill_bg" },
     
-    ["panel_left"]        = { ["varname"] = "panel_left" },  
-    ["image_skill_bg"]    = { ["varname"] = "image_skill_bg" },  
+
 }
 
 SkillLeftView.BTN_ARR  = {    
@@ -25,18 +29,18 @@ function SkillLeftView:onCreate( ... )
 end
 
 function SkillLeftView:initView()
-    self.firstPosX = self.image_skill_bg:getPositionX()
+    self.firstPosX = self.node_skill:getPositionX()
     self:setIsOpen()
     self:openTouchEventListener()
     self.panel_left:setSwallowTouches(false)
 
     self:runAction(self.resourceNode_["animation"])
 
+    local mode = require("Game/Skill/NormalSkill/SkillBtn")
+    mode.RESOURCE_FILENAME = "ui/battle/skill/uiskillitem1"
     for i,v in ipairs(self.BTN_ARR) do
         local node = self["node_skill_left_"..(0+i)]
         self:runAction(self["node_skill_left_"..(0+i)].animation)
-        local mode = require("Game/Skill/NormalSkill/SkillBtn")
-        mode.RESOURCE_FILENAME = "ui/battle/skill/uiskillitem1"
         node = mode.new(self, node)
         node:initBtn(v,i,#self.BTN_ARR)
         local btn = node:getBtn()
@@ -44,9 +48,16 @@ function SkillLeftView:initView()
         self["node_skill_left_"..(0+i)] = node
     end
 
+    local node1 = mode.new(self, self.node_open)
+    node1:initNormalBtn("battle/skill/bl_btn_hd.png" )
+    local btn1 = node1:getBtn()
+    btn1:onClickDarkEffect(self:handler(self,self.onClickOpen))
+    btn1.parentClasss = node1
+    self.node_open = node1
+    
     self:initBtn()
     
-    FishGI.eventDispatcher:registerCustomListener("setNewUsedPropId", self, function(valTab) self:setNewUsedPropId(valTab) end);
+    --FishGI.eventDispatcher:registerCustomListener("setNewUsedPropId", self, function(valTab) self:setNewUsedPropId(valTab) end);
 
 end
 
@@ -55,7 +66,6 @@ function SkillLeftView:initBtn()
         local node = self["node_skill_left_"..(0+i)]:getBtn()
         self:initBtnByPropId(node,v)
     end
-
 end
 
 function SkillLeftView:initBtnByPropId(node,propId)
@@ -95,14 +105,11 @@ end
 function SkillLeftView:setIsOpen()  
     self.isOpen = not self.isOpen
     if self.isOpen == true then
-        self.btn_triangle:getChildByName("spr_triangle"):setRotation(180)
-        self.image_skill_bg:stopAllActions()
-        self.image_skill_bg:runAction(cc.MoveTo:create(0.2,cc.p(self.firstPosX,self.image_skill_bg:getPositionY())))
+        self.node_skill:stopAllActions()
+        self.node_skill:runAction(cc.MoveTo:create(0.2,cc.p(self.firstPosX,self.node_skill:getPositionY())))
     else
-        self.btn_triangle:getChildByName("spr_triangle"):setRotation(0)
-        self.image_skill_bg:stopAllActions()
-        --self.image_skill_bg:runAction(cc.MoveTo:create(0.2,cc.p(-102,self.image_skill_bg:getPositionY())))
-        self.image_skill_bg:runAction(cc.MoveTo:create(0.2,cc.p(-133,self.image_skill_bg:getPositionY())))
+        self.node_skill:stopAllActions()
+        self.node_skill:runAction(cc.MoveTo:create(0.2,cc.p(-262,self.node_skill:getPositionY())))
     end
 end
 

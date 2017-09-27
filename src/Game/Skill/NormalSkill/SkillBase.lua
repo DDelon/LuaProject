@@ -75,7 +75,8 @@ function SkillBase:judgeUseType()
         useType = 0
     else
         --判断VIP多少购买
-        local requireVip = tonumber(FishGI.GameTableData:getItemTable(self.propId).require_vip)
+        local itemData = FishGI.GameTableData:getItemTable(self.propId)
+        local requireVip = tonumber(itemData.require_vip)
         self.playerSelf = FishGI.gameScene.playerManager:getMyData()
         local playerInfo = self.playerSelf.playerInfo;
 
@@ -89,7 +90,8 @@ function SkillBase:judgeUseType()
                     FishGI.gameScene.uiShopLayer:setShopType(1)
                 end
             end
-            local str = FishGF.getChByIndex(800000111)..requireVip..FishGF.getChByIndex(800000112);
+            local str = FishGF.getChByIndex(800000111)..requireVip..FishGF.getChByIndex(800000112).."\n"..itemData.pack_text;
+            --local des = itemData.pack_text
             FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,str,callback);
             return
         end

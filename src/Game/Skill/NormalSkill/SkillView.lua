@@ -12,7 +12,7 @@ SkillView.RESOURCE_BINDING  = {
     ["btn_skill_17"]        = { ["varname"] = "btn_skill_17" },
     
     ["node_left"]           = { ["varname"] = "node_left" },   
-    ["btn_triangle"]        = { ["varname"] = "btn_triangle" ,      ["events"]={["event"]="click",["method"]="onClickOpen"}},
+--    ["btn_triangle"]        = { ["varname"] = "btn_triangle" ,      ["events"]={["event"]="click",["method"]="onClickOpen"}},
     
     ["node_skll_desk"]      = { ["varname"] = "node_skll_desk" },  
 
@@ -80,7 +80,6 @@ function SkillView:onCreate( ... )
     self.Skill_14 = require("Game/Skill/NormalSkill/SkillTimeRevert").create()
     self.Layer:addChild(self.Skill_14,7)
     
-
     --狂暴
     self.Skill_17 = require("Game/Skill/NormalSkill/SkillViolnet").create()
     self.Layer:addChild(self.Skill_17,7)
@@ -122,6 +121,11 @@ end
 function SkillView:initListener()
     FishGI.eventDispatcher:registerCustomListener("updataPropUI", self, function(valTab) self:updataPropUI(valTab) end)
 end
+
+function SkillView:initSkill()
+    self.Skill_4:initLock()
+end
+
 
 function SkillView:clearAllbomb(  )
     self.Skill_15:clearUseNBomb()

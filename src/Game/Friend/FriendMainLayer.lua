@@ -203,10 +203,17 @@ function FriendMainLayer:buttonClicked(viewTag, btnTag)
             if wechatAppId == nil then
                 wechatAppId = WX_APP_ID_LOGIN
             end
-            local title = FishGF.getChByIndex(800000241)..FishGF.getChByIndex(800000218)..FishGI.FRIEND_ROOMNO
+            local title = FishGF.getChByIndex(800000336)..FishGF.getChByIndex(800000241)..FishGF.getChByIndex(800000218)..FishGI.FRIEND_ROOMNO
+
+            local createData = self.tGameInfo
+            local roomPropType = FishGF.getChByIndex(800000333)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomPropType",createData.roomPropType).str)
+            local roomPeopleCountType = FishGF.getChByIndex(800000334)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomPeopleCountType",createData.roomPeopleCountType).str)
+            local roomDurationType = FishGF.getChByIndex(800000334)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomDurationType",createData.roomDurationType).str)
+            local des = roomPropType.."/n"..roomPeopleCountType.."/n"..roomDurationType
+
             local targetPlatform = cc.Application:getInstance():getTargetPlatform()
             if (cc.PLATFORM_OS_WINDOWS ~= targetPlatform) then
-                FishGI.ShareHelper:doShareAppWebType(title,FishGF.getChByIndex(800000294),url,0,wechatAppId)
+                FishGI.ShareHelper:doShareAppWebType(title,des,url,0,wechatAppId)
             end
 
         elseif btnTag == "StartGame" then 
@@ -302,6 +309,10 @@ end
 
 function FriendMainLayer:onGameLoaded(data)
     self.tGameInfo = data.roomInfo
+    if  self.tGameInfo ~= nil then
+        local newData = FishGF.changeRoomData("roomDurationType",self.tGameInfo.roomDurationType)
+        self.uiGameData:setGameTimeout(newData.time)
+    end
     if self.tGameInfo.started then 
         self.uiPropList:setVisible(true)
         self.uiGameData:updateGameStatus(true)

@@ -17,8 +17,7 @@ PlayerInfo.RESOURCE_BINDING  = {
     ["text_coin"]           = { ["varname"] = "text_coin" }, 
     ["text_crystal"]        = { ["varname"] = "text_crystal" },     
 
-    ["btn_phone_act"]       = { ["varname"] = "btn_phone_act" ,         ["events"]={["event"]="click",["method"]="onClickphone_act"}},  
-    ["btn_com_act"]         = { ["varname"] = "btn_com_act" ,           ["events"]={["event"]="click",["method"]="onClickcom_act"}},  
+    ["btn_phone_act"]       = { ["varname"] = "btn_phone_act" ,         ["events"]={["event"]="click",["method"]="onClickphone_act"}},   
     ["btn_phone_unbind"]    = { ["varname"] = "btn_phone_unbind" ,      ["events"]={["event"]="click",["method"]="onClickphone_unbind"}}, 
 
     ["btn_change_password"] = { ["varname"] = "btn_change_password" ,   ["events"]={["event"]="click",["method"]="onClickchange_password"}},  
@@ -113,7 +112,6 @@ function PlayerInfo:upDataBtnState( isActivited,isBindPhone )
     self.btn_phone_unbind:setVisible(false)
     self.btn_phone_bind:setVisible(false)
     self.btn_change_password:setVisible(false)
-    self.btn_com_act:setVisible(false)
     self.btn_phone_act:setVisible(false)
 
     if FishGF.isThirdSdk() and FishGF.isThirdSdkLogin() then
@@ -142,7 +140,6 @@ function PlayerInfo:upDataBtnState( isActivited,isBindPhone )
         FishGI.PLAYER_STATE = 1
     else
         FishGF.print("--激活帐号--")
-        self.btn_com_act:setVisible(true)
         self.btn_phone_act:setVisible(true)
         FishGI.PLAYER_STATE = 0
     end
@@ -164,12 +161,6 @@ function PlayerInfo:onClickphone_act( sender )
     print("onClickphone_act")
     self:hideLayer() 
     FishGI.hallScene.uiPhoneAct:showLayer() 
-end
-
-function PlayerInfo:onClickcom_act( sender )
-    print("onClickcom_act")
-    self:hideLayer() 
-    FishGI.hallScene.uiComAct:showLayer() 
 end
 
 function PlayerInfo:onClickphone_unbind( sender )
@@ -201,9 +192,8 @@ function PlayerInfo:onClicksetname( sender )
             local function callback(sender)
                 local tag = sender:getTag()
                 if tag == 2 then
-                    print("---PlayerInfo--goto comAct-")
                     self:hideLayer(false) 
-                    FishGI.hallScene.uiComAct:showLayer() 
+                    FishGI.hallScene.uiPhoneAct:showLayer() 
                     --FishGI.hallScene.uiComAct:initEditBoxStr("") 
                 end
             end

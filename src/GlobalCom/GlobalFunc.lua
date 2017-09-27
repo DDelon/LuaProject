@@ -1477,3 +1477,68 @@ function FishGF.checkUpdate(shortName)
     local hotScene = require("Update/UpDateScene").create(info.APP_ID..info.APP_KEY..info.APP_ID, info.APP_ID, info.CHANNEL_ID, version)
     cc.Director:getInstance():pushScene(hotScene)
 end
+
+--朋友场数据转换  道具类型,0:不带怼人道具，1:带怼人道具   人数类型，0:2人，1:3人，2:4人   时长类型,0:8分钟，1,24分钟
+function FishGF.changeRoomData(key,val)
+    local result = {}
+    if key == "roomDurationType" then
+        if val == 0 then
+            result.cardCount = 1
+            result.str = FishGF.getChByIndex(800000327)
+        elseif val == 1 then
+            result.cardCount = 3
+            result.str = FishGF.getChByIndex(800000328)
+        end
+        result.time = 8*60*result.cardCount
+    elseif key == "roomPeopleCountType" then
+        if val == 0 then
+            result.count = 2
+            result.str = FishGF.getChByIndex(800000324)
+        elseif val == 1 then
+            result.count = 3
+            result.str = FishGF.getChByIndex(800000325)
+        elseif val == 2 then
+            result.count = 4
+            result.str = FishGF.getChByIndex(800000326)
+        end
+    elseif key == "roomPropType" then
+        if val == 0 then
+            result.str = FishGF.getChByIndex(800000323)
+        elseif val == 1 then
+            result.str = FishGF.getChByIndex(800000322)
+        end
+        result.time = 8*60*result.cardCount
+    end
+
+    return result
+end
+
+function FishGF.dgtSDKAct(content)
+    if device.platform == "android" then
+        print("gdt data"..content)
+        local luaBridge = require("cocos.cocos2d.luaj");
+        local javaClassName = "com.tencent.tmgp.weile.buyu.GDTHelper";
+        local javaMethodName = "activeDevice";
+        local javaParams = {
+            content
+        }
+        local javaMethodSig = "(Ljava/lang/String;)V";
+        local ok,ret = luaBridge.callStaticMethod(javaClassName, javaMethodName, javaParams, javaMethodSig);
+        
+    end
+end
+
+function FishGF.dgtSDKReg(content)
+    if device.platform == "android" then
+        print("gdt data"..content)
+        local luaBridge = require("cocos.cocos2d.luaj");
+        local javaClassName = "com.tencent.tmgp.weile.buyu.GDTHelper";
+        local javaMethodName = "registerAccount";
+        local javaParams = {
+            content
+        }
+        local javaMethodSig = "(Ljava/lang/String;)V";
+        local ok,ret = luaBridge.callStaticMethod(javaClassName, javaMethodName, javaParams, javaMethodSig);
+        
+    end
+end

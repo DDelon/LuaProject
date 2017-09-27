@@ -21,6 +21,7 @@ end
 function UpDateScene:initUIWithBuyu()
 	self.view = require("Update/hotUpdate/UpDate").create();
 	self:addChild(self.view);
+	
 
 	--大版本更新界面
 	self.uiBigUpDate = require("Update/bigUpdate/BigUpDate").create();
@@ -38,6 +39,7 @@ function UpDateScene:initUIWithChildGame()
 end
 
 function UpDateScene:init(urlkey, appid, channelid, version)
+	self.sceneName = "UpDateScene"
 	
 	--
 	self.appid = appid or APP_ID;
@@ -118,6 +120,7 @@ function UpDateScene:init(urlkey, appid, channelid, version)
 end
 
 function UpDateScene:onEnter()
+	FishGI.CommonLayer:addLayerToParent(self)
 	self:checkVersion();
 end
 

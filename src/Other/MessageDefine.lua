@@ -609,7 +609,7 @@ MSGS2CGetFriendStatus = 96 {
 	friendRoomNo : string = 4;friendStatus=1,2才有效，朋友场中房间id
 	friendGameId : string = 5;friendStatus=1,2才有效，场次id
 	startTime : string = 6;friendStatus=1,2才有效，场次id，开始时间
-	unreadFriendGameId : string = 7;friendStatus=4才有效，结算未读的朋友场id
+	unreadFriendGameId : string = 7;friendStatus=4才有效，结算未读的朋友场id	
 }
 
 MSGFriendServerItem = 97 {
@@ -650,13 +650,16 @@ MSGFriendDetailItem = 103 {
 }
 
 MSGC2SCreateFriendRoom = 104 {
+	roomPropType : int = 1;道具类型,0:不带怼人道具，1:带怼人道具
+	roomPeopleCountType : int = 2;人数类型，0:2人，1:3人，2:4人
+	roomDurationType : int = 3;时长类型,0:8分钟，1,24分钟
 }
 
 MSGS2CCreateFriendRoom = 105 {
 	success : bool = 1
 	friendRoomNo : string = 2
 	deskId : int = 3
-	errorCode : int = 4; 0:成功， 1:已经在房间，2:无可用房间,3:无房卡,4:朋友场服务器已关闭
+	errorCode : int = 4; 0:成功， 1:已经在房间，2:无可用房间,3:无房卡,4:朋友场服务器已关闭,5,参数不合法
 }
 
 MSGC2SJoinFriendRoom = 106 {;加入朋友场
@@ -685,6 +688,10 @@ MSGFriendGameInfo = 110 {
 	started : bool = 6;是否开始
 	leftTime : int = 7;剩余时间
 	creatorPlayerId : int = 8;创建者玩家id
+	
+	roomPropType : int = 9;道具类型,0:不带怼人道具，1:带怼人道具
+	roomPeopleCountType : int = 10;人数类型，0:2人，1:3人，2:4人
+	roomDurationType : int = 11;时长类型,0:8分钟，1,24分钟
 }
 
 MSGFriendPlayerInfo = 111 {

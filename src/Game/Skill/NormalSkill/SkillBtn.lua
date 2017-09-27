@@ -16,8 +16,6 @@ SkillBtn.RESOURCE_BINDING  = {
 }
 
 function SkillBtn:onCreate( ... )
-    self:runAction(self.resourceNode_["animation"])
-    self.animation = self.resourceNode_["animation"]
 
 end
 
@@ -30,14 +28,27 @@ function SkillBtn:initBtn( propId ,index,allCount)
         print("----initWithFile is faile------")
     end    
 
-    self:initLight(propId,index,allCount)
+    self:initLight(index,allCount)
 
     self:initProgressTimer()
 
 end
 
+--初始化为按键，不是道具
+function SkillBtn:initNormalBtn(btnPic,btnCallBck )
+    self.spr_lock:initWithFile(btnPic)
+    self:initLight(1,1)
+    self:setState(1)
+
+    self.num_bg:setVisible(false)
+    self.fnt_price:setVisible(false)
+    self.fnt_count:setVisible(false)
+    self.spr_gray:setVisible(false)
+    self.spr_price:setVisible(false)
+end
+
 --初始化光圈
-function SkillBtn:initLight(propId,index,allCount )
+function SkillBtn:initLight(index,allCount )
     self.node_light_1:stopAllActions()
     self.node_light_1:runAction(self.node_light_1.animation)
     local disTime = 55/60
@@ -94,11 +105,6 @@ end
 
 function SkillBtn:initBtnState( propId )
     self:setState(1)
-    -- if propId == 3 or propId == 4 or propId == 5 or propId == 17 then
-    --     self:setState(1)
-    -- elseif propId == 14 or propId == 6 or propId == 15 or propId == 16 then
-    --     self:setState(0)
-    -- end
 end
 
 function SkillBtn:getBtn(  )

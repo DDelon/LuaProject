@@ -6,6 +6,7 @@ GameTableData.gameTableList  = {
     { ["tableName"] = "cannonoutlook",  ["tableDataName"] = "cannonoutlookTab", ["clearType"] = 0},
     { ["tableName"] = "recharge",       ["tableDataName"] = "rechargeTab",      ["clearType"] = 0},
     { ["tableName"] = "task",           ["tableDataName"] = "taskTab",          ["clearType"] = 0},
+    { ["tableName"] = "cannon",         ["tableDataName"] = "cannonTab",        ["clearType"] = 0},
 
     { ["tableName"] = "skill",          ["tableDataName"] = "skillTab",         ["clearType"] = 2}, 
     { ["tableName"] = "newtask",        ["tableDataName"] = "newtaskTab",       ["clearType"] = 2}, 
@@ -31,6 +32,80 @@ function GameTableData:clearGameTable(NoClearIndex)
         end
     end
 end
+
+--炮倍数据
+function GameTableData:initCannonTable()
+    local back = FishGMF.getTableByName("cannon")
+    self.cannonTab = {}
+    for k,v in pairs(back) do
+        for k2,v2 in pairs(v) do
+            if k2 ~= "unlock_item" then
+                v[k2] = tonumber(v2)
+            end
+        end
+        table.insert( self.cannonTab,v)
+    end
+    FishGF.sortByKey(self.cannonTab,"id",1)
+    local a = 1
+end
+function GameTableData:getCannonTable(index)
+    if self.cannonTab == nil then
+        self:initCannonTable()
+    end
+    if index == nil then
+        return self.cannonTab
+    end
+    index = tonumber(index)
+    return self.cannonTab[index]
+end
+--得到当前炮倍附近范围内数据
+function GameTableData:getCannonIndex(curRate)
+    local index = nil
+    if self.cannonTab == nil then
+        self:initCannonTable()
+    end
+    for i,v in ipairs(self.cannonTab) do
+        if v.times == curRate then
+            index = i
+            break
+        end
+    end
+
+    return index
+end
+
+--得到当前炮倍附近范围内数据  curRate.当前炮倍  range.炮倍区间  limitRate.最高炮倍
+function GameTableData:getCannonRangeTable(curRate,range,limitRate)
+    local resultMap = {}
+    if self.cannonTab == nil then
+        self:initCannonTable()
+    end
+    local maxIndex = self:getCannonIndex(limitRate)
+    if maxIndex == nil then
+        return
+    end
+    local curIndex = self:getCannonIndex(curRate)+1
+    if curIndex == nil then
+        return
+    end
+    local radius = math.floor( (range/2) )
+    local firstIndex = 0
+    local endIndex = 0
+    if curIndex <= radius then
+        firstIndex = 1
+    elseif curIndex > maxIndex - radius then
+        firstIndex = maxIndex - range + 1
+    else
+        firstIndex = curIndex -radius 
+    end
+    endIndex = firstIndex + range - 1
+    for i=firstIndex,endIndex do
+        table.insert( resultMap, self.cannonTab[i] )
+    end
+
+    return resultMap
+end
+
 
 --日常任务数据
 function GameTableData:initTaskTable()

@@ -29,6 +29,10 @@ function FriendGameData:init()
     self.bTimeoutAni = false
 end
 
+function FriendGameData:setGameTimeout(iGameTimeout)
+    self.iGameTimeout = iGameTimeout
+end
+
 function FriendGameData:onTouchBegan(touch, event)
     return false
 end

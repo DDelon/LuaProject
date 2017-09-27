@@ -335,7 +335,10 @@ function evt.OnMsgJoinRoom(hall,result,lockedroomid)
         FishGF.print("lockedroomid: "..lockedroomid);
     end
     FishGF.waitNetManager(false,nil,"joinGame")
-    
+    local function temp(data)
+        dump(data);
+    end
+    FishGI.Dapi:RealNameVerify("金阳", "110102197810272321", temp);
     print("hall OnMsgJoinRoom");
     local strMsg = nil
     print("OnMsgJoinRoom result"..result);

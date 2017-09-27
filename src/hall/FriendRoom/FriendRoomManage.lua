@@ -100,9 +100,14 @@ function FriendRoomManage:sendGetFriendStatus()
 end
 
 --创建朋友场
-function FriendRoomManage:sendCreateFriendRoom()
+function FriendRoomManage:sendCreateFriendRoom(propType,countType,timeType)
     FishGF.waitNetManager(true,nil,"MSGC2SCreateFriendRoom")
-    self:sendJMsg("MSGC2SCreateFriendRoom", {})
+    local data = {
+        roomPropType = propType,
+        roomPeopleCountType = countType,
+        roomDurationType = timeType
+    }
+    self:sendJMsg("MSGC2SCreateFriendRoom", data)
 end
 
 --加入朋友场

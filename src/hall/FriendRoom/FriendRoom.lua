@@ -62,12 +62,24 @@ function FriendRoom:onTouchEnded(touch, event)
     local curType = 0
     if cc.rectContainsPoint(rect1,locationInNode1) then
         print("-----panel_create-------")
-        --self:createFriendRoom()
-        local resuleData = self:isAllowCreate()
-        if  resuleData ~= nil then
-            self.costData = resuleData
-            curType = 1
-        else
+        FishGI.hallScene.uiCreateLayer:showLayer()
+    end
+
+    local s2 = self.panel_enter:getContentSize()
+    local locationInNode2 = self.panel_enter:convertToNodeSpace(curPos)
+    local rect2 = cc.rect(0,0,s2.width,s2.height)
+    if cc.rectContainsPoint(rect2,locationInNode2) then
+        print("-----panel_enter-------")
+        self:setChooseType(2)
+    end
+
+end
+
+--1.创建房间   2.加入房间
+function FriendRoom:setChooseType( curType,needCount)
+    if curType == 1 then
+        local resuleData,canUsedCount = self:isAllowCreate()
+        if  resuleData == nil or canUsedCount < needCount then
             local function callback(sender)
                 local tag = sender:getTag()
                 if tag == 2 then --ok
@@ -77,19 +89,8 @@ function FriendRoom:onTouchEnded(touch, event)
                 FishGF.backToHall( )
             end
             FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000285),callback, nil)
-        end
-    end
-
-    local s2 = self.panel_enter:getContentSize()
-    local locationInNode2 = self.panel_enter:convertToNodeSpace(curPos)
-    local rect2 = cc.rect(0,0,s2.width,s2.height)
-    if cc.rectContainsPoint(rect2,locationInNode2) then
-        print("-----panel_enter-------")
-        curType = 2
-        --FishGI.hallScene.uiJoinRoom:showLayer()
-    end
-
-    if curType == 1 then
+        end        
+        
         local playerKey = "FriendCost"..FishGI.myData.playerId
         local isFriendNoticeCost = cc.UserDefault:getInstance():getBoolForKey(playerKey)
         if not isFriendNoticeCost then
@@ -112,6 +113,11 @@ function FriendRoom:onTouchEnded(touch, event)
             FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE_HOOK,str,callback,nil,strHook)
             return
         end
+
+    elseif curType == 2 then
+
+
+
     end
 
     if curType ~= 0 then
@@ -129,12 +135,14 @@ function FriendRoom:isAllowCreate( )
     --判断限时房卡是否有以及能用
     local playerData = FishGMF.getPlayerData(FishGI.myData.playerId)
     local limitCardS = playerData.seniorProps[tostring(FishCD.PROP_TAG_15)]
+    local canUsedCount = 0
     if limitCardS ~= nil then
         for k,v in pairs(limitCardS) do
             local time = v.stringProp
             local date = os.date("%Y-%m-%d");
             if date == time then
-                return v
+                resuleData = v
+                canUsedCount = canUsedCount + 1
             end
         end
     end
@@ -145,9 +153,9 @@ function FriendRoom:isAllowCreate( )
         local data = {}
         data.propId = FishCD.PROP_TAG_13
         resuleData = data
+        canUsedCount = canUsedCount + roomCardCount
     end
-
-    return resuleData
+    return resuleData,canUsedCount
 
 end
 
@@ -348,8 +356,8 @@ function FriendRoom:OnFriendServerReady(data)
     print("-----FriendRoom-OnFriendServerReady-----")
    if FishGI.FRIEND_ROOM_STATUS == 1 and not FishGI.hallScene.uiCreateSuceed:isVisible() then
         --申请创建房间
-        FishGI.FriendRoomManage:sendCreateFriendRoom()
-
+        local createData = FishGI.hallScene.uiCreateLayer.createData
+        FishGI.FriendRoomManage:sendCreateFriendRoom(createData.roomPropType,createData.roomPeopleCountType,createData.roomDurationType)
    elseif FishGI.FRIEND_ROOM_STATUS == 2 then
         --直接加入房间
         self:sendJoinFriendRoom()
@@ -369,16 +377,18 @@ function FriendRoom:OnCreateFriendRoom(netData)
         FishGI.hallScene.uiCreateSuceed:setRoomNo(friendRoomNo)
         FishGI.hallScene.uiCreateSuceed:showLayer()
 
-        --界面减个数
-        if self.costData ~= nil then
-            local propId = self.costData.propId
-            if propId == FishCD.PROP_TAG_13 then 
-                FishGMF.addTrueAndFlyProp(FishGI.myData.playerId,propId,-1,true)
-            elseif propId == FishCD.PROP_TAG_15 then 
-                FishGMF.refreshSeniorPropData(FishGI.myData.playerId,self.costData,3,0)
-            end 
-        end
+        local createData = FishGI.hallScene.uiCreateLayer.createData
+        local newData = FishGF.changeRoomData("roomDurationType",createData.roomDurationType)
+        local cardCount = newData.cardCount
 
+        --界面减个数
+        local limitCardCount = self.propData[FishCD.PROP_TAG_15]
+        if limitCardCount > cardCount then
+            self:updatePropData(FishCD.PROP_TAG_15,limitCardCount - cardCount)
+        else
+            self:updatePropData(FishCD.PROP_TAG_15,0)
+            FishGMF.addTrueAndFlyProp(FishGI.myData.playerId,propId,-(cardCount - limitCardCount ),true)
+        end
         return
     end
 
@@ -389,6 +399,8 @@ function FriendRoom:OnCreateFriendRoom(netData)
         FishGF.showToast(FishGF.getChByIndex(800000284))
     elseif errorCode == 4 then             --朋友场服务器已关闭
         FishGF.showToast(FishGF.getChByIndex(800000298))
+    elseif errorCode == 5 then             --参数不合法
+        FishGF.showToast(FishGF.getChByIndex(800000332))
     elseif errorCode == 3 then             --无房卡
         local function callback(sender)
             local tag = sender:getTag()
@@ -578,6 +590,9 @@ function FriendRoom:updatePropData(propId,showCount)
     if node ~= nil then
         local fnt = node:getChildByName("fnt_count")
         fnt:setString(showCount)
+        if FishGI.hallScene.uiCreateLayer ~= nil then
+            FishGI.hallScene.uiCreateLayer:updatePropData(propId,showCount)
+        end
     end
 end
 

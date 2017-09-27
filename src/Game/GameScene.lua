@@ -302,7 +302,7 @@ function GameScene:onEnter( )
 
     FishGI.FRIEND_ROOM_STATUS = 0
     FishGI.FRIEND_ROOMID = nil
-
+    self.uiSkillView:initSkill()
 	
     FishGI.hallScene.net.isEnterRoom = false;
 
@@ -503,7 +503,7 @@ function GameScene:startGame(data)
                 playerAimTab[buttle.playerId] = {}
                 playerAimTab[buttle.playerId].timelineId = buttle.timelineId
                 playerAimTab[buttle.playerId].fishArrayId = buttle.fishArrayId
-                FishGMF.setCppAimFish(buttle.playerId, buttle.timelineId,buttle.fishArrayId)
+                FishGMF.setLockData(buttle.playerId,3,buttle.timelineId,buttle.fishArrayId)
             end
         end
     end

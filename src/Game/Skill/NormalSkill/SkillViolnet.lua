@@ -61,6 +61,13 @@ function SkillViolnet:useViolentResult(data)
     if data.isSuccess then
         self.playerSelf = FishGI.gameScene.playerManager:getMyData()
         local myPlayerId = self.playerSelf.playerInfo.playerId
+        
+        local data = {};
+        data.useType = 2;
+        data.newCrystal = 1000;
+        data.isSuccess = true;
+        data.skillPlus = nil;
+        FishGI.eventDispatcher:dispatch("startMyLock", data);
 
         local isShow = nil
         if myPlayerId == playerId then

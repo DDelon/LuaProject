@@ -728,6 +728,14 @@ function Dapi:PackAward( id, callback )
     end
 end
 
+--实名验证
+function Dapi:RealNameVerify(name, idcard, callback)
+    local url = getUserApi_("/realname/cert");
+    local data = {idcard = idcard, realname = name}
+    table.merge( data, getToken_() )
+     Http:Post(url, errorhandler_(callback), data, true)
+end
+
 function Dapi:feedBackUrl(callback)
     local url = getUserApi_("/feedback/old");
     local data = getToken_();

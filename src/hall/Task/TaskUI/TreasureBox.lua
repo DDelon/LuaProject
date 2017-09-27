@@ -86,10 +86,12 @@ end
 function TreasureBox:onTouch(touch)
     if touch.name == "began" then
         self.tip = require("hall/Task/TaskUI/TaskRewardTip").create()
-        local x, y = self.tip:getPosition()
+        local x, y = self:getPosition()
+        local par = self:getParent()
+
         self.tip:setPosition(x, y + 100)
         self.tip:setTip(self.tipString)
-        self:addChild(self.tip)
+        par:addChild(self.tip)
 
     elseif touch.name == "ended" then
         if self.tip then

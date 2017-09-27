@@ -267,11 +267,6 @@ function Player:endShoot()
     end
 end
 
-function Player:setMyAimFish(timelineId,fishArrayId)
-    self.timelineId = timelineId
-    self.fishArrayId = fishArrayId
-end
-
 --玩家信息框弹出
 function Player:showPlayerInfo()
     if self.playerInfoLayer:getIsCanSend() then

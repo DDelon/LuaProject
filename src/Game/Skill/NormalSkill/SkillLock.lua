@@ -6,7 +6,7 @@ SkillLock.chainCount  = 8  --锁链点个数
 function SkillLock:ctor(...)
 
     self:initListener()
-    self:initLock()
+    --self:initLock()
     self:openTouchEventListener()
 
     FishGI.isLock = false
@@ -19,7 +19,11 @@ end
 function SkillLock:initListener()
     FishGI.eventDispatcher:registerCustomListener("startMyLock", self, function(valTab) self:startMyLock(valTab) end);
     FishGI.eventDispatcher:registerCustomListener("startOtherLock", self, function(valTab) self:startOtherLock(valTab) end);
-    FishGI.eventDispatcher:registerCustomListener("bulletTargetChange", self, function(valTab) self:bulletTargetChange(valTab) end);
+    --FishGI.eventDispatcher:registerCustomListener("bulletTargetChange", self, function(valTab) self:bulletTargetChange(valTab) end);
+
+    local eventDispatcher = self:getEventDispatcher()
+    local bulletlistener = cc.EventListenerCustom:create("bulletTargetChange", handler(self, self.bulletTargetChange))
+    eventDispatcher:addEventListenerWithSceneGraphPriority(bulletlistener, self)
 
 end
 
@@ -157,53 +161,6 @@ function SkillLock:getLockFishByPos( curPos )
     return timelineId,fishArrayId
 end
 
---得到我的目标鱼坐标
-function SkillLock:getMyAimFishPos(  )
-    local dataTab = {}
-    dataTab.funName = "getAimFishPos"
-    dataTab.playerId = FishGI.gameScene.playerManager.selfIndex
-    local data = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
-    local aimPosX = 0
-    local aimPosY = 0
-    local state = 0
-    if data ~= nil then
-        aimPosX = data["posX"]
-        aimPosY = data["posY"]
-        state = data["state"]
-    end
-
-    return cc.p(aimPosX,aimPosY),state
-
-end
-
---设置我的目标鱼
-function SkillLock:setMyAimFish(timelineId,fishArrayId)
-    -- if self.timelineId == timelineId and self.fishArrayId == fishArrayId then
-    --     return
-    -- end
-
-    self.timelineId = timelineId
-    self.fishArrayId = fishArrayId
-
-    if FishGI.isLock == true then
-        self:playLockChangeAim()
-        --锁定目标变换
-        self.playerSelf = FishGI.gameScene.playerManager:getMyData()
-        self.playerSelf:setMyAimFish(self.timelineId,self.fishArrayId)
-    end
-
-end
-
---设置c++方面的目标鱼
-function SkillLock:setCppAimFish(playerId, timelineId,fishArrayId)
-    local dataTab = {}
-    dataTab.funName = "setAimFish"
-    dataTab.playerId = playerId
-    dataTab.timelineId = timelineId
-    dataTab.fishArrayId = fishArrayId
-    LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
-end
-
 --开始我的锁定
 function SkillLock:startMyLock( valTab)
     self.scaleX_,self.scaleY_,self.scaleMin_  = FishGF.getCurScale()
@@ -339,6 +296,7 @@ end
 --收到玩家改变目标消息
 function SkillLock:bulletTargetChange(data )
     print("-0-OnBulletTargetChange----")
+    data = data._usedata
     local selfId = FishGI.gameScene.playerManager.selfIndex;
     if data.playerId ~= selfId then
         FishGMF.setLockData(data.playerId,3,data.timelineId,data.fishArrayId)
