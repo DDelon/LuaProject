@@ -73,10 +73,16 @@ function FriendMainLayer:initView()
     self.uiGameData:setPosition(cc.p(0,cc.Director:getInstance():getWinSize().height/2))
     self:addChild(self.uiGameData,FishCD.ORDER_GAME_player)
     self.uiGameData:setScale(self.scaleMin_)
+
+    --倒计时
+    self.uiGameCountdown = require("Game/Friend/FriendGameCountdown").create()
+    self.uiGameCountdown:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height-45*self.scaleMin_))
+    self:addChild(self.uiGameCountdown,FishCD.ORDER_GAME_player)
+    self.uiGameCountdown:setScale(self.scaleMin_)
     local function callBackTimeout( )
         print("callBackTimeout")
     end
-    self.uiGameData:setTimeoutCallBack(callBackTimeout)
+    self.uiGameCountdown:setTimeoutCallBack(callBackTimeout)
 
     --宝箱
     self.uiBox = require("Game/Friend/FriendBox").create()
@@ -148,7 +154,7 @@ function FriendMainLayer:initView()
     self.uiSelectCannon:setVisible(false)
     FishGI.gameScene.uiSelectCannon = self.uiSelectCannon
 
-    self.uiGameData:updateGameStatus(false)
+    self.uiGameCountdown:updateGameStatus(false)
 end
 
 function FriendMainLayer:onClickSecret( sender )
@@ -179,8 +185,10 @@ function FriendMainLayer:buttonClicked(viewTag, btnTag)
             local tPropList = {}
             tPropList.initFriendProps = {}
             tPropList.initFriendProps[1] = self.uiSelectProp.tSelectList[1]
-            if self.tGameInfo.creatorPlayerId == FishGI.myData.playerId then 
+            if self.uiSelectProp.iSelectPropCount > 1 then
                 tPropList.initFriendProps[2] = self.uiSelectProp.tSelectList[2]
+            end
+            if self.tGameInfo.creatorPlayerId == FishGI.myData.playerId then 
                 self.uiPlayerInfoLayer:setVisible(true)
                 self.uiPlayerInfoLayer:setOwnerIndex(FishGI.gameScene.playerManager:getPlayerChairId(FishGI.myData.playerId))
                 self.uiPlayerInfoLayer:showBtns(true)
@@ -209,7 +217,7 @@ function FriendMainLayer:buttonClicked(viewTag, btnTag)
             local roomPropType = FishGF.getChByIndex(800000333)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomPropType",createData.roomPropType).str)
             local roomPeopleCountType = FishGF.getChByIndex(800000334)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomPeopleCountType",createData.roomPeopleCountType).str)
             local roomDurationType = FishGF.getChByIndex(800000334)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomDurationType",createData.roomDurationType).str)
-            local des = roomPropType.."/n"..roomPeopleCountType.."/n"..roomDurationType
+            local des = roomPropType.."\n"..roomPeopleCountType.."\n"..roomDurationType
 
             local targetPlatform = cc.Application:getInstance():getTargetPlatform()
             if (cc.PLATFORM_OS_WINDOWS ~= targetPlatform) then
@@ -309,13 +317,17 @@ end
 
 function FriendMainLayer:onGameLoaded(data)
     self.tGameInfo = data.roomInfo
+    self.uiBox:initData(self.tGameInfo.roomPropType, self.tGameInfo.roomDurationType)
+    self.uiGameCountdown:initData(self.tGameInfo.roomDurationType, self.tGameInfo.startedMs)
+    self.uiSelectProp:initData(self.tGameInfo.roomPropType)
+    self.uiPropList:initData(self.tGameInfo.roomPropType)
     if  self.tGameInfo ~= nil then
         local newData = FishGF.changeRoomData("roomDurationType",self.tGameInfo.roomDurationType)
-        self.uiGameData:setGameTimeout(newData.time)
+        self.uiGameCountdown:setGameTimeout(newData.time)
     end
     if self.tGameInfo.started then 
         self.uiPropList:setVisible(true)
-        self.uiGameData:updateGameStatus(true)
+        self.uiGameCountdown:updateGameStatus(true)
         self.uiPlayerInfoLayer:setVisible(true)
         self.uiPlayerInfoLayer:showBtns(false)
     else 
@@ -355,7 +367,7 @@ end
 function FriendMainLayer:onStartGame(data)
     self.uiPlayerInfoLayer:isOpenShowBtns(false)
     self.uiStartGame:setVisible(false)
-    self.uiGameData:updateGameStatus(true)
+    self.uiGameCountdown:updateGameStatus(true)
     self.uiStartAni:showLayer(true, 127)
 end
 
@@ -552,7 +564,7 @@ function FriendMainLayer:closeAllSchedule()
         FishGI.gameScene.loadingLayer:closeAllSchedule()
     end
     FishGI.gameScene.net:closeSchedule();
-    self.uiGameData:unscheduleTimes()
+    self.uiGameCountdown:unscheduleTimes()
 end
 
 --设置是否开启微信

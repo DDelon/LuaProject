@@ -62,6 +62,19 @@ function FriendRoom:onTouchEnded(touch, event)
     local curType = 0
     if cc.rectContainsPoint(rect1,locationInNode1) then
         print("-----panel_create-------")
+        local resuleData,canUsedCount = self:isAllowCreate()
+        if  resuleData == nil or canUsedCount < 1 then
+            local function callback(sender)
+                local tag = sender:getTag()
+                if tag == 2 then --ok
+                    FishGI.hallScene.uiBagLayer:showLayer(FishCD.PROP_TAG_13) 
+                end
+                FishGF.backToHall( )
+            end
+            FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000285),callback, nil)
+            return 
+        end      
+
         FishGI.hallScene.uiCreateLayer:showLayer()
     end
 
@@ -83,12 +96,12 @@ function FriendRoom:setChooseType( curType,needCount)
             local function callback(sender)
                 local tag = sender:getTag()
                 if tag == 2 then --ok
-                    FishGI.hallScene.uiBagLayer:showLayer() 
-                    FishGI.hallScene.uiBagLayer:setRightPropData(FishCD.PROP_TAG_13)
+                    FishGI.hallScene.uiBagLayer:showLayer(FishCD.PROP_TAG_13) 
                 end
                 FishGF.backToHall( )
             end
             FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000285),callback, nil)
+            return 
         end        
         
         local playerKey = "FriendCost"..FishGI.myData.playerId
@@ -233,9 +246,7 @@ end
 --房卡
 function FriendRoom:onClickprop_13( sender )
     print("onClickprop_13")
-    FishGI.hallScene.uiBagLayer:showLayer() 
-    FishGI.hallScene.uiBagLayer:setRightPropData(FishCD.PROP_TAG_13)
-
+    FishGI.hallScene.uiBagLayer:showLayer(FishCD.PROP_TAG_13) 
 end
 
 --创建朋友场
@@ -387,7 +398,7 @@ function FriendRoom:OnCreateFriendRoom(netData)
             self:updatePropData(FishCD.PROP_TAG_15,limitCardCount - cardCount)
         else
             self:updatePropData(FishCD.PROP_TAG_15,0)
-            FishGMF.addTrueAndFlyProp(FishGI.myData.playerId,propId,-(cardCount - limitCardCount ),true)
+            FishGMF.addTrueAndFlyProp(FishGI.myData.playerId,FishCD.PROP_TAG_13,-(cardCount - limitCardCount ),true)
         end
         return
     end
@@ -405,8 +416,7 @@ function FriendRoom:OnCreateFriendRoom(netData)
         local function callback(sender)
             local tag = sender:getTag()
             if tag == 2 then --ok
-                FishGI.hallScene.uiBagLayer:showLayer() 
-                FishGI.hallScene.uiBagLayer:setRightPropData(FishCD.PROP_TAG_13)
+                FishGI.hallScene.uiBagLayer:showLayer(FishCD.PROP_TAG_13) 
             end
             FishGF.backToHall( )
         end
@@ -555,9 +565,10 @@ function FriendRoom:unreadFriend(netData)
         local tag = sender:getTag()
         if tag == 2 then --ok
             --设置已读，查询详细信息
-            FishGI.FriendRoomManage:sendGetFriendDetail(friendGameId)
+            --FishGI.FriendRoomManage:sendGetFriendDetail(friendGameId)
             FishGI.FriendRoomManage:sendFriendMarkAsRead(friendGameId)
             FishGI.FriendRoomManage:sendGetFriendHistory()
+            
         elseif tag == 3 then --cancel
             --设置已读
             FishGI.FriendRoomManage:sendFriendMarkAsRead(friendGameId)

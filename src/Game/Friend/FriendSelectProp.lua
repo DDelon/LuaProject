@@ -4,6 +4,9 @@ FriendSelectProp.AUTO_RESOLUTION   = true
 FriendSelectProp.RESOURCE_FILENAME = "ui/battle/friend/uifriendselectprop"
 FriendSelectProp.RESOURCE_BINDING  = {
     ["panel"]               = { ["varname"] = "panel" },
+    ["spr_title"]           = { ["varname"] = "spr_title" },
+    ["img_bg"]              = { ["varname"] = "img_bg" },
+    ["img_body"]            = { ["varname"] = "img_body" },
     ["text_tip"]            = { ["varname"] = "text_tip" },
     ["node_prop_list"]      = { ["varname"] = "node_prop_list" },
     ["btn_prop_1"]          = { ["varname"] = "btn_prop_1", ["events"]={["event"]="click",
@@ -24,6 +27,7 @@ FriendSelectProp.RESOURCE_BINDING  = {
     ["btn_prop_6"]          = { ["varname"] = "btn_prop_6", ["events"]={["event"]="click",
         ["method"]="onClickSelect",["methodTouchBegin"]="onClickSelectTouchBegin",["methodTouchCancel"]="onClickSelectTouchCancel"} },
     ["spr_prop_6"]          = { ["varname"] = "spr_prop_6" },
+    ["node_btn_select"]     = { ["varname"] = "node_btn_select" },
     ["node_btn_select_1"]   = { ["varname"] = "node_btn_select_1" },
     ["node_btn_select_2"]   = { ["varname"] = "node_btn_select_2" },
     ["btn_select"]          = { ["varname"] = "btn_select", ["events"]={["event"]="click",["method"]="onClickOk"}},
@@ -39,10 +43,15 @@ end
 
 function FriendSelectProp:init()   
     self:openTouchEventListener()
+    self.iSelectPropCount = 1
     self.tSelectList = {}
-    self.tSelectList[1] = FishCD.FRIEND_PROP_01
-    self.tSelectList[2] = FishCD.FRIEND_PROP_02
     self.strTip = FishGF.getChByIndex(800000266)
+
+    self.imgBgHeight = self.img_bg:getContentSize().height
+    self.imgBodyHeight = self.img_body:getContentSize().height
+    self.sprTitleTopPosY = self.img_bg:getContentSize().height-self.spr_title:getPositionY()
+    self.txtTipTopPosY = self.img_bg:getContentSize().height-self.text_tip:getPositionY()
+    self.nodePropListTopPosY = self.node_prop_list:getPositionY()
 end
 
 function FriendSelectProp:initView()
@@ -60,6 +69,20 @@ function FriendSelectProp:initView()
     self:runAction(self.node_btn_select_2["animation"])
     self:setRoomOwner(false)
     self:updatePropDesc(1)
+end
+
+function FriendSelectProp:initData( durationType )
+    self.durationType = durationType
+    local configId = "990000094"
+    if durationType == 1 then
+        configId = "990000095"
+    end
+    local tPropList = {}
+    local propList = string.split(FishGI.GameConfig:getConfigData("config", configId, "data"), ';')
+    for i,v in ipairs(propList) do
+        tPropList[i] = tonumber(v)
+    end
+    self:resetPropList(tPropList)
 end
 
 function FriendSelectProp:onTouchBegan(touch, event)
@@ -113,17 +136,40 @@ end
 function FriendSelectProp:resetPropList( tPropList )
     if tPropList then
         self.tPropList = tPropList
+        self.tSelectList[1] = self.tPropList[1]
+        self.tSelectList[2] = self.tPropList[2]
     end
-    for i, v in ipairs(tPropList) do
-        local btnProp = self["btn_prop_"..i]
-        btnProp:setTag(v)
-        local sprProp = self["spr_prop_"..i]
-        local scale = sprProp:getScale()
-        local AnchorPoint = sprProp:getAnchorPoint()
-        sprProp:initWithFile("battle/friend/"..FishGI.GameConfig:getConfigData("friendprop", tostring(420000000+v), "friendprop_res"))
-        sprProp:setAnchorPoint(AnchorPoint)
-        sprProp:setScale(scale)
+    for i=1,6 do
+        if self.tPropList[i] then
+            local btnProp = self["btn_prop_"..i]
+            btnProp:setTag(self.tPropList[i])
+            local sprProp = self["spr_prop_"..i]
+            local scale = sprProp:getScale()
+            local AnchorPoint = sprProp:getAnchorPoint()
+            sprProp:initWithFile("battle/friend/"..FishGI.GameConfig:getConfigData("friendprop", tostring(420000000+self.tPropList[i]), "friendprop_res"))
+            sprProp:setAnchorPoint(AnchorPoint)
+            sprProp:setScale(scale)
+            btnProp:setVisible(true)
+        else
+            self["btn_prop_"..i]:setVisible(false)
+        end
     end
+    if #self.tPropList <= 3 then
+        for i,v in ipairs(self.tPropList) do
+            self["btn_prop_"..i]:setPosition(cc.p(self["btn_prop_"..3+i]:getPosition()))
+        end
+        self.img_bg:setContentSize(cc.size(self.img_bg:getContentSize().width,self.imgBgHeight-100))
+        self.img_body:setContentSize(cc.size(self.img_body:getContentSize().width,self.imgBodyHeight-100))
+        self.node_prop_list:setPositionY(self.nodePropListTopPosY+10)
+    else
+        self.img_bg:setContentSize(cc.size(self.img_bg:getContentSize().width,self.imgBgHeight))
+        self.img_body:setContentSize(cc.size(self.img_body:getContentSize().width,self.imgBodyHeight))
+        self.node_prop_list:setPositionY(self.nodePropListTopPosY)
+    end
+    self.node_btn_select:setPositionY(self.node_prop_list:getPositionY())
+    self.spr_title:setPositionY(self.img_bg:getContentSize().height-self.sprTitleTopPosY)
+    self.text_tip:setPositionY(self.img_bg:getContentSize().height-self.txtTipTopPosY)
+    self:refreshSelectProps()
 end
 
 function FriendSelectProp:updateSelectData( iPropID )
@@ -134,7 +180,7 @@ function FriendSelectProp:updateSelectData( iPropID )
             break
         end
     end
-    if self.bRoomOwner then
+    if self.iSelectPropCount > 1 then
         if iFindProp then
             local iTmp = self.tSelectList[1]
             self.tSelectList[1] = self.tSelectList[2]
@@ -176,7 +222,7 @@ end
 
 function FriendSelectProp:refreshSelectProps()
     self.node_btn_select_1:setPosition(self:getPropBtnPos(self.tSelectList[1]))
-    if self.bRoomOwner then
+    if self.iSelectPropCount > 1 then
         self.node_btn_select_2:setPosition(self:getPropBtnPos(self.tSelectList[2]))
     end
 end
@@ -188,14 +234,16 @@ end
 
 function FriendSelectProp:setRoomOwner( bRoomOwner )
     self.bRoomOwner = bRoomOwner
-    local iPropCount = 1
-    self.tSelectList[1] = FishCD.FRIEND_PROP_01
-    if self.bRoomOwner then
-        iPropCount = 2
-        self.tSelectList[2] = FishCD.FRIEND_PROP_02
+    self.iSelectPropCount = 1
+    -- if self.bRoomOwner then
+    --     self.iSelectPropCount = 2
+    -- end
+    self.text_tip:setString(string.format( self.strTip,self.iSelectPropCount ))
+    if self.iSelectPropCount == 1 then
+        self.node_btn_select_2:setVisible(false)
+    else
+        self.node_btn_select_2:setVisible(true)
     end
-    self.text_tip:setString(string.format( self.strTip,iPropCount ))
-    self.node_btn_select_2:setVisible(self.bRoomOwner)
     self:refreshSelectProps()
 end
 

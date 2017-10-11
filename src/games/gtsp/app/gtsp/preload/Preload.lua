@@ -60,6 +60,7 @@ function Preload:preLoadEffect()
     self:preLoadEffectImpl(SmallGamesGF.getCurAppResPath("sound/rolling_01.mp3"))
     self:preLoadEffectImpl(SmallGamesGF.getCurAppResPath("sound/readygo_01.mp3"))
     self:preLoadEffectImpl(SmallGamesGF.getCurAppResPath("sound/readygo_02.mp3"))
+    self:preLoadEffectImpl(SmallGamesGF.getCurAppResPath("sound/bet_voice.mp3"))
 end
 
 function Preload:preLoadMusic()

@@ -14,6 +14,10 @@ function TaskData:getTaskDataById(id)
     return self.taskTable[id]
 end
 
+function TaskData:isTaskOrderPri(id1, id2)
+    return tonumber(self.taskTable[TaskData.START_INDEX + id1].task_turn) > tonumber(self.taskTable[TaskData.START_INDEX + id2].task_turn)
+end
+
 function TaskData:getTreasureConfig()
     return self.taskTreasureConfig
 end
@@ -41,6 +45,7 @@ function TaskData:initData()
         taskTab.task_active =   task.task_active
         taskTab.task_if     =   task.task_if
         taskTab.task_text   =   task.task_text
+        taskTab.task_turn   =   task.task_turn
         self:fillWithTaskTitle(taskTab)
 
         self.taskTable[tonumber(id)] = taskTab

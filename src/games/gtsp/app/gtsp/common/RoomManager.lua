@@ -23,7 +23,9 @@ end
 
 function RoomManager:sendReady()
     SmallGamesGF.delayShowWaittingBox(nil, nil, "SMSGC2SReady")
-    self:sendMsg("SMSGC2SReady", {})
+    local val  = {}
+    val.channel = SmallGamesGI.lobbyData.ChannelId
+    self:sendMsg("SMSGC2SReady", val)
 end
 
 function RoomManager:sendBegin(startInfo)

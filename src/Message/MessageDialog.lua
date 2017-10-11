@@ -16,7 +16,8 @@ MessageDialog.RESOURCE_BINDING  = {
     ["text_notice"]        = { ["varname"] = "text_notice" },  
     
     ["text_middle_data"]   = { ["varname"] = "text_middle_data" },    
-    
+    ["text_middle_desc"]   = { ["varname"] = "text_middle_desc" },    
+       
     ["node_min"]           = { ["varname"] = "node_min" },
     ["btn_min_only_OK"]    = { ["varname"] = "btn_min_only_OK" ,    ["events"]={["event"]="click",["method"]="onClickCallback"}},  
     ["text_min_data"]      = { ["varname"] = "text_min_data" },    
@@ -25,11 +26,20 @@ MessageDialog.RESOURCE_BINDING  = {
 
 function MessageDialog:onCreate(...)   
     self.panel:setSwallowTouches(false)
-
     self:openTouchEventListener()
     
     self.btn_hook:getChildByName("spr_hook"):setVisible(false)
-    --self.text_notice:setString(FishGF.getChByIndex(800000120)) 
+
+    self.firstPos = {}
+    self.firstPos.x = self.text_middle_data:getPositionX()
+    self.firstPos.y = self.text_middle_data:getPositionY()
+    self.textSize = self.text_middle_data:getContentSize()
+    self.text_middle_data:ignoreContentAdaptWithSize(true)
+    self.text_middle_data:setTextAreaSize({width = 0, height = 0})
+
+    self.text_middle_desc:ignoreContentAdaptWithSize(true)
+    self.text_middle_desc:setTextAreaSize({width = 0, height = 0})
+
 end
 
 function MessageDialog:initBtnShow()   
@@ -101,8 +111,45 @@ function MessageDialog:onTouchBegan(touch, event)
 end
 
 function MessageDialog:setTextData( str )
-    self.text_middle_data:setString(str)
-    self.text_min_data:setString(str)   
+    local back = self:splitTextStr(str)
+    self:updateText(self.text_middle_data,back[1],self.textSize.width)
+    self:updateText(self.text_middle_desc,back[2],self.textSize.width)
+    self.text_min_data:setString(back[1])   
+    self:updateTextPos()
+end
+
+function MessageDialog:splitTextStr( str )
+    local result = string.split(str,"$")
+    return result
+end
+
+function MessageDialog:updateTextPos(  )
+    local size1 = self.text_middle_data:getContentSize()
+    local size2 = self.text_middle_desc:getContentSize()
+    if size2.width > 0 then
+        local newPosY1 = self.firstPos.y + self.textSize.height/2 - size1.height/2
+        self.text_middle_data:setPositionY(newPosY1)
+        local newPosY2 = self.firstPos.y + self.textSize.height/2 - size1.height - size2.height/2
+        self.text_middle_desc:setPositionY(newPosY2)
+    else
+        self.text_middle_data:setPositionY(self.firstPos.y)
+    end
+
+
+end
+
+
+--设置中提示界面的提示数据
+function MessageDialog:updateText(text, str,sizeWidth )
+    text:setTextAreaSize({width = 0, height = 0})
+    text:setString(str)
+    local size = text:getContentSize()
+    if size.width > sizeWidth then
+        text:setTextAreaSize({width = sizeWidth, height = 0})
+        text:setTextHorizontalAlignment(0)
+    else
+        text:setTextHorizontalAlignment(1)
+    end  
 end
 
 function MessageDialog:onClickCallback( sender )

@@ -28,11 +28,14 @@ end
 function Widget:onClickScaleEffect(callbackEnd, callbackBegin, callbackMove, callbackCancel)
 	self:addTouchEventListener(function(sender, state) 
         if state == 0 then    --began
-            if sender["curScale"] == nil then
-                sender["curScale"] = sender:getScale() or 1
+            if sender.curScaleX == nil then
+                sender.curScaleX = sender:getScaleX() or 1
             end
-        	sender.scale_=sender["curScale"] or 1
-            sender:setScale(sender.scale_*0.95)
+            if sender.curScaleY == nil then
+                sender.curScaleY = sender:getScaleY() or 1
+            end
+            sender:setScaleX(sender.curScaleX*0.95)
+            sender:setScaleY(sender.curScaleY*0.95)
             if callbackBegin then
                 callbackBegin(sender,state)
             end
@@ -41,13 +44,15 @@ function Widget:onClickScaleEffect(callbackEnd, callbackBegin, callbackMove, cal
                 callbackMove(sender,state)
             end
         elseif state == 2 then  --end
-            sender:setScale(sender.scale_*1.0)	
+            sender:setScaleX(sender.curScaleX*1.0)
+            sender:setScaleY(sender.curScaleY*1.0)
             callbackEnd(sender,state)
 
             -- 播放点击音效
             FishGI.AudioControl:playEffect("sound/com_btn01.mp3")
         else    --cancel
-            sender:setScale(sender.scale_*1.0)
+            sender:setScaleX(sender.curScaleX*1.0)
+            sender:setScaleY(sender.curScaleY*1.0)
             if callbackCancel then
                 callbackCancel(sender,state)
             end

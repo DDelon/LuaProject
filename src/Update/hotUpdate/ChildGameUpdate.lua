@@ -22,7 +22,9 @@ function ChildGameUpdate:ctor()
     self.text_status_pos = cc.p(self.text_status:getPositionX(), self.text_status:getPositionY());
     self.sliderScale = self.slider_loading:getScale()
 
+    self.curPercent = 0
     self:openTips(4)
+    self:checkProgress(1)
 end
 
 function ChildGameUpdate:onCreate( ... )
@@ -40,6 +42,18 @@ function ChildGameUpdate:openTips(time)
         local tip = FishGI.GameConfig:getConfigData("tips", index, "text");
         print("tip:"..tip)
         self.text_message:setString(tip)
+    end
+    callFunc();
+    self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(time), cc.CallFunc:create(callFunc))));
+end
+
+function ChildGameUpdate:checkProgress(time)
+    local function callFunc()
+        if self.curPercent >= 100 then
+            self.spr_bar_light:setVisible(false);
+            self:getParent():runNextScene();
+            self:removeFromParent()
+        end
     end
     callFunc();
     self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(time), cc.CallFunc:create(callFunc))));
@@ -70,9 +84,9 @@ function ChildGameUpdate:isCheckVer(isCheck)
 end
 
 function ChildGameUpdate:receiveData(cur,all,speed)
-    local percent = (cur/all)*100
+    self.curPercent = (cur/all)*100
     local str = math.floor(cur/1024).."/".. math.floor(all/1024).."KB"
-    self.slider_loading:setPercent(percent);
+    self.slider_loading:setPercent(self.curPercent);
     self.text_sizeper:setString(str)
 
     self:updataSliderLight()
@@ -95,9 +109,8 @@ function ChildGameUpdate:updataSliderLight()
 end
 
 function ChildGameUpdate:loadingEnd()
-    self.spr_bar_light:setVisible(false);
-    self:getParent():runNextScene();
-    self:removeFromParent()
+    self.curPercent = 100
+    self.slider_loading:setPercent(self.curPercent)
 end
 
 return ChildGameUpdate

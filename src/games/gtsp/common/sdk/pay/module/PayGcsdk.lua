@@ -55,12 +55,12 @@ end
 
 function PayGcsdk:getPayCallBackUrl()
     return string.format("http://thirdpay.%s/callback/%s/%s/%s/%s/%s", WEB_DOMAIN, 
-        self.orderData[self.gcsdkType].typeName, APP_ID, CHANNEL_ID, SmallGamesGF.getHallVerison(), REGION_CODE)
+        self.orderData[self.gcsdkType].typeName, SmallGameApp.AppId, SmallGamesGI.lobbyData.ChannelId, SmallGamesGF.getHallVerison(), REGION_CODE)
 end
 
-function PayGcsdk:doPay(payInfo)
+function PayGcsdk:doPay(payInfo, extendData)
 	payInfo.type = self.orderData[self.gcsdkType].typeName
-    self.super.doPay(self, payInfo)
+    self.super.doPay(self, payInfo, extendData)
 end
 
 function PayGcsdk:doPayAndroidBuyu(payInfo)
@@ -78,8 +78,7 @@ function PayGcsdk:doPayAndroidBuyu(payInfo)
         jsonStr,
         handler(self, self.onCallback_)
 	}
-    local javaMethodSig = "(Ljava/lang/String;I)I"
-	self:doPayAndroid(javaParams, javaMethodSig)
+	self:doPayAndroid(javaParams, self.luaBottomCallData.methodSig)
 end
 
 function PayGcsdk:doPayBuyuBaidu(payArgs)

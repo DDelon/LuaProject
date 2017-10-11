@@ -191,7 +191,11 @@ end
 
 --通过索引得到中文
 function FishGF.getChByIndex(index)
-    return FishGI.GameConfig:getLanguageFromBin("language", index);
+    local result = FishGI.GameTableData:getLanguageTable(index)
+    if result == nil or result == "" then
+        result = FishGI.GameConfig:getLanguageFromBin("language", index);
+    end
+    return result
 end
 
 --通过id得到道具的中文单位
@@ -241,17 +245,31 @@ function FishGF.getHallPropAimByID(propId)
 end
 
 --显示系统消息提示框
-function FishGF.showMessageLayer(messageType,strMsg,callback,scene,strHook)
+function FishGF.showMessageLayer(messageType,strMsg,callback,scene,strHook,delayTime)
     local curScene = (scene == nil and cc.Director:getInstance():getRunningScene() or scene);
     if curScene == nil or type(curScene) == "number" then
         return
     end
-    local uiNoticeLayer = FishGI.CommonLayer:getComLayer("uiNoticeLayer")
-    if uiNoticeLayer ~= nil then
-        uiNoticeLayer:setData(messageType,strMsg,callback,strHook)
-        local isShow = uiNoticeLayer["isShow"]
-        if isShow == nil or isShow == false then
-            uiNoticeLayer:showLayer() 
+    if delayTime ~= nil then
+        local function show()
+            local uiNoticeLayer = FishGI.CommonLayer:getComLayer("uiNoticeLayer")
+            if uiNoticeLayer ~= nil then
+                uiNoticeLayer:setData(messageType,strMsg,callback,strHook)
+                local isShow = uiNoticeLayer["isShow"]
+                if isShow == nil or isShow == false then
+                    uiNoticeLayer:showLayer() 
+                end
+            end
+        end
+        curScene:runAction(cc.Sequence:create(cc.DelayTime:create(delayTime), cc.CallFunc:create(show)))
+    else
+        local uiNoticeLayer = FishGI.CommonLayer:getComLayer("uiNoticeLayer")
+        if uiNoticeLayer ~= nil then
+            uiNoticeLayer:setData(messageType,strMsg,callback,strHook)
+            local isShow = uiNoticeLayer["isShow"]
+            if isShow == nil or isShow == false then
+                uiNoticeLayer:showLayer() 
+            end
         end
     end
 end
@@ -566,8 +584,8 @@ end
 --排序 type:0 >从大到小, 1 <从小到大, 2 >=, 3 <=
 function FishGF.sortByKey(valTable,key,type)
     local function comps(a,b)
-        local ida = tonumber(a[key])
-        local idb = tonumber(b[key])
+        local ida = (a[key])
+        local idb = (b[key])
         if type == 0 and ida > idb then
             return true
         elseif type == 1 and ida < idb then
@@ -991,6 +1009,8 @@ function FishGF.isRechargeSucceed(newData)
     local fishIcon = newData.fishIcon
     local crystal = newData.crystal
     local leftMonthCardDay = newData.leftMonthCardDay
+    local val = 0;
+    local unitStr = "";
 
 
     local myFishIcon = FishGMF.getPlayerPropData(newData.playerId,FishCD.PROP_TAG_01).realCount
@@ -999,22 +1019,34 @@ function FishGF.isRechargeSucceed(newData)
         return true
     end
     local myLeftMonthCardDay = FishGI.myData.leftMonthCardDay
+    print("isRechargeSucceed GlobalFunc 1008")
 
     if myFishIcon ~= fishIcon or myCrystal ~= crystal or myLeftMonthCardDay ~= leftMonthCardDay then
+        if myFishIcon ~= fishIcon then
+            val = fishIcon-myFishIcon
+            unitStr = "鱼币！\n"..FishGF.getChByIndex(800000353)
+        elseif myCrystal ~= crystal then
+            val = crystal-myCrystal
+            unitStr = "水晶！\n"..FishGF.getChByIndex(800000352)
+        end
+
         isSuccess = true
     end
     print("--------isRechargeSucceed------1111---------")
 
+	
     --结果处理
     if isSuccess then
         FishGF.waitNetManager(false,nil,"doPaySDK")
         FishGI.IS_RECHARGE = 0
         FishGI.eventDispatcher:dispatch("BuySuccessCall", resultInfo)
         FishGI.WebUserData:initWithUserId(FishGI.WebUserData:GetUserId())
-        if FishGI.PLAYER_STATE == 0 then    --"游客"
+        if not FishGI.WebUserData:isActivited() then    --"游客"
             FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000175),nil) 
         else
-            FishGF.showSystemTip(nil,800000157,1);
+            if not (val == 0 and unitStr == "") then
+                FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000351)..val..unitStr,nil, nil, nil, 0.5)
+            end
         end
     else
         FishGI.IS_RECHARGE = FishGI.IS_RECHARGE - 1
@@ -1507,7 +1539,6 @@ function FishGF.changeRoomData(key,val)
         elseif val == 1 then
             result.str = FishGF.getChByIndex(800000322)
         end
-        result.time = 8*60*result.cardCount
     end
 
     return result

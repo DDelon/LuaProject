@@ -117,6 +117,8 @@ function GameFriendScene:initView()
     self:addChild(self.playerManager)
 
     self.playerManager:initPlayers(self.uiMainLayer)
+
+    
 end
 
 function GameFriendScene:onEnter()
@@ -139,6 +141,10 @@ function GameFriendScene:onEnter()
     end
 
     self.net:sendClientGameLoadedMessage()
+
+    --初始化朋友场锁定ui
+    LuaCppAdapter:getInstance():setLuaNode(1,self.uiMainLayer,{});
+    self.lockUI = require("Game/Skill/NormalSkill/SkillUI/LockFriendUI").create(FishGI.gameScene.uiMainLayer);
 
 end
 
@@ -166,6 +172,7 @@ end
 function GameFriendScene:onExit( )
     print("GameScene:onExit( )")
     --FishGMF.setGameState(1)
+    FishGI.lockCount = 0;
     FishGI.FRIEND_ROOM_STATUS = 0
     FishGI.FRIEND_ROOMID = nil
     FishGI.isExitRoom = true

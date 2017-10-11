@@ -69,6 +69,10 @@ function ViewBase:onEnter( )
     end 
 end
 
+function ViewBase:onExit( )
+    FishGI.eventDispatcher:removeListenerByView(self)
+end
+
 local function dispatchRemoveEvent_(listeners)
     for _,callback in ipairs(listeners) do
         callback()

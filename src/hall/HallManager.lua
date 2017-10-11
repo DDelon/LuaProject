@@ -111,12 +111,12 @@ function HallManager:initLayer( )
     self.uiExchange:setVisible(false)   
     self.uiExchange:setScale(self.scaleMin_)
 
-    --签到
-    self.uiCheck = require("hall/Check/Check").create()
-    self.uiCheck:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiCheck,FishCD.ORDER_LAYER_TRUE)
-    self.uiCheck:setVisible(false)
-    self.uiCheck:setScale(self.scaleMin_)
+    -- --签到
+    -- self.uiCheck = require("hall/Check/Check").create()
+    -- self.uiCheck:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    -- self:addChild(self.uiCheck,FishCD.ORDER_LAYER_TRUE)
+    -- self.uiCheck:setVisible(false)
+    -- self.uiCheck:setScale(self.scaleMin_)
 
     --微信分享
     self.uiWeChatShare = require("hall/WeChatShare/WeChatShare").create()
@@ -159,6 +159,13 @@ function HallManager:initLayer( )
     self.taskPanel:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
     self:addChild(self.taskPanel, FishCD.ORDER_GAME_task);
     self.taskPanel:setVisible(false)
+
+    --每日任务
+    self.uiRealName = require("hall/RealName/RealName").new()
+    self.uiRealName:setAnchorPoint(0.5, 0.5)
+    self.uiRealName:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    self:addChild(self.uiRealName, FishCD.ORDER_GAME_task)
+    self.uiRealName:setVisible(false)
 end
 
 --初始化朋友场
@@ -509,13 +516,15 @@ function HallManager:receiveNetData( netData )
         end
 
     elseif netData.msgType == FishCD.ViewMessageType.HALL_SIGNIN then  --大厅签到
-        local isSuccess = netData.isSuccess
-        if isSuccess then
-            self.view:setBtnIsLight(FishCD.HALL_BTN_3,false)
-        else
-            self.view:setBtnIsLight(FishCD.HALL_BTN_3,true)
-        end
-        self.uiCheck:receiveCheckData(netData)
+       -- local isSuccess = netData.isSuccess
+       -- if isSuccess then
+       --     self.view:setBtnIsLight(FishCD.HALL_BTN_3,false)
+       -- else
+        --    self.view:setBtnIsLight(FishCD.HALL_BTN_3,true)
+        --end
+        self.taskPanel:onTaskSigned(netData)
+        --self.uiCheck:receiveCheckData(netData)
+        --self.
     elseif netData.msgType == FishCD.ViewMessageType.HALL_BAG_BUY then --背包购买
         self.uiBagLayer:receiveBuyData(netData)
     elseif netData.msgType == FishCD.ViewMessageType.HALL_ACCOUNT then --大厅公告
@@ -617,7 +626,7 @@ function HallManager:upDataPlayerInfo( netData )
         --绑定玩家到c++
         self:upDataPlayerToCpp(netData)
         FishGI.myData = netData
-        self.uiBagLayer:setRightPropData(self.uiBagLayer:getPropListFirst())
+        --self.uiBagLayer:setRightPropData(self.uiBagLayer:getPropListFirst())
 
         FishGI.myData.isActivited = FishGI.WebUserData:isActivited()
         FishGI.myData.isBindPhone = FishGI.WebUserData:isBindPhone()
@@ -793,12 +802,12 @@ end
 
 --更新签到
 function HallManager:upDataCheck()
-    if FishGI.myData.hasSignToday then
-        self.view:setBtnIsLight(FishCD.HALL_BTN_3,false)
-    else
-        self.view:setBtnIsLight(FishCD.HALL_BTN_3,true)
-    end
-    self.uiCheck:receiveData(FishGI.myData)
+    -- if FishGI.myData.hasSignToday then
+    --     self.view:setBtnIsLight(FishCD.HALL_BTN_3,false)
+    -- else
+    --     self.view:setBtnIsLight(FishCD.HALL_BTN_3,true)
+    -- end
+    -- self.uiCheck:receiveData(FishGI.myData)
 
 end
 
@@ -973,6 +982,7 @@ function HallManager:closeAllSchedule()
     if self.uiDialVIP ~= nil then
         self.uiDialVIP:initDialAge()
     end
+    self:clearpoolData()
 end
 
 --按键关闭，--关闭一些功能
@@ -1010,6 +1020,15 @@ function HallManager:buttonClicked(viewTag, btnTag)
             FishGI.hallScene:removeChildByTag(FishCD.TAG.RANK_WEB_TAG);
         end 
     end 
+end
+
+function HallManager:loadNode( nodeName)
+    self[nodeName]:loadNode()
+end
+
+--设置是否返回大厅
+function HallManager:clearpoolData( )
+    self.uiRecord:clearRecordItemPool()
 end
 
 return HallManager;

@@ -67,8 +67,8 @@ end
 function AllocSitRoomManager:sendDataGetInfo()
     SmallGamesGF.createWaittingBox("", "sendDataGetInfo")
     local data = {
-        channelId = CHANNEL_ID,
-        version = table.concat(HALL_WEB_VERSION, "."),
+        channelId = SmallGamesGI.lobbyData.ChannelId,
+        version = table.concat(SmallGamesGI.appVersion, "."),
     }
     self:sendMsg("MSGC2SGetHallInfo", data)
 end

@@ -7,6 +7,7 @@ end
 
 function ShopLayerBase:onInit()
     self.super:onInit()
+    self.storeProductDatas = SmallGamesGI.storeData.productConfig
 end
 
 function ShopLayerBase:onEnter()

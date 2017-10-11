@@ -60,7 +60,7 @@ end
 
 --更新道具数量
 function CreateLayer:updatePropData(propId,showCount)
-    self.propList.propId = showCount
+    self.propList[propId] = showCount
     
     local allCount = 0
     for k,v in pairs(self.propList) do
@@ -156,7 +156,7 @@ function CreateLayer:buttonClicked(viewTag, btnTag)
     self:setBtnChoose(viewTag, btnTag)
 
     if viewTag == "sure" then 
-        local newData = FishGF.changeRoomData("roomDurationType",self.createData.roomPeopleCountType)
+        local newData = FishGF.changeRoomData("roomDurationType",self.createData.roomDurationType)
         FishGI.hallScene.uiFriendRoom:setChooseType(1,newData.cardCount)
         self:hideLayer()
     elseif viewTag == "prop" then 

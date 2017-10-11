@@ -211,7 +211,7 @@ function ViewBase:createResourceBinding(binding, res_node)
                     elseif nodeBinding.events.event == SmallGamesGI.bindingEvents.Click then
                         self:addClickEvent(node, self:handler(self,self[nodeBinding.events.method]), nil, multiTouchTime, multiBtnTouchTime)
                     elseif nodeBinding.events.event == SmallGamesGI.bindingEvents.ClickScale then
-                        self:addClickEvent(node, self:handler(self,self[nodeBinding.events.method]), 2, multiTouchTime, multiBtnTouchTime)
+                        self:addClickEvent(node, self:handler(self,self[nodeBinding.events.method]), 2, multiTouchTime, multiBtnTouchTime, nodeBinding.events.soundEffectPath)
                     elseif nodeBinding.events.event == SmallGamesGI.bindingEvents.ClickColor then
                         self:addClickEvent(node, self:handler(self,self[nodeBinding.events.method]), 1, multiTouchTime, multiBtnTouchTime)
                     end
@@ -239,7 +239,7 @@ function ViewBase:createResourceBinding(binding, res_node)
 end 
 
 -- 触摸事件  effect：1变暗 2 缩放 0 or nil 无效果
-function ViewBase:addTouchEvent(sender, callbackBegin, callbackMove, callbackEnd, callbackCancel, effect, multiTouchTime, multiBtnTouchTime)
+function ViewBase:addTouchEvent(sender, callbackBegin, callbackMove, callbackEnd, callbackCancel, effect, multiTouchTime, multiBtnTouchTime, soundEffectPath)
     local allowClick = true
     sender:addTouchEventListener(function(sender, eventType) 
         if eventType == ccui.TouchEventType.began then    --began
@@ -275,7 +275,11 @@ function ViewBase:addTouchEvent(sender, callbackBegin, callbackMove, callbackEnd
                 callbackEnd(sender,eventType)
             end
             -- 播放点击音效
-            AudioEngine.playEffect(SmallGamesCD.rootResPath.."/sound/common/com_btn01.mp3")
+            if soundEffectPath ~= nil then
+                AudioEngine.playEffect(soundEffectPath)
+            else 
+                AudioEngine.playEffect(SmallGamesGI.rootResPath.."/sound/common/com_btn01.mp3")
+            end
         elseif eventType == ccui.TouchEventType.canceled then  --cancel
             if 1 == effect then
                 sender:setColor({r = 255, g = 255, b = 255})
@@ -290,8 +294,8 @@ function ViewBase:addTouchEvent(sender, callbackBegin, callbackMove, callbackEnd
 end
 
 -- 点击事件  effect：1变暗 2 缩放 0 or nil 无效果
-function ViewBase:addClickEvent(sender, callback, effect, multiTouchTime, multiBtnTouchTime)
-    self:addTouchEvent(sender, nil, nil, nil, nil, effect)
+function ViewBase:addClickEvent(sender, callback, effect, multiTouchTime, multiBtnTouchTime, soundEffectPath)
+    self:addTouchEvent(sender, nil, nil, nil, nil, effect, nil, nil, soundEffectPath)
     sender:addClickEventListener(function() 
         if self:ifBtnCanClick(sender, multiTouchTime, multiBtnTouchTime) then
             if callback then

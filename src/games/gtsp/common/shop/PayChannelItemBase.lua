@@ -29,16 +29,11 @@ function PayChannelItemBase:setPayInfo(payInfo )
     self.payInfo = payInfo
 end
 
-function PayChannelItemBase:setRelation(relation)
-    self.relation = relation
-end
-
 function PayChannelItemBase:setChannelType(channelType)
     self.channelType = channelType
 end
 
 function PayChannelItemBase:onDoPay()
-    self.payInfo["type"] = self.relation
     SmallGamesGI.PayHelper:doPay(self.channelType, self.payInfo)
 end
 

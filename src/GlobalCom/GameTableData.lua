@@ -7,6 +7,7 @@ GameTableData.gameTableList  = {
     { ["tableName"] = "recharge",       ["tableDataName"] = "rechargeTab",      ["clearType"] = 0},
     { ["tableName"] = "task",           ["tableDataName"] = "taskTab",          ["clearType"] = 0},
     { ["tableName"] = "cannon",         ["tableDataName"] = "cannonTab",        ["clearType"] = 0},
+    { ["tableName"] = "language",       ["tableDataName"] = "languageTab",      ["clearType"] = 0},
 
     { ["tableName"] = "skill",          ["tableDataName"] = "skillTab",         ["clearType"] = 2}, 
     { ["tableName"] = "newtask",        ["tableDataName"] = "newtaskTab",       ["clearType"] = 2}, 
@@ -33,6 +34,25 @@ function GameTableData:clearGameTable(NoClearIndex)
     end
 end
 
+--中文数据
+function GameTableData:initLanguageTable()
+    local back = FishGMF.getTableByName("language")
+    self.languageTab = {}
+    for k,v in pairs(back) do
+        self.languageTab[tonumber(v.id)] = v.ch
+    end
+end
+function GameTableData:getLanguageTable(index)
+    if self.languageTab == nil then
+        self:initLanguageTable()
+    end
+    if index == nil then
+        return self.languageTab
+    end
+    index = tonumber(index)
+    return self.languageTab[index]
+end
+
 --炮倍数据
 function GameTableData:initCannonTable()
     local back = FishGMF.getTableByName("cannon")
@@ -46,7 +66,6 @@ function GameTableData:initCannonTable()
         table.insert( self.cannonTab,v)
     end
     FishGF.sortByKey(self.cannonTab,"id",1)
-    local a = 1
 end
 function GameTableData:getCannonTable(index)
     if self.cannonTab == nil then
@@ -325,32 +344,33 @@ function GameTableData:getSkillTable()
 end
 
 function GameTableData:initItemTable()
+    local strList = {
+        "name",
+        "res",
+        "sell_value",
+        "price",
+        "pack_text"
+    }
     local dataTab = {}
     dataTab.funName = "getAllItemData"
     local itemAllData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
     local data = {}
     for i=1,itemAllData.count do
         local val = itemAllData[tostring(i)]
+        for k2,v2 in pairs(val) do
+            local ifToNumber = true
+            for k3,v3 in pairs(strList) do
+                if v3 == k2 then
+                    ifToNumber = false
+                end
+            end
+            if ifToNumber then
+                val[k2] = tonumber(val[k2] )
+            end
+        end
+
         val.propId = val.id - 200000000
         val.propCount = 0
-        val.inner_value = tonumber(val.inner_value)
-        val.can_buy = tonumber(val.can_buy)
-        val.num_perbuy = tonumber(val.num_perbuy)
-        val.require_num = tonumber(val.require_num)
-        val.require_vip = tonumber(val.require_vip)
-        val.if_show = tonumber(val.if_show)
-        val.default_show = tonumber(val.default_show)
-        val.decomposable = tonumber(val.decomposable)
-        val.num_decompose = tonumber(val.num_decompose)
-        val.allow_send = tonumber(val.allow_send)
-        val.num_send = tonumber(val.num_send)
-        val.sendreq_vip = tonumber(val.sendreq_vip)
-        val.allow_exchange = tonumber(val.allow_exchange)
-        val.if_taste = tonumber(val.if_taste)
-        val.use_outlook = tonumber(val.use_outlook)
-        val.taste_time = tonumber(val.taste_time)
-        val.show_order = tonumber(val.show_order)
-        val.if_senior = tonumber(val.if_senior)
         if val.if_senior == 1 then
             val.seniorData = nil
         end

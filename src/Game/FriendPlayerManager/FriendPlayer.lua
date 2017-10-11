@@ -324,6 +324,13 @@ function FriendPlayer:shootByDegree(degree)
                 end
 
                 dataTab.frameId = backData.frameId
+                if backData.lockDegree ~= nil then
+                    self.degree = backData.lockDegree
+                    dataTab.degree = self.degree - 90;
+                end
+                dataTab.timelineId = backData.timelineId
+                dataTab.fishArrayId = backData.fishArrayId
+
                 dataTab.bulletRate = backData.bulletRate
                 FishGI.bulletCount = FishGI.bulletCount +1
                 FishGI.eventDispatcher:dispatch("sendPlayerFire", dataTab);

@@ -25,14 +25,17 @@ function ShopItemBase:onTouchBegan(touch,event)
     return false
 end
 
-function ShopItemBase:onDoPay( payInfo )
+function ShopItemBase:onDoPay()
+    local payInfo = {}
+    payInfo.id = self.id
+    payInfo.name = self.recharge_name
+    payInfo.money = self.recharge
+    payInfo.unit = SmallGamesGI.storeData.unit
+    payInfo.type = self.recharge_type
+    
     local channelType = 0
     if not SmallGamesGF.isGcsdkChannel() then
         if bit.band(PAY_SWITCH, 8) == 8 and PAY_SWITCH == 8 then
-            payInfo.productType = payInfo.type
-            local cfgTable = checktable(PAY_CONFIG["appstore"][payInfo.type])
-            payInfo.goods = cfgTable[payInfo.price]
-			print("goods "..payInfo.goods)
             channelType = SmallGamesGI.PaySDKType.Apple
         else
             local payChannelList = SmallGamesGF.createView(SmallGameApp.PayChannelList, self, nil)

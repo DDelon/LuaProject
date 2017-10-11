@@ -56,7 +56,9 @@ function Player:initMyData()
         FishGI.gameScene.net:sendNewGunRate(self.playerInfo.maxGunRate)
         if FishGI.gameScene.uiGunUpGrade ~= nil then
             FishGI.gameScene.uiGunUpGrade:setCurMultiple(self.playerInfo.maxGunRate)
+            -- FishGI.gameScene.uiSkillView.Skill_17:setMaxRate(self.playerInfo.maxGunRate)
             FishGI.gameScene.uiGunUpGrade:setCurCrystal(self.playerInfo.crystal)
+            FishGI.gameScene.uiUnlockCannon:setCurCrystal(self.playerInfo.crystal)
             if self.playerInfo.maxGunRate >= 1000 then
                 FishGI.gameScene:hideGunUpGradePanel()
             end
@@ -100,6 +102,10 @@ function Player:endEffectId()
     self.playerInfo.effectId = 0;
 end
 
+function Player:getEffectId()
+    return self.playerInfo.effectId
+end
+
 function Player:shootByDegree(degree)
     --BreakPoint()
     self.isEnd = false;
@@ -132,7 +138,6 @@ function Player:shootByDegree(degree)
 
                 --c++创建子弹，若不成功返回失败，并且自动切换炮倍
                 local backData = FishGMF.myCreateBullet(dataTab)
-                
 
                 --失败类型，0.成功   1.没有玩家  2.子弹数太多 3.切换炮倍  4.当前炮倍大于自己最高炮倍   
                             --5.没钱了 6,当前炮倍大于自己最高炮倍并且炮倍大于1000
@@ -141,10 +146,12 @@ function Player:shootByDegree(degree)
                     return
                 end
                 dataTab.frameId = backData.frameId
-                print("------------------------------------------------backData.frameId="..backData.frameId)
+                --print("------------------------------------------------backData.frameId="..backData.frameId)
                 if backData.lockDegree ~= nil then
                     self.degree = backData.lockDegree
+                    dataTab.degree = self.degree - 90;
                 end
+                
                 dataTab.timelineId = backData.timelineId
                 dataTab.fishArrayId = backData.fishArrayId
                 dataTab.bulletRate = backData.bulletRate

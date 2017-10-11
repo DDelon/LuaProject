@@ -18,10 +18,10 @@ PlayerInfo.RESOURCE_BINDING  = {
     ["text_crystal"]        = { ["varname"] = "text_crystal" },     
 
     ["btn_phone_act"]       = { ["varname"] = "btn_phone_act" ,         ["events"]={["event"]="click",["method"]="onClickphone_act"}},   
-    ["btn_phone_unbind"]    = { ["varname"] = "btn_phone_unbind" ,      ["events"]={["event"]="click",["method"]="onClickphone_unbind"}}, 
+    --["btn_phone_unbind"]    = { ["varname"] = "btn_phone_unbind" ,      ["events"]={["event"]="click",["method"]="onClickphone_unbind"}}, 
 
     ["btn_change_password"] = { ["varname"] = "btn_change_password" ,   ["events"]={["event"]="click",["method"]="onClickchange_password"}},  
-    ["btn_phone_bind"]      = { ["varname"] = "btn_phone_bind" ,        ["events"]={["event"]="click",["method"]="onClickphone_bind"}},  
+    --["btn_phone_bind"]      = { ["varname"] = "btn_phone_bind" ,        ["events"]={["event"]="click",["method"]="onClickphone_bind"}},  
     ["btn_photo"]           = { ["varname"] = "btn_photo" ,             ["events"]={["event"]="click",["method"]="onClickphoto"}}, 
     ["btn_setname"]         = { ["varname"] = "btn_setname" ,           ["events"]={["event"]="click",["method"]="onClicksetname"}}, 
     ["btn_copy"]            = { ["varname"] = "btn_copy" ,              ["events"]={["event"]="click",["method"]="onClickcopy"}},   
@@ -109,8 +109,8 @@ end
 
 --更新按键
 function PlayerInfo:upDataBtnState( isActivited,isBindPhone )
-    self.btn_phone_unbind:setVisible(false)
-    self.btn_phone_bind:setVisible(false)
+    --self.btn_phone_unbind:setVisible(false)
+    --self.btn_phone_bind:setVisible(false)
     self.btn_change_password:setVisible(false)
     self.btn_phone_act:setVisible(false)
 
@@ -131,10 +131,10 @@ function PlayerInfo:upDataBtnState( isActivited,isBindPhone )
     if isActivited then
         if isBindPhone then
             FishGF.print("--手机解绑--")
-            self.btn_phone_unbind:setVisible(true)
+            --self.btn_phone_unbind:setVisible(true)
         else
             FishGF.print("--手机绑定--")
-            self.btn_phone_bind:setVisible(true)
+            --self.btn_phone_bind:setVisible(true)
         end
         self.btn_change_password:setVisible(true)
         FishGI.PLAYER_STATE = 1
@@ -188,7 +188,7 @@ end
 function PlayerInfo:onClicksetname( sender )
     print("onClicksetname")
     if (not FishGF.isThirdSdk()) or CHANNEL_ID == CHANNEL_ID_LIST.baidu then
-        if FishGI.PLAYER_STATE == 0 then
+        if not FishGI.WebUserData:isActivited() then
             local function callback(sender)
                 local tag = sender:getTag()
                 if tag == 2 then

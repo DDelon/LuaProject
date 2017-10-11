@@ -8,11 +8,11 @@ end
 
 --0.登录   1.大厅   2.普通场   3.朋友场
 CommonLayer.layerList  = {  
-    { ["layerName"] = "uiShopLayer",    ["order"] = FishCD.ORDER_LAYER_TRUE,        ["isAutoHide"] = 0,["noShowScene"] = {0}}, 
-    { ["layerName"] = "uiVipRight",     ["order"] = FishCD.ORDER_LAYER_TRUE,        ["isAutoHide"] = 0,["noShowScene"] = {0}}, 
-    { ["layerName"] = "uiMonthcard",    ["order"] = FishCD.ORDER_LAYER_TRUE,        ["isAutoHide"] = 0,["noShowScene"] = {0}}, 
-    { ["layerName"] = "uiNoticeLayer",  ["order"] = FishCD.ORDER_SYSTEM_MESSAGE,    ["isAutoHide"] = 0,["noShowScene"] = {}}, 
-    { ["layerName"] = "uiExitNotice",   ["order"] = FishCD.ORDER_SYSTEM_MESSAGE+1,  ["isAutoHide"] = 1,["noShowScene"] = {}}, 
+    { ["layerName"] = "uiShopLayer",    ["order"] = FishCD.ORDER_LAYER_TRUE,        ["isAutoHide"] = 0,["noShowScene"] = {0},["isAddToScene"] = 0}, 
+    { ["layerName"] = "uiVipRight",     ["order"] = FishCD.ORDER_LAYER_TRUE,        ["isAutoHide"] = 0,["noShowScene"] = {0},["isAddToScene"] = 0}, 
+    { ["layerName"] = "uiMonthcard",    ["order"] = FishCD.ORDER_LAYER_TRUE,        ["isAutoHide"] = 0,["noShowScene"] = {0},["isAddToScene"] = 0}, 
+    { ["layerName"] = "uiNoticeLayer",  ["order"] = FishCD.ORDER_SYSTEM_MESSAGE,    ["isAutoHide"] = 0,["noShowScene"] = {},["isAddToScene"] = 1}, 
+    { ["layerName"] = "uiExitNotice",   ["order"] = FishCD.ORDER_SYSTEM_MESSAGE+1,  ["isAutoHide"] = 1,["noShowScene"] = {},["isAddToScene"] = 1}, 
 }
 
 function CommonLayer:init()
@@ -95,7 +95,7 @@ function CommonLayer:getAllComLayer()
     return result
 end
 
-function CommonLayer:addOneLayerToParent(layerName,parent,parent2,order,isAdd,isAutoHide,isShow)
+function CommonLayer:addOneLayerToParent(layerName,parent,parent2,order,isAdd,isAutoHide,isShow,isAddToScene)
     print("CommonLayer:addOneLayerToParent----------------------------------------------------------------")
     if isAdd == false then
         return
@@ -110,7 +110,12 @@ function CommonLayer:addOneLayerToParent(layerName,parent,parent2,order,isAdd,is
     if parent2 ~= nil then
         parent2[layerName] = self[layerName]
     end
-    parent:addChild(self[layerName],order)
+    if isAddToScene == 0 then
+        parent:addChild(self[layerName],order)
+    else
+        parent2:addChild(self[layerName],order)
+    end
+    
     if (not isShow) or isAutoHide == 1 then
         self[layerName]:hideLayer(false)
     end
@@ -119,7 +124,11 @@ end
 
 function CommonLayer:addLayerToParent(parent,parent2)
     print("CommonLayer:initComLayer----------------------------------------------------------------")
+
     local curScene = cc.Director:getInstance():getRunningScene();
+    if parent2 == nil then
+        parent2 = curScene
+    end
     local sceneName = curScene.sceneName
     local scenetype = 0
     if sceneName == "login" or sceneName == "UpDateScene" then
@@ -145,7 +154,7 @@ function CommonLayer:addLayerToParent(parent,parent2)
         if scenetype == 0 then
             isShow = false
         end
-        self:addOneLayerToParent(v.layerName,parent,parent2,v.order,isAdd,v.isAutoHide,isShow)
+        self:addOneLayerToParent(v.layerName,parent,parent2,v.order,isAdd,v.isAutoHide,isShow,v.isAddToScene)
     end 
 end
 

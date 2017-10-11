@@ -1,30 +1,45 @@
+
+
+
+
+
+
+
+---------------------------------------------------------------
+
 local SkillBase = import("Game.Skill.NormalSkill.SkillBase")
 local SkillLock = class("SkillLock",SkillBase)
 
 SkillLock.touchDisTime  = 0.5  --手动切换目标间隔
 SkillLock.chainCount  = 8  --锁链点个数
 function SkillLock:ctor(...)
-
-    self:initListener()
-    --self:initLock()
-    self:openTouchEventListener()
-
-    FishGI.isLock = false
-    self.tem_timelineId = 0
-    self.tem_fishArrayId = 0
-
+    self:registerListener()
+    self:openTouchEventListener(false)
+    self:initData();
+    
 end
 
 --初始化监听器
-function SkillLock:initListener()
-    FishGI.eventDispatcher:registerCustomListener("startMyLock", self, function(valTab) self:startMyLock(valTab) end);
-    FishGI.eventDispatcher:registerCustomListener("startOtherLock", self, function(valTab) self:startOtherLock(valTab) end);
-    --FishGI.eventDispatcher:registerCustomListener("bulletTargetChange", self, function(valTab) self:bulletTargetChange(valTab) end);
+function SkillLock:registerListener()
+    local startLockListener=cc.EventListenerCustom:create("startMyLock",handler(self, self.startMyLock))
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(startLockListener, 1)
 
-    local eventDispatcher = self:getEventDispatcher()
-    local bulletlistener = cc.EventListenerCustom:create("bulletTargetChange", handler(self, self.bulletTargetChange))
-    eventDispatcher:addEventListenerWithSceneGraphPriority(bulletlistener, self)
+    local startOtherLockListener = cc.EventListenerCustom:create("startOtherLock",handler(self, self.startOtherLock))
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(startOtherLockListener, 1)
 
+    local changeTargetListener=cc.EventListenerCustom:create("bulletTargetChange",handler(self, self.bulletTargetChange))  
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(changeTargetListener, 1)
+
+    local sendChangeAimFishListener=cc.EventListenerCustom:create("sendChangeAimFish",handler(self, self.sendChangeAimFish))  
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(sendChangeAimFishListener, 1)
+
+
+end
+
+function SkillLock:initData()
+    FishGI.isLock = false
+    print("skill lock init data");
+    
 end
 
 --初始化锁定
@@ -33,21 +48,18 @@ function SkillLock:initLock()
     self.playerSelf = nil
     self.startTime = 0
     self.touchStartTime = 0
-
     LuaCppAdapter:getInstance():setLuaNode(1,self,{});
-
+    self.lockUI = require("Game/Skill/NormalSkill/SkillUI/LockCommonUI").create(self);
 end
 
 --结束锁定
-function SkillLock:endLock( )
+function SkillLock:endLock()
     print("over lock")
-    FishGI.isLock = false
-    FishGMF.setLockData(FishGI.gameScene.playerManager.selfIndex,2,0,0)
-
-    self.playerSelf = FishGI.gameScene.playerManager:getMyData()
-    if self.playerSelf ~= nil then
-        self.playerSelf:endShoot();
-    end 
+    --结束锁定标志量
+    if self.lockFunc ~= nil then
+        self.lockFunc:over(FishGI.gameScene.playerManager.selfIndex)
+        self.lockFunc = nil
+    end
     self.touchStartTime = 0
     self.btn.parentClasss:setState(1)
 
@@ -59,27 +71,18 @@ function SkillLock:onTouchBegan(touch, event)
             return
         end
         self.touchStartTime = os.time()
-
+        --判断点击的是否是其他的技能按钮 如果是就不执行换锁定目标的功能
         local isTouchBtn = self:getParent():getParent():isTouchBtn(touch)
         if isTouchBtn then
             return true
         end
 
+        
+        
         local curPos = touch:getLocation()
-        self.playerSelf = FishGI.gameScene.playerManager:getMyData()
-        local myPlayerId = FishGI.gameScene.playerManager.selfIndex
-
-        local timelineId,fishArrayId = self:getLockFishByPos(curPos)
-
-        if timelineId == nil or (timelineId == 0 and  fishArrayId == 0)  then
-            return true
+        if self.lockFunc ~= nil then
+            self.lockFunc:changeLockTarget(curPos);
         end
-
-        FishGMF.setLockData(myPlayerId,3,timelineId,fishArrayId)
-
-        --锁定目标变换
-        self:sendChangeAimFish(timelineId,fishArrayId)
-
         return true
     end
 
@@ -97,31 +100,30 @@ function SkillLock:clickCallBack( )
     if useType == nil then
         return
     end
-    local timelineId = 0
-    local fishArrayId = 0
-    
-    -- if FishGI.isLock == false then
-    --     timelineId,fishArrayId = self:getLockFishByScore()
-    -- else
-    --     timelineId = self.timelineId
-    --     fishArrayId = self.fishArrayId
-    -- end
-    timelineId,fishArrayId = self:getLockFishByScore()
-    
+
+    --判断是不是正在使用狂暴
+    local isUseViolent = (FishGI.gameScene.playerManager:getPlayerByPlayerId(FishGI.gameScene.playerManager.selfIndex):getEffectId()==FishCD.SKILL_TAG_VIOLENT)
+    if isUseViolent then
+        --FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000350),nil)
+        FishGF.showSystemTip(nil,800000350,1);
+        return;
+    end
+
+    if self.lockFunc ~= nil then
+        self.lockFunc:over(FishGI.gameScene.playerManager.selfIndex)
+        self.lockFunc = nil;
+    end
+    self.lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+    self.lockUI:rebind(self);
+
+    local timelineId, fishArrayId = self.lockFunc:getLockFishByScore();
     if timelineId == nil then
-        return 
+        return;
     end
     self:pushDataToPool(useType)
     self.useType = useType
-    self.tem_timelineId = timelineId
-    self.tem_fishArrayId = fishArrayId
 
-    local data = {}
-    data.useType = useType
-    data.timelineId = timelineId
-    data.fishArrayId = fishArrayId
-    data.sendType = "start"
-    self:sendNetMessage(data)
+    self.lockFunc:sendStartLock(useType);
     self:runTimer()
     self.btn:setTouchEnabled(false)
 	
@@ -132,37 +134,9 @@ function SkillLock:clickCallBack( )
 	end
 end
 
-function SkillLock:getLockFishByScore( )
-    local dataTab = {}
-    dataTab.funName = "getLockFishByScore"
-    local data = LuaCppAdapter:getInstance():luaUseCppFun(dataTab);
-    local timelineId = data["timelineId"]
-    local fishArrayId = data["fishArrayId"]
-    if timelineId == nil then
-        return 
-    end
-
-    return timelineId,fishArrayId
-end
-
-function SkillLock:getLockFishByPos( curPos )
-    local locationInNode = FishGI.gameScene:convertToNodeSpace(curPos)
-    local dataTab = {}
-    dataTab.funName = "getFishByPos"
-    dataTab.posX = locationInNode.x
-    dataTab.posY = locationInNode.y
-    local aimFish = LuaCppAdapter:getInstance():luaUseCppFun(dataTab);
-    if aimFish["timelineId"] == 0 and  aimFish["fishArrayId"] == 0  then
-        return 
-    end
-    local timelineId = aimFish["timelineId"]
-    local fishArrayId = aimFish["fishArrayId"]
-
-    return timelineId,fishArrayId
-end
-
 --开始我的锁定
-function SkillLock:startMyLock( valTab)
+function SkillLock:startMyLock(evt)
+    local valTab = evt._userdata;
     self.scaleX_,self.scaleY_,self.scaleMin_  = FishGF.getCurScale()
     self.playerSelf = FishGI.gameScene.playerManager:getMyData()
     local myPlayerId = self.playerSelf.playerInfo.playerId
@@ -170,62 +144,55 @@ function SkillLock:startMyLock( valTab)
     local newCrystal = valTab.newCrystal
     local isSuccess = valTab.isSuccess
     local skillPlus = valTab.skillPlus
-    self.lock_userTime = self:getSkillData(4,"duration")
+
+    --技能持续时间
+    self.lock_userTime = self.super.getSkillData(self, 4,"duration")
     if skillPlus ~= nil then
         self.lock_userTime = self.lock_userTime*skillPlus/100
     end
+
     if isSuccess == false then
-        print("-----startMyLock--isSuccess == false-")
+        --清除缓存
         self:clearDataFromPool(useType)
+        --停止技能图标转圈
         self:stopTimer()
-        self.tem_timelineId = 0
-        self.tem_fishArrayId = 0
+        --
+        self.lockFunc:init();
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000087),nil)
-        return
-    end
-
-    self.btn.parentClasss:setState(2)
-
-    if useType == 1 then
-        --更新水晶
-        FishGMF.upDataByPropId(myPlayerId,FishCD.PROP_TAG_02,newCrystal,false)
-    elseif useType == 0 then
-        FishGMF.addTrueAndFlyProp(myPlayerId,FishCD.PROP_TAG_04,-1,false)
-    end
-    self:clearDataFromPool(useType,false)
-
-    FishGI.AudioControl:playEffect("sound/lock_01.mp3")
-
-    FishGI.isLock = true
-    --继续锁定
-    self.startTime = os.time()
-    self:runTimer()
-    self:stopActionByTag(10006)
-    local delayAct = cc.Sequence:create(cc.DelayTime:create(self.lock_userTime),cc.CallFunc:create(function ( ... )
-        self:endLock();
-    end))
-    delayAct:setTag(10006)
-    self:runAction(delayAct)
-
-    self.playerSelf.cannon.uiCannonChange:setAutoFire(false)
-
-    local backData = FishGMF.setLockData(myPlayerId,1,self.tem_timelineId,self.tem_fishArrayId)
-    if backData.x == nil then
-        print("-----aimFish is no exit------")
-        return
-    end
-    --print("get aim posx:"..aimPos.x.." posy:"..aimPos.y);
-    if self.playerSelf ~= nil then
-        if backData.x > 0 and  backData.y > 0 then
-            print("shoot to aim");
-            self.playerSelf:shoot(cc.p(backData.x,backData.y));
-        end
+        
     else
-        print("player self is nil")
+        
+        --记录锁定开始时间
+        self.startTime = os.time()
+        --播放声音
+        FishGI.AudioControl:playEffect("sound/lock_01.mp3")
+        --开启技能栏边缘光圈转动
+        self.btn.parentClasss:setState(2)
+        --清除缓存
+        self:clearDataFromPool(useType,false)
+        --开始倒计时转圈
+        self:runTimer()
+        --关闭自动发炮d的UI图标
+        self.playerSelf.cannon.uiCannonChange:setAutoFire(false)
+        --设置玩家锁定目标
+        self.lockFunc:start(myPlayerId);
+        --开始计时
+        self:stopActionByTag(10006)
+        local delayAct = cc.Sequence:create(cc.DelayTime:create(self.lock_userTime),cc.CallFunc:create(function ( ... )
+            self:endLock();
+        end))
+        delayAct:setTag(10006)
+        self:runAction(delayAct)
+
+        if useType == 1 then
+            --更新水晶
+            FishGMF.upDataByPropId(myPlayerId,FishCD.PROP_TAG_02,newCrystal,false)
+        elseif useType == 0 then
+            --更新数量
+            FishGMF.addTrueAndFlyProp(myPlayerId,FishCD.PROP_TAG_04,-1,false)
+        end
+        self:clearDataFromPool(useType)
     end
-
-    
-
 end
 
 --进入前台刷新时间
@@ -239,8 +206,11 @@ function SkillLock:upDateUserTime(disTime )
         return
     end
 
-    self:upDateTimer()
+    if self.lock_userTime == nil then
+        return;
+    end
 
+    self:upDateTimer()
     if curdisTime > self.lock_userTime then
         self:endLock()
     else
@@ -255,51 +225,43 @@ function SkillLock:upDateUserTime(disTime )
 
 end
 
-function SkillLock:startOtherLock(data )
+function SkillLock:startOtherLock(evt)
+    local data = evt._userdata
     local playerId = data.playerId
     local timelineId = data.timelineId
     local fishArrayId = data.fishArrayId
-    FishGMF.setLockData(playerId,3,timelineId,fishArrayId)
+    if self.lockFunc == nil then
+        self.lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+        self.lockFunc:lockFish(playerId, timelineId, fishArrayId);
+        self.lockFunc:over(playerId);
+        self.lockFunc = nil;
+    end
+    
     --更新水晶
     FishGMF.upDataByPropId(playerId,2,data.newCrystal)
 end
 
---发送自己改变目标鱼消息
-function SkillLock:sendChangeAimFish(timelineId, fishArrayId)
-    local playerId = FishGI.gameScene.playerManager.selfIndex
-    local data = {}
-    data.timelineId = timelineId
-    data.fishArrayId = fishArrayId
-    local bulletCount,bullets = self:getLockBullet(playerId)
-    data.bullets = bullets
-    data.sendType = "change"
-    self:sendNetMessage(data)
-
-end
-
---得到锁定子弹
-function SkillLock:getLockBullet(playerId )
-    local bullerCount = 0
-    local bulletsTab = {}
-    local dataTab = {}
-    dataTab.funName = "getLockBullet"
-    dataTab.playerId = playerId
-    local bullets = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
-    for key,val in pairs(bullets) do
-        bullerCount = bullerCount +1
-        table.insert(bulletsTab,val)
+function SkillLock:sendChangeAimFish(data)
+    data = data._userdata
+    if self.lockFunc ~= nil then
+        self.lockFunc:sendChangeTarget(data.timelineId, data.fishArrayId)
     end
-
-    return bullerCount,bulletsTab
 end
 
 --收到玩家改变目标消息
 function SkillLock:bulletTargetChange(data )
     print("-0-OnBulletTargetChange----")
-    data = data._usedata
+    data = data._userdata
     local selfId = FishGI.gameScene.playerManager.selfIndex;
     if data.playerId ~= selfId then
-        FishGMF.setLockData(data.playerId,3,data.timelineId,data.fishArrayId)
+        if self.lockFunc ~= nil then
+            self.lockFunc:lockFish(data.playerId,data.timelineId,data.fishArrayId)
+        else
+            self.lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+            self.lockFunc:lockFish(data.playerId, data.timelineId, data.fishArrayId);
+            self.lockFunc:over(data.playerId);
+            self.lockFunc = nil;
+        end
     end 
     
 end

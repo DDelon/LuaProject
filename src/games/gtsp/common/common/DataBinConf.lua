@@ -8,6 +8,7 @@ end
 
 function DataBinConf:init(confName)
     self.confData = require(SmallGamesGI.dataBinPath.."."..confName)
+    self.confData["nil"] = nil
 end
 
 function DataBinConf:getDataById( strId )

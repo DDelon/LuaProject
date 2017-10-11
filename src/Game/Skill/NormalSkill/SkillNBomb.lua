@@ -445,7 +445,7 @@ end
 --收到申请核弹结果
 function SkillNBomb:NBombUseResult(data)
     local scaleX_,scaleY_,scaleMin_  = FishGF.getCurScale();
-    local data = data._usedata
+    local data = data._userdata
     if self.propId ~= data.nPropID then
         return
     end

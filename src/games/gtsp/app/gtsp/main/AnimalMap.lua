@@ -156,7 +156,9 @@ end
 function AnimalMap:onClickClose( ... )
     self:onQuit()
     --self:removeFromParent()
+    self:release()
     DogGI.ui_manager:resume()
+    DogGI.main.animal_map = nil
 end
 
 function AnimalMap:onEnterAni()

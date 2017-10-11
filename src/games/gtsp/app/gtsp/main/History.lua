@@ -17,8 +17,9 @@ end
 
 function History:onClickClose( ... )
     DogGI.ui_manager:resume()
+    self:release()
     self:onQuit()
-    --self:removeFromParent()
+    DogGI.main.his = nil
 end
 
 function History:init( datas )

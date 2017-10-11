@@ -11,8 +11,8 @@ function PayApple:init()
 	self.type = SmallGamesGI.PaySDKType.Apple
 end
 
-function PayApple:doPay(payInfo)
-	self.super.doPay(self, payInfo)
+function PayApple:doPay(payInfo, extendData)
+	self.super.doPay(self, payInfo, extendData)
 end
 
 return PayApple

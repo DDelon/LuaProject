@@ -127,14 +127,15 @@ function GunUpGrade:onTouchBegan(touch, event)
                 --FishGMF.isSurePropData(FishGI.gameScene.playerManager.selfIndex,FishCD.PROP_TAG_02,self.aimCrystal,false)
                 FishGI.gameScene.net:sendUpgradeCannon()
             else
-                local function callback(sender)
-                    local tag = sender:getTag()
-                    if tag == 2 then
-                        FishGI.gameScene.uiShopLayer:showLayer()
-                        FishGI.gameScene.uiShopLayer:setShopType(2)
-                    end
-                end
-                FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000093),callback)
+                FishGI.gameScene.uiUnlockCannon:showLayer()
+                -- local function callback(sender)
+                --     local tag = sender:getTag()
+                --     if tag == 2 then
+                --         FishGI.gameScene.uiShopLayer:showLayer()
+                --         FishGI.gameScene.uiShopLayer:setShopType(2)
+                --     end
+                -- end
+                -- FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000093),callback)
             end 
         end 
         return true
@@ -229,6 +230,19 @@ function GunUpGrade:isCanGunUpData()
         return true
     end
     return false
+end
+
+function GunUpGrade:getPropStartPos()
+    local spr = self:child("fnt_multiple_1")
+    local child = spr:getParent()
+    local pos = cc.p(spr:getPositionX(),spr:getPositionY())
+    pos = child:convertToWorldSpace(pos)    
+    return pos
+end
+
+function GunUpGrade:getPropEndPos(propId)
+    local pos = FishGI.gameScene.uiSkillView:getPropBtnPos(propId)
+    return pos
 end
 
 return GunUpGrade;

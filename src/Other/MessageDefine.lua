@@ -176,6 +176,7 @@ MSGS2CUpgradeCannonResult = 27 {
 	newCrystal : int = 4
 	costProps : []MSGProp = 5
 	dropSeniorProps : []MSGSeniorProp = 6
+	dropProps: []MSGProp = 7
 }
 
 MSGC2SAlmInfo = 28 {	
@@ -629,6 +630,8 @@ MSGFriendHistoryItem = 100 {
 	creatorNickName : string = 2;
 	friendRoomNo : string = 3;房间号
 	friendGameId : string = 4;场次id
+	items : []MSGFriendDetailItem = 5;名次数据
+	creatorPlayerId : int = 6;创建者玩家id
 }
 
 MSGC2SGetFriendDetail = 101 {;获取朋友场详细信息
@@ -653,6 +656,7 @@ MSGC2SCreateFriendRoom = 104 {
 	roomPropType : int = 1;道具类型,0:不带怼人道具，1:带怼人道具
 	roomPeopleCountType : int = 2;人数类型，0:2人，1:3人，2:4人
 	roomDurationType : int = 3;时长类型,0:8分钟，1,24分钟
+	appId : string = 4;appId
 }
 
 MSGS2CCreateFriendRoom = 105 {
@@ -665,6 +669,7 @@ MSGS2CCreateFriendRoom = 105 {
 MSGC2SJoinFriendRoom = 106 {;加入朋友场
 	friendRoomNo : string = 1;房间Id
 	friendGameId : string = 2;场次id,用于断线重连的用户，新用户请置空
+	appId : string = 3;appId
 }
 
 MSGS2CJoinFriendRoom = 107 {
@@ -692,6 +697,7 @@ MSGFriendGameInfo = 110 {
 	roomPropType : int = 9;道具类型,0:不带怼人道具，1:带怼人道具
 	roomPeopleCountType : int = 10;人数类型，0:2人，1:3人，2:4人
 	roomDurationType : int = 11;时长类型,0:8分钟，1,24分钟
+	startedMs : int = 12;已开始时间，毫秒
 }
 
 MSGFriendPlayerInfo = 111 {
@@ -1011,6 +1017,8 @@ MSGS2CForbidAccount = 178 {
 	msg : string = 2;错误描述
 }
 
-
+MSGS2CFriendStartTimeline = 179 {
+	timelineId : int = 1;鱼线id
+}
 ]]
 return a

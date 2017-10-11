@@ -1,4 +1,13 @@
+cc.exports.SmallGamesGI = {}
 cc.exports.SmallGamesGF = {}
+
+local function initRootPath(rootSrcPath, rootResPath)
+    -- 模块目录结构
+    SmallGamesGI.rootSrcPath = rootSrcPath
+    SmallGamesGI.rootResPath = rootResPath
+    SmallGamesGI.rootResUIPath = string.gsub(rootResPath, '/', '.')
+    require(rootSrcPath..".global.GlobalInstance")
+end
 
 function SmallGamesGF.ClassEx(clsname,fncreate)
     local cls;
@@ -40,6 +49,23 @@ function SmallGamesGF.isGcsdkChannel( channelId )
         channelId = SmallGamesGI.lobbyData.ChannelId
     end
     if channelId ~= SmallGamesGI.ChannelIdList.weile and channelId ~= SmallGamesGI.ChannelIdList.tencent and channelId ~= SmallGamesGI.ChannelIdList.ios then
+        return true
+    end
+    return false
+end
+
+function SmallGamesGF.getChannelName( channelId )
+    if channelId == nil then
+        channelId = SmallGamesGI.lobbyData.ChannelId
+    end
+    return SmallGamesGI.ChannelNameList[channelId]
+end
+
+function SmallGamesGF.isAndroidChannel( channelId )
+    if channelId == nil then
+        channelId = SmallGamesGI.lobbyData.ChannelId
+    end
+    if channelId ~= SmallGamesGI.ChannelIdList.ios then
         return true
     end
     return false
@@ -142,6 +168,20 @@ function SmallGamesGF.getAppConfigsPath(appName)
     return SmallGamesGF.getAppSrcPath(appName)..".AppConfigs"
 end
 
+-- 清理游戏
+function SmallGamesGF.cleanAppFiles()
+    local dataFileList = require(SmallGamesGF.getCurAppSrcPath()..".FileList")
+    for i,v in ipairs(dataFileList.res) do
+        package.loaded[SmallGamesGF.getCurAppResUIPath().."."..v] = nil
+        package.loaded[SmallGamesGF.getCurAppResUIPath().."."..v..".lua"] = nil
+    end
+    for i,v in ipairs(dataFileList.src) do
+        package.loaded[SmallGamesGF.getCurAppSrcPath().."."..v] = nil
+        package.loaded[SmallGamesGF.getCurAppSrcPath().."."..v..".lua"] = nil
+    end
+    cc.FileUtils:getInstance():purgeCachedEntries()
+end
+
 -- 移除游戏配置
 function SmallGamesGF.cleanAppConfigs()
     if SmallGamesGI.appName then
@@ -163,7 +203,7 @@ function SmallGamesGF.loadAppConfigs(appName)
     package.loaded[SmallGamesGF.getCommonSrcPath("waittingbox.WaittingBox")] = nil
     package.loaded[SmallGamesGF.getCommonSrcPath("hintbar.HintBar")] = nil
     package.loaded[SmallGamesGF.getCommonSrcPath("soundbox.SoundBox")] = nil
-    cc.FileUtils:getInstance():purgeCachedEntries();
+    cc.FileUtils:getInstance():purgeCachedEntries()
 end
 
 -- 重置界面tag列表
@@ -252,14 +292,23 @@ function SmallGamesGF.enterGame(roomId)
     end
 end
 
+-- 初始化数据
+function SmallGamesGF.initGameData( data )
+    SmallGamesGF.setLobbyData(data.system_status, data.app_id, data.app_key, data.game_id, data.channel_id, data.wechat_appid, data.res_path, data.money_prop_res, data.callbackUpdateLobbyData)
+    SmallGamesGF.setLobbyLoginData(data.server_config, data.login_type, data.guest_name, data.user_name, data.user_pass, data.thirdlogin_info)
+    SmallGamesGF.setStoreData(data.recharge_product_config, data.recharge_unit, data.recharge_point_of_money)
+end
+
 -- 设置大厅数据
-function SmallGamesGF.setLobbyData( systemStatus, appId, appKey, gameId, channelId, wechatAppId, callbackUpdateLobbyData )
+function SmallGamesGF.setLobbyData( systemStatus, appId, appKey, gameId, channelId, wechatAppId, res_path, money_prop_res, callbackUpdateLobbyData )
     SmallGamesGI.SYSTEM_STATE = systemStatus
     SmallGamesGI.lobbyData.AppId = appId
     SmallGamesGI.lobbyData.AppKey = appKey
     SmallGamesGI.lobbyData.GameId = gameId
     SmallGamesGI.lobbyData.ChannelId = channelId
     SmallGamesGI.lobbyData.WechatAppId = wechatAppId
+    SmallGamesGI.extend_res_path = res_path
+    SmallGamesGI.extend_money_prop_res = money_prop_res
     SmallGamesGI.callbackUpdateLobbyData = callbackUpdateLobbyData
 end
 
@@ -270,24 +319,26 @@ function SmallGamesGF.setLobbyLoginData( serverConfig, loginType, visitorName, u
     SmallGamesGI.LoginManager.thirdLoginInfo = thirdLoginInfo
 end
 
--- 设置底层调用数据
-function SmallGamesGF.setBottomCallData( luaj, luaoc, luaPayData, luaShareData )
-    SmallGamesGI.luaj = luaj
-    SmallGamesGI.luaoc = luaoc
-    SmallGamesGI.PayHelper:setBottomCallData(luaPayData)
-    SmallGamesGI.ShareHelper:setBottomCallData(luaShareData)
-end
-
--- 设置商品数据
-function SmallGamesGF.setStoreProductData( storeProductDatas )
-    SmallGamesGI.storeProductDatas = storeProductDatas
+-- 设置商城数据
+function SmallGamesGF.setStoreData( productConfig, unit, pointOfMoney )
+    SmallGamesGI.storeData.productConfig = productConfig
+    SmallGamesGI.storeData.unit = unit
+    SmallGamesGI.storeData.pointOfMoney = pointOfMoney
 end
 
 -- 开始游戏
-function SmallGamesGF.start(lobbyName, appName)
-    SmallGamesGI.appVersion = require(SmallGamesCD.rootSrcPath..".version")
+function SmallGamesGF.start(lobbyName, appName, lobbyData)
+    if lobbyData then
+        SmallGamesGI.ExtendGameConf = require(lobbyData.game_conf).create()
+        table.merge(SmallGamesGI.ExtendGameConf.extend_data, lobbyData)
+        SmallGamesGF.initGameData(SmallGamesGI.ExtendGameConf.extend_data)
+    end
+    if lobbyName == nil or appName == nil or SmallGamesGI.ExtendGameConf == nil then
+        return
+    end
     SmallGamesGI.lobbyName = lobbyName
     SmallGamesGI.lobbyNameLower = string.lower( lobbyName )
+    SmallGamesGI.appVersion = require(SmallGamesGI.rootSrcPath..".version")
     if appName == nil then
         if SmallGamesGI.appName then
             appName = SmallGamesGI.appName
@@ -368,6 +419,7 @@ function SmallGamesGF.exitApp(isExitType)
     package.loaded[SmallGamesGF.getCommonSrcPath("waittingbox.WaittingBox")] = nil
     package.loaded[SmallGamesGF.getCommonSrcPath("hintbar.HintBar")] = nil
     cc.FileUtils:getInstance():purgeCachedEntries()
+    SmallGamesGF.cleanAppFiles()
     if SmallGamesGI.callbackUpdateLobbyData then
         SmallGamesGI.callbackUpdateLobbyData(SmallGamesGI.lobbyData.AppId, SmallGamesGI.lobbyData.AppKey, SmallGamesGI.lobbyData.GameId)
     end
@@ -375,6 +427,7 @@ function SmallGamesGF.exitApp(isExitType)
     if isExitType == 2 then
         SmallGamesGI.myApp:enterScene("LoginScene")
     end
+    collectgarbage("collect")
 end
 
 -- 创建界面
@@ -613,16 +666,13 @@ function SmallGamesGF.initAllDataBinConf()
     for k,v in pairs(SmallGamesGI.DataBinList) do
         SmallGamesGI.DataBinConf[k] = require(SmallGamesGI.commonSrcPath..".common.DataBinConf"):create(v)
     end
+    SmallGamesGI.PayHelper:initBottomCallData()
+    SmallGamesGI.ShareHelper:initBottomCallData()
 end
 
 -- 微信图片分享
-function SmallGamesGF.onShareWechatImage(imgName, wxscene)
-    if imgName == nil then
-        imgName = SmallGamesGI.lobbyName.."WechatShare.jpg"
-    end
-    if wxscene == nil then
-        wxscene = SmallGamesGI.ShareWechatType.Timeline
-    end
+function SmallGamesGF.onShareWechatImage()
+    local imgName = SmallGamesGI.lobbyName.."WechatShare.jpg"
     local imaPath = ""
     if device.platform == "android" then
         imaPath = "/sdcard/"..imgName
@@ -633,14 +683,17 @@ function SmallGamesGF.onShareWechatImage(imgName, wxscene)
     local function afterCaptured(succeed, outputFile)
         if succeed then
             print("Capture screen success.")
-            local shareData = clone(SmallGamesGI.ShareWechatData)
-            shareData.wxscene = wxscene
-            shareData.imgpath = outputFile
-            shareData.sharetype="image"
-            SmallGamesGI.ShareHelper:doShare(SmallGamesGI.ShareSDKType.Wechat, shareData)
+            local extendData = {}
+            extendData.appid = SmallGamesGI.lobbyData.WechatAppId
+            extendData.wxscene = SmallGamesGI.ShareWechatModel.Timeline
+            extendData.imgpath = outputFile
+            extendData.sharetype = SmallGamesGI.ShareType.Image
+            SmallGamesGI.ShareHelper:doShare(SmallGamesGI.ShareSDKType.Wechat, extendData)
         else
             print("Capture screen failed.")
         end
     end
     cc.utils:captureScreen(afterCaptured, imaPath)
 end
+
+return initRootPath

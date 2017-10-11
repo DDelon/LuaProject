@@ -57,6 +57,7 @@ function PlayerManager:playerJoin(valTab)
 	if isSelf then
 		self.selfIndex = valTab.playerInfo.playerId;
 		FishGMF.setMyPlayerId(valTab.playerInfo.playerId)
+		FishGI.gameScene.uiSkillView.Skill_17:setMaxRate(valTab.playerInfo.maxGunRate)
 	end
 
 	if valTab.playerInfo == nil then
@@ -329,6 +330,9 @@ function PlayerManager:PlayerNewVIP(valTab)
     --更新换炮层
     FishGI.gameScene.uiSelectCannon:setCurGunType(vip_level,player.playerInfo.gunType)
 
+	--解锁炮倍层
+	FishGI.gameScene.uiUnlockCannon:setCurGunType(vip_level)
+
 end
 
 --玩家破产
@@ -433,6 +437,7 @@ function PlayerManager:CannonUpgrade(valTab)
 	local newCrystal = valTab.newCrystal
 	local costProps = valTab.costPropsd
 	local dropSeniorProps = valTab.dropSeniorProps
+	local dropProps = valTab.dropProps
 
 	if self.selfIndex == playerId then
 	    local aimCrystal = FishGI.gameScene.uiGunUpGrade:getAimCrystal()
@@ -477,7 +482,8 @@ function PlayerManager:CannonUpgrade(valTab)
 		
 		--发送切换炮倍
 		FishGI.gameScene.net:sendNewGunRate(nextRate)
-
+		FishGI.gameScene.uiSkillView.Skill_17:GunUpgrade(nextRate)
+		
 		--隐藏面板
 		if nextRate >= 1000 then
 			print("----000-curMaxRate="..nextRate)
@@ -493,6 +499,62 @@ function PlayerManager:CannonUpgrade(valTab)
 			FishGF.doMyLeaveGame(1)
 		end
 	end
+
+	--其他人获得道具
+	if self.selfIndex ~= playerId then
+		--更新增加道具
+		for k,val in pairs(dropProps) do
+			FishGMF.addTrueAndFlyProp(playerId,val.propId,val.propCount,true)
+		end
+		if dropSeniorProps ~= nil then
+			for k,val in pairs(dropSeniorProps) do
+				FishGMF.refreshSeniorPropData(playerId,val,1,0)
+			end
+		end
+		return 
+	end
+
+    --普通道具
+    for k,val in pairs(dropProps) do
+		if val.propCount <=0 then
+			FishGMF.addTrueAndFlyProp(playerId,val.propId,val.propCount,true)
+		else
+			FishGMF.addTrueAndFlyProp(playerId,val.propId,val.propCount,false)
+			FishGMF.setAddFlyProp(playerId,val.propId,val.propCount,false)
+			local propTab = {}
+			propTab.playerId = playerId
+			propTab.propId = val.propId
+			propTab.propCount = val.propCount
+			propTab.isRefreshData = true
+			propTab.isJump = false
+			propTab.Zorder = FishCD.ORDER_SCENE_UI + 1
+			propTab.firstPos = FishGI.gameScene.uiGunUpGrade:getPropStartPos()
+			propTab.endPos = FishGI.gameScene.uiGunUpGrade:getPropEndPos(val.propId)
+			propTab.dropType = "normal"
+			propTab.isShowCount = false
+			FishGI.GameEffect:playDropProp(propTab)
+		end    
+    end
+
+    --高级道具
+    for k,val in pairs(dropSeniorProps) do
+        FishGMF.refreshSeniorPropData(playerId,val,8,0)
+        local propTab = {}
+        propTab.playerId = playerId
+        propTab.propId = val.propId
+        propTab.propCount = 1
+        propTab.isRefreshData = true
+        propTab.isJump = false
+		propTab.Zorder = FishCD.ORDER_SCENE_UI + 1
+		propTab.firstPos = FishGI.gameScene.uiGunUpGrade:getPropStartPos()
+		propTab.endPos = FishGI.gameScene.uiGunUpGrade:getPropEndPos(val.propId)
+        propTab.dropType = "normal"
+        propTab.isShowCount = false
+        propTab.seniorPropData = val
+        FishGI.GameEffect:playDropProp(propTab)
+
+    end
+
 
 end
 

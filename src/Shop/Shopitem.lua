@@ -122,10 +122,11 @@ function Shopitem:onClickBuy( sender )
     data["body"] = self.unit.." "..self.id.." x1";
     data["money"] = self.recharge;
     data["price"] = self.recharge/100;
-    data["type"] = self.recharge_type;
+    data["rechargeType"] = tonumber(self.recharge_type);
     data["autobuy"] = 1;
     data["subject"] = self.unit;
-    data["ingame"] = 1;
+    data["num"] = self.recharge_num;
+    data["ingame"] = (FishGI.GAME_STATE == 3 and GAME_ID or 0);
     data["roomid"] = 0;
     data["count"] = 1;
     data["debug"] = 0;

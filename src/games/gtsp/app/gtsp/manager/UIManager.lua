@@ -27,7 +27,9 @@ function UIManager:create( ... )
     math.randomseed(tostring(os.time()):reverse():sub(1, 6))  
 
     dm.dogs = {}
+    dm.randomPicScheduleIds = {}
     dm.run_count = 0
+    dm.last_time_clock = 0
     return dm
 end
 
@@ -84,7 +86,6 @@ function UIManager:onReady(data)
     local baseDeltY = 0.099
     self.dogTab = data.animals
     DogGI.config.unlockAnimals = data.unlockAnimals
-    self.preparing = true
     DogGI.cur_money = data.money
     DogGI.cur_point = data.point
     DogGI.historyBet = data.historyBet
@@ -142,45 +143,73 @@ end
 
 function UIManager:getStartAnimate(i)
     local animate = {}
-    local baseFrameRate = self:getFrameRateByRace(i)
-    local last = 0
     self.mainUI:disableClick()
     animate[#animate + 1] = cc.CallFunc:create(function ( ... )
         DogGI.main["bet_stake_effect" .. i]:play()
     end)
-    for a =1 , enterAnimate[i].count do
-        animate[#animate + 1] = cc.CallFunc:create(function ( ... )
+   -- for a =1 , enterAnimate[i].count do
+    animate[#animate + 1] = cc.CallFunc:create(function ( ... )
+
+        local last = 0
+        local total_period = 0
+        local total_times = 0
+
+        self.randomPicScheduleIds[i] = cc.Director:getInstance():getScheduler():scheduleScriptFunc(function(dt)
+            total_period = total_period + dt
+
+            if total_period > enterAnimate[i].time then
+                cc.Director:getInstance():getScheduler():unscheduleScriptEntry(self.randomPicScheduleIds[i])
+
+                self:startAnimateEnd(i)
+
+                return
+            end
+
+
+            if enterAnimate[i].time/enterAnimate[i].count * total_times >= total_period then
+                return
+            end
+            total_times = total_times + 1
+
             local random = self:getUniqueRondom(last)
-            self.mainUI["btn_dog_head_" .. i]:getChildByName("img_head"):loadTexture(UIManager.RESOURCE_COMMON .. "com_pic_photo_".. random .. ".png")
-            self.mainUI["fnt_rate_"..i]:setString("x" .. DogGI.dog_config.dogs[random].score)
-            last = random
+            self:setAnimalTitle(i, random)
             
-            if i == UIManager.TRACE_NUM then
+            if (i == UIManager.TRACE_NUM) and (total_times%5 ~= 0) then
+                --print("dsx total time: " .. total_times)
+                --print("dsx total time period:" .. (os.clock() - self.last_time_clock))
+                self.last_time_clock = os.clock()
                 local path = SmallGamesGF.getCurAppResPath("sound/rolling_01.mp3")
                 AudioEngine.playEffect(path)
             end
-        end)
-        animate[#animate + 1] = cc.DelayTime:create(enterAnimate[i].time/enterAnimate[i].count)
-    end
+            last = random
 
-    animate[#animate + 1] = cc.CallFunc:create(function ( ... )
-    
+        end,0,false)
+    end)
+
+
+    return transition.sequence(animate)
+end
+
+function UIManager:setAnimalTitle(index, i)
+    self.mainUI["btn_dog_head_" .. index]:getChildByName("img_head"):loadTexture(UIManager.RESOURCE_COMMON .. "com_pic_photo_".. i .. ".png")
+    self.mainUI["fnt_rate_"..index]:setString("x" .. DogGI.dog_config.dogs[i].score)
+end
+
+function UIManager:startAnimateEnd(i)
         local color = {r = 255, g = 255, b = 255}
         self.mainUI["btn_dog_head_" .. i]:setEnabled(enable)
         self.mainUI["btn_dog_head_" .. i]:setColor(color)
 
         DogGI.main["bet_stake_effect" .. i]:stop()
-        self.mainUI["btn_dog_head_" .. i]:getChildByName("img_head"):loadTexture(UIManager.RESOURCE_COMMON .. "com_pic_photo_".. self.dogTab[i] .. ".png")
-        self.mainUI["fnt_rate_" .. i]:setString("x" .. self.betInfos[i].score)
-    end)
+        self:setAnimalTitle(i, self.dogTab[i])
 
-    animate[#animate + 1] = cc.CallFunc:create(function ( ... )
+        local baseFrameRate = self:getFrameRateByRace(i)
         self.mainUI.panel_running:addChild(self.dogs[i],  i)
         local x, y = self.dogs[i]:getPosition()
         local action_move_to  = {}
         action_move_to[#action_move_to + 1] = cc.CallFunc:create(function ( ... )
             self.dogs[i]:getAnimation():setSpeedScale(baseFrameRate)
-            self.dogs[i]:getAnimation():play("running",-1, 1)
+            --self.dogs[i]:getAnimation():play("running",-1, 1)
         end)
         action_move_to[#action_move_to + 1] = cc.MoveTo:create(0.5,cc.p(DogGI.config.start_x * DogGI.winSize.width/100, y))
         action_move_to[#action_move_to + 1] = cc.CallFunc:create(function ( ... )
@@ -206,12 +235,6 @@ function UIManager:getStartAnimate(i)
             end)
         end
         self.dogs[i]:runAction(transition.sequence(action_move_to))
-
-        self.mainUI["btn_dog_head_" .. i]:getChildByName("img_head"):loadTexture(UIManager.RESOURCE_COMMON .. "com_pic_photo_".. self.dogTab[i] .. ".png")
-
-     end)
-
-    return transition.sequence(animate)
 end
 
 function UIManager:tryRefreshTotalBetOrClear() -- 如果刷新失败, 重置倍率, 挂机的情况下, 没钱了, 重置退出挂机状态
@@ -962,6 +985,20 @@ function UIManager:initDog()
     end
 end
 
+function UIManager:releaseDog()
+    print("release dog")
+    for k,dog in pairs(self.all_dogs) do
+        dog:release()
+    end
+    
+    local dogs = DogGI.dog_config.dogs
+
+    for k, dog in pairs(dogs) do
+        self:unloadAnimal(dog.res)
+    end
+
+end
+
 function UIManager:loadAnimal(headName)
     local armature = ccs.Armature:create()
     armature:setScaleX(0.4000)
@@ -972,5 +1009,11 @@ function UIManager:loadAnimal(headName)
     
     return armature
 end
+
+
+function UIManager:unloadAnimal(headName)
+    ccs.ArmatureDataManager:getInstance():removeArmatureFileInfo(UIManager.RESOURCE_PATH .. headName ..".ExportJson")
+end
+
 
 return UIManager

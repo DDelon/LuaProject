@@ -35,7 +35,7 @@ function Monthcard:initView()
     local data = FishGI.GameConfig:getConfigData("config", tostring(990000032), "data");
     local vatTab = string.split(data,";")
     local resultTab = {}
-    for i=0,#vatTab do
+    for i=1,#vatTab do
         if vatTab[i] == nil then
             vatTab[i] = "0,0"
         end
@@ -56,7 +56,7 @@ function Monthcard:initView()
         local spr_prop = node:getChildByName("spr_prop")
         local spr_name = node:getChildByName("spr_name")
 
-        local sprFile = string.format("hall/monthcard/monthcard_pic_%d.png",(propId+1))
+        local sprFile = string.format("hall/monthcard/monthcard_pic_%d.png",(propId))
         local result = spr_prop:initWithFile(sprFile)
         if not result then
             print("----------result == false-----")
@@ -94,9 +94,10 @@ function Monthcard:onClickByType( sender )
         data["money"] = self.recharge;
         data["price"] = self.recharge/100;
         data["type"] = tonumber(self.recharge_type);
+        data["rechargeType"] = 3;
         data["autobuy"] = 1;
         data["subject"] = self.unit;
-        data["ingame"] = 1;
+        data["ingame"] = (FishGI.GAME_STATE == 3 and GAME_ID or 0);
         data["roomid"] = 0;
         data["count"] = 1;
         data["debug"] = 0;

@@ -90,7 +90,7 @@ function SkillBase:judgeUseType()
                     FishGI.gameScene.uiShopLayer:setShopType(1)
                 end
             end
-            local str = FishGF.getChByIndex(800000111)..requireVip..FishGF.getChByIndex(800000112).."\n"..itemData.pack_text;
+            local str = FishGF.getChByIndex(800000111)..requireVip..FishGF.getChByIndex(800000112).."$".."("..FishGF.getChByIndex(800000337)..FishGF.getChByIndex(800000218)..itemData.pack_text..")"
             --local des = itemData.pack_text
             FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,str,callback);
             return
@@ -110,6 +110,24 @@ function SkillBase:judgeUseType()
             FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000093),callback)
             return
         end
+
+        --提示炮倍不足
+        local need_cannon = tonumber(itemData.need_cannon)
+        local maxGunRate = playerInfo.maxGunRate;
+        FishGF.print("maxGunRate:"..maxGunRate.." --need_cannon:"..need_cannon);
+        if maxGunRate < need_cannon then
+            local function callback(sender)
+                local tag = sender:getTag()
+                if tag == 2 then
+                    FishGI.gameScene.uiUnlockCannon:showLayer()
+                end
+            end
+            local str = FishGF.getChByIndex(800000345)..need_cannon..FishGF.getChByIndex(800000346)
+            FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,str,callback);
+            return
+        end
+
+
         useType = 1
     end
     return useType

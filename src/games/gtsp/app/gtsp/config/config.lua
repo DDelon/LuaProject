@@ -67,7 +67,7 @@ function Config:initConfig()
     self.bet_countdown          = luaconfig["990000024"].data + 0
     self.pause_period           = luaconfig["990000026"].data + 0
     self.enter_condition        = luaconfig["990000029"].data + 0
-
+    self.title_icon             = luaconfig["990000030"].data
 end
 
 return Config

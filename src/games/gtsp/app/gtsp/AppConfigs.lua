@@ -56,7 +56,13 @@ function SmallGameApp.getRoomData( tRoomDataList )
             end
         end
     end
+    dump(tRoomDataList)
+    dump(roomData)
     return roomData
 end
 
 SmallGamesGI.RoomManager = require(SmallGamesGF.getCurAppSrcPath("common.RoomManager"))
+
+SmallGamesGI.dataBinPath = SmallGamesGF.getCurAppSrcPath("databin")
+
+SmallGamesGI.DataBinList = {}

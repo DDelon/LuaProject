@@ -27,26 +27,36 @@ SkillView.BOMB_LIST  = {
 
 --底部的按键
 SkillView.DOWN_LIST  = {
-    { ["varname"] = "btn_skill_3",["propId"] = 3,["index"] = 1,["allCount"] = 4}, 
-    { ["varname"] = "btn_skill_4",["propId"] = 4,["index"] = 2,["allCount"] = 4},
-    { ["varname"] = "btn_skill_5",["propId"] = 5,["index"] = 3,["allCount"] = 4},
-    { ["varname"] = "btn_skill_17",["propId"] = 17,["index"] = 4,["allCount"] = 4},
+    { ["varname"] = "btn_skill_3",["propId"] = 3,["index"] = 1,["allCount"] = 3}, 
+    { ["varname"] = "btn_skill_4",["propId"] = 4,["index"] = 2,["allCount"] = 3},
+    { ["varname"] = "btn_skill_5",["propId"] = 5,["index"] = 1,["allCount"] = 1},
+    { ["varname"] = "btn_skill_17",["propId"] = 17,["index"] = 3,["allCount"] = 3},
     { ["varname"] = "btn_skill_14",["propId"] = 14,["index"] = 1,["allCount"] = 1},
 }
 
+--最小缩放列表
+SkillView.SCALE_LIST  = {
+    "node_skll_desk",
+    "btn_skill_14",
+    "btn_skill_5",
+    "node_left"
+}
+
+
 function SkillView:onCreate( ... )
     self.node_left = require("Game/Skill/NormalSkill/SkillLeftView").new(self, self.node_left)
-    self.node_left:setScale(self.scaleMin_)
+    --self.node_left:setScale(self.scaleMin_)
     self.node_left:initView()
-    self.btn_skill_14:setScale(self.scaleMin_)
+    --self.btn_skill_14:setScale(self.scaleMin_)
 
     self:runAction(self.resourceNode_["animation"])
-    self.node_skll_desk:setScale(self.scaleMin_)
+    --self.node_skll_desk:setScale(self.scaleMin_)
 
     --按键在效果层上
     self.node_skll_desk:setLocalZOrder(100)
     self.node_left:setLocalZOrder(100)
     self.btn_skill_14:setLocalZOrder(100)
+    self.btn_skill_5:setLocalZOrder(100)
 
     --冰冻
     self.Layer = self:getChildByName("Layer")
@@ -113,6 +123,9 @@ function SkillView:onCreate( ... )
     
     self:openTouchEventListener()
 
+    for k,v in pairs(self.SCALE_LIST) do
+        self[v]:setScale(self.scaleMin_)
+    end
 
     self:initListener()
 end
@@ -124,6 +137,7 @@ end
 
 function SkillView:initSkill()
     self.Skill_4:initLock()
+    self.Skill_17:initLock()
 end
 
 
@@ -228,6 +242,19 @@ function SkillView:upDateUserTime(disTime )
     self.Skill_4:upDateUserTime(disTime)
     self.Skill_3:upDateUserTime(disTime)
     self.Skill_17:upDateUserTime(disTime)
+end
+
+function SkillView:getPropBtnPos(propId )
+    
+    local btn = self["btn_skill_"..propId]
+    if btn == nil then
+        return nil
+    end
+    local pos = cc.p(0,0)
+    local child = btn:getParent()
+    local pos = cc.p(btn:getPositionX(),btn:getPositionY())
+    pos = child:convertToWorldSpace(pos)  
+    return pos
 end
 
 return SkillView;

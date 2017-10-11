@@ -17,23 +17,23 @@ MainLayer.RESOURCE_BINDING  = {
         btn_reset               = { parent = "img_sub_title", varname = "btn_reset", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickReset"} },
         btn_hungup              = { parent = "img_sub_title", varname = "btn_hungup", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickHungup"} },
             spr_hungeffect      = { parent = "btn_hungup", varname = "spr_hungeffect" },
-        bet_all                 = { parent = "img_sub_title", varname = "bet_all", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickBetall"} },
-        btn_dog_head_1          = { parent = "img_sub_title", varname = "btn_dog_head_1", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate"} },
+        bet_all                 = { parent = "img_sub_title", varname = "bet_all", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickBetall", soundEffectPath = SmallGamesGF.getCurAppResPath("sound/bet_voice.mp3")} },
+        btn_dog_head_1          = { parent = "img_sub_title", varname = "btn_dog_head_1", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate", soundEffectPath = SmallGamesGF.getCurAppResPath("sound/bet_voice.mp3")} },
             fnt_rate_1          = { parent = "btn_dog_head_1", varname = "fnt_rate_1" },
 
-        btn_dog_head_2          = { parent = "img_sub_title", varname = "btn_dog_head_2", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate"} },
+        btn_dog_head_2          = { parent = "img_sub_title", varname = "btn_dog_head_2", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate", soundEffectPath = SmallGamesGF.getCurAppResPath("sound/bet_voice.mp3")} },
             fnt_rate_2          = { parent = "btn_dog_head_2", varname = "fnt_rate_2" },
 
-        btn_dog_head_3          = { parent = "img_sub_title", varname = "btn_dog_head_3", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate"} },
+        btn_dog_head_3          = { parent = "img_sub_title", varname = "btn_dog_head_3", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate", soundEffectPath = SmallGamesGF.getCurAppResPath("sound/bet_voice.mp3")} },
             fnt_rate_3          = { parent = "btn_dog_head_3", varname = "fnt_rate_3" },
 
-        btn_dog_head_4          = { parent = "img_sub_title", varname = "btn_dog_head_4", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate"} },
+        btn_dog_head_4          = { parent = "img_sub_title", varname = "btn_dog_head_4", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate", soundEffectPath = SmallGamesGF.getCurAppResPath("sound/bet_voice.mp3")} },
             fnt_rate_4          = { parent = "btn_dog_head_4", varname = "fnt_rate_4" },
 
-        btn_dog_head_5          = { parent = "img_sub_title", varname = "btn_dog_head_5", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate"} },
+        btn_dog_head_5          = { parent = "img_sub_title", varname = "btn_dog_head_5", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate", soundEffectPath = SmallGamesGF.getCurAppResPath("sound/bet_voice.mp3")} },
             fnt_rate_5          = { parent = "btn_dog_head_5", varname = "fnt_rate_5" },
 
-        btn_dog_head_6          = { parent = "img_sub_title", varname = "btn_dog_head_6", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate"} },
+        btn_dog_head_6          = { parent = "img_sub_title", varname = "btn_dog_head_6", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickDogRate", soundEffectPath = SmallGamesGF.getCurAppResPath("sound/bet_voice.mp3")} },
             fnt_rate_6          = { parent = "btn_dog_head_6", varname = "fnt_rate_6" },
 
         img_ratio_text_1        = { parent = "img_sub_title", varname = "img_ratio_text_1" },
@@ -119,8 +119,6 @@ function MainLayer:onMessage(type, data)
         --SmallGamesGI.RoomManager:sendGetPlayerInfo()
         --self:playDark()
     elseif type == "onBegin" then
-        -- local
-        
         if not data.success then
             DogGI.ui_manager.betable = true
             DogGI.ui_manager.isRunning = false
@@ -147,13 +145,35 @@ function MainLayer:onMessage(type, data)
         animate[#animate + 1] = cc.DelayTime:create(1)
         animate[#animate + 1] = cc.CallFunc:create(function ( ... )
 
+        local titems = self.his_data.items
+        if #titems >= 20 then
+            table.remove( titems, 1)
+        end
+
+        print("#(DogGI.ui_manager.betInfos) :" .. #(DogGI.ui_manager.betInfos) )
+        local server_bet_infos = {}
+        for i = 1 ,#(DogGI.ui_manager.betInfos) do 
+            local info = {}
+            info.count = DogGI.ui_manager.betInfos[i].count
+            info.animalId = DogGI.ui_manager.betInfos[i].id
+            server_bet_infos[#server_bet_infos + 1] = info
+        end
+        data.resultAnimal = DogGI.ui_manager.dogTab[data.winId + 1]
+        data.bets = server_bet_infos
+
+        table.insert( titems, #titems + 1, data )
+        self.his_data.items = titems
+
             DogGI.ui_manager:doRun(data, function ( ... )
+            
+                DogGI.ui_manager.preparing = true
                 SmallGamesGI.RoomManager:sendReady()
-                SmallGamesGI.RoomManager:sendHistory()
+        -- 
                 self.node_title_bar:doShow()
                 
                 self:enableClick()
                 self:playBright()
+                DogGI.ui_manager:resetLine()
             end)
 
             animates:removeFromParent()
@@ -163,6 +183,9 @@ function MainLayer:onMessage(type, data)
         self:runAction(transition.sequence(animate))
     elseif type == "onHistory" then
         self:onHistory(data)
+
+        DogGI.ui_manager.preparing = true
+        SmallGamesGI.RoomManager:sendReady()
     elseif type == "onUnlock" then
         --dump(data)
         self.animal_map:onUnlock(data)
@@ -300,7 +323,7 @@ function MainLayer:loadStartAnimate()
 end
 
 function MainLayer:loadBraodcast(data)
-    local anouncement = string.format(DogGI.language_config.anouncement, data.playerId , 1,  data.nWinGold + 0)
+    local anouncement = string.format(DogGI.language_config.anouncement, data.playerId , data.nWinGold + 0)
     local animate = require(SmallGamesGF.getCurAppSrcPath("main.HallNotice.lua")).create()
     animate:setPosition(DogGI.winSize.width/2, DogGI.winSize.height*0.85)
     animate:play(anouncement)
@@ -311,6 +334,7 @@ function MainLayer:loadBraodcast(data)
 end
 
 function MainLayer:onCreate()
+--    cc.Director:getInstance():setDisplayStats(true)
     self.super:onCreate(self)
     self:openKeyboard()
     --self.img_sub_title:setLocalZOrder(9999)
@@ -385,6 +409,15 @@ function MainLayer:onExit()
     if DogGI.ui_manager.schedulerID then
         cc.Director:getInstance():getScheduler():unscheduleScriptEntry(DogGI.ui_manager.schedulerID)
     end
+    
+    local schechIds = DogGI.ui_manager.randomPicScheduleIds
+    if schechIds then
+        for k,v in pairs(schechIds) do
+            cc.Director:getInstance():getScheduler():unscheduleScriptEntry(v)
+        end
+    end
+    
+    DogGI.ui_manager:releaseDog()
 end
 
 function MainLayer:onKeyback()
@@ -406,7 +439,7 @@ function MainLayer:sendHeartBeat()
 end
 
 function MainLayer:onMsgReady()
-    SmallGamesGI.RoomManager:sendReady()
+   -- SmallGamesGI.RoomManager:sendReady()
     SmallGamesGI.RoomManager:sendHistory()
 end
 
@@ -455,6 +488,7 @@ function MainLayer:onClickStart()
     if DogGI.ui_manager.preparing then
         return
     end
+    
     self.start_effect:play()
     print("click start")
     self.img_bg_counting_down:stop()
@@ -587,6 +621,7 @@ function MainLayer:checkAndRemove(obj)
     
     if obj:getParent() then
         obj:removeFromParent()
+        --obj:release()
         obj = nil
     end
 end
@@ -617,12 +652,12 @@ end
 function MainLayer:showSettings()
     self.soundBox = SmallGamesGF.createSoundBox()
     self.soundBox:setPosition(DogGI.winSize.width/2, DogGI.winSize.height/2)
-    self.soundBox:retain()
     self.soundBox:setCallbackEnter(function ( ... )
         DogGI.ui_manager:pause()
     end)
     self.soundBox:setCallbackExit(function ( ... )
         DogGI.ui_manager:resume()
+        self.soundBox = nil
     end)
     self:addChild(self.soundBox)
 end

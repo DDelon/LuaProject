@@ -13,6 +13,7 @@ SkillBtn.RESOURCE_BINDING  = {
     ["fnt_count"]    = { ["varname"] = "fnt_count" },   
     ["fnt_price"]    = { ["varname"] = "fnt_price" },   
     ["spr_price"]    = { ["varname"] = "spr_price" },
+    ["node_light_3"]    = { ["varname"] = "node_light_3" },
 }
 
 function SkillBtn:onCreate( ... )
@@ -20,6 +21,7 @@ function SkillBtn:onCreate( ... )
 end
 
 function SkillBtn:initBtn( propId ,index,allCount)
+    self.propId = propId
     self:initBtnState(propId)
     self.btn_skill:setTag(propId)
 
@@ -31,7 +33,7 @@ function SkillBtn:initBtn( propId ,index,allCount)
     self:initLight(index,allCount)
 
     self:initProgressTimer()
-
+    self:setBtnIfCanUsed(0)
 end
 
 --初始化为按键，不是道具
@@ -77,6 +79,11 @@ function SkillBtn:initLight(index,allCount )
     self.node_light_2:stopAllActions()
     self.node_light_2:runAction(self.node_light_2.animation)
     self.node_light_2.animation:play("doplay", true);
+
+    self.node_light_3:stopAllActions()
+    self.node_light_3:runAction(self.node_light_3.animation)
+    self.node_light_3.animation:play("use", false);
+
 end
 
 --阴影进度条
@@ -218,5 +225,32 @@ function SkillBtn:stopTimer()
     Timer:setPercentage(0) 
     self.btn_skill:setTouchEnabled(true)
 end
+
+--设置按键是否可用
+function SkillBtn:playBtnUpAct(index)
+    print("------------setBtnIfCanUsed----------index="..index.."--self.propId="..self.propId)
+    if index == 0 then      --正常
+        self.node_light_3.animation:play("use", false);
+    elseif index == 1 then      --禁用
+        self.node_light_3.animation:play("nouse", false);
+    elseif index == 2 then      --解锁动作1
+        self.node_light_3.animation:play("activation1", false);
+    elseif index == 3 then      --解锁动作2
+        self.node_light_3.animation:play("activation2", false);
+    end
+
+end
+
+--设置按键是否可用
+function SkillBtn:setBtnIfCanUsed(ifCan)
+    if ifCan then
+        FishGF.grayToNormal(self.spr_lock)
+        --self.spr_lock:setColor(cc.c3b(255, 255,255))
+    else
+        FishGF.spriteToGray(self.spr_lock)
+        --self.spr_lock:setColor(cc.c3b(100, 100, 100))
+    end
+end
+
 
 return SkillBtn;

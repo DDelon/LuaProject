@@ -1,4 +1,3 @@
-cc.exports.SmallGamesGI = {}
 
 -- 平台大厅列表
 SmallGamesGI.lobbyList = {
@@ -16,6 +15,14 @@ SmallGamesGI.lobbyData = {
     AppKey = "",
     GameId = 0,
     ChannelId = 0,
+    WechatAppId = "",
+}
+
+-- 商城数据
+SmallGamesGI.storeData = {
+    productConfig = {},
+    unit = "",
+    pointOfMoney = 1,
 }
 
 -- 游戏列表
@@ -36,14 +43,14 @@ SmallGamesGI.curScene = nil
 SmallGamesGI.lastScene = nil
 
 -- 资源目录
-SmallGamesGI.packagesPath = SmallGamesCD.rootSrcPath..".packages"
-SmallGamesGI.appSrcPath = SmallGamesCD.rootSrcPath..".app"
-SmallGamesGI.commonSrcPath = SmallGamesCD.rootSrcPath..".common"
-SmallGamesGI.globalSrcPath = SmallGamesCD.rootSrcPath..".global"
-SmallGamesGI.appResPath = SmallGamesCD.rootResPath.."/res/app"
-SmallGamesGI.commonResPath = SmallGamesCD.rootResPath.."/res/common"
-SmallGamesGI.appResUIPath = SmallGamesCD.rootResUIPath..".ui.app"
-SmallGamesGI.commonResUIPath = SmallGamesCD.rootResUIPath..".ui.common"
+SmallGamesGI.packagesPath = SmallGamesGI.rootSrcPath..".packages"
+SmallGamesGI.appSrcPath = SmallGamesGI.rootSrcPath..".app"
+SmallGamesGI.commonSrcPath = SmallGamesGI.rootSrcPath..".common"
+SmallGamesGI.globalSrcPath = SmallGamesGI.rootSrcPath..".global"
+SmallGamesGI.appResPath = SmallGamesGI.rootResPath.."/res/app"
+SmallGamesGI.commonResPath = SmallGamesGI.rootResPath.."/res/common"
+SmallGamesGI.appResUIPath = SmallGamesGI.rootResUIPath..".ui.app"
+SmallGamesGI.commonResUIPath = SmallGamesGI.rootResUIPath..".ui.common"
 
 -- 界面路径配置
 SmallGamesGI.appPathConfigs = {
@@ -157,7 +164,6 @@ SmallGamesGI.uiSoundBox = nil
 
 -- 加载全局配置
 require(SmallGamesGI.globalSrcPath..".GameFunc")
-require(SmallGamesGI.globalSrcPath..".GlobalFunc")
 
 -- 界面消息推送
 SmallGamesGI.eventDispatcher = require(SmallGamesGI.commonSrcPath..".common.EventDispatcher").create()
@@ -165,7 +171,7 @@ SmallGamesGI.eventDispatcher = require(SmallGamesGI.commonSrcPath..".common.Even
 SmallGamesGI.WebTool = require(SmallGamesGI.commonSrcPath..".common.WebTool")
 
 SmallGamesGI.Http = require(SmallGamesGI.commonSrcPath..".common.HttpHelper")
-SmallGamesGI.ApiHelper = require(SmallGamesGI.commonSrcPath..".common.ApiHelper")
+SmallGamesGI.Dapi = require(SmallGamesGI.commonSrcPath..".common.ApiHelper")
 
 -- 登录管理
 SmallGamesGI.LoginManagerBase = require(SmallGamesGI.commonSrcPath..".common.LoginManager")
@@ -250,53 +256,16 @@ SmallGamesGI.GcsdkType = {
     yyb = "yyb",
 }
 
--- 商城商品数据
-SmallGamesGI.StoreProductData = {
-    id = 0, -- 商品id
-    name = "", -- 商品名
-    num = 0, -- 商品数额
-    image = "", -- 商品图片
-    frist_charge = false, -- 是否首充
-    gift_num = 0, -- 赠送数额
-    price = 0, -- 商品价格
-    type = 0, -- 商品类型
-}
-
--- 商城订单数据
-SmallGamesGI.StoreOrderData = {
-    id = "",
-    goods = "",
-    name = "",
-    body = "",
-    money = 0,
-    price = 0,
-    type = 0,
-    virtual = 0,
-    autobuy = 0,
-    subject = "",
-    ingame = 1,
-    roomid = 0,
-    count = 0,
-    debug = 0,
-    udid = "",
-}
-
 SmallGamesGI.ShareSDKType = {
     Wechat = "Wechat",
 }
 
-SmallGamesGI.ShareWechatType = {
+SmallGamesGI.ShareWechatModel = {
     Session = 0,    --聊天界面
     Timeline = 1,   --朋友圈
     Favorite = 2,   --收藏
 }
 
-SmallGamesGI.ShareWechatData = {
-    wxscene = SmallGamesGI.ShareWechatType.Timeline,
-    title = nil,
-    text = nil,
-    imgurl = nil,
-    weburl = nil,
-    imgpath = nil,
-    desc = nil,
+SmallGamesGI.ShareType = {
+    Image = 1,      --分享图片
 }

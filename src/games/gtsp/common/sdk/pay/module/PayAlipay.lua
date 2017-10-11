@@ -11,8 +11,8 @@ function PayAlipay:init()
 	self.type = SmallGamesGI.PaySDKType.Alipay
 end
 
-function PayAlipay:doPay(payInfo)
-	self.super.doPay(self, payInfo)
+function PayAlipay:doPay(payInfo, extendData)
+	self.super.doPay(self, payInfo, extendData)
 end
 
 return PayAlipay

@@ -191,7 +191,6 @@ function GameScene:initUILayer()
     self.uiAddFishCoin:runAction(AddFishCoin.animation)
     self.uiAddFishCoin.animation:play("nojump", false)
 
-
     --右边按键面板
     self.uiSetButton = require("Game/SetButton").create()
     self.uiSetButton:setPosition(cc.p(cc.Director:getInstance():getWinSize().width,cc.Director:getInstance():getWinSize().height/2))
@@ -200,13 +199,13 @@ function GameScene:initUILayer()
 
     --炮台升级 小于1000才创建升炮面板
     self.uiGunUpGrade = require("Game/GunUpGrade").create()
-    self.uiGunUpGrade:setPosition(cc.p(0,512.94*self.scaleY_))
+    self.uiGunUpGrade:setPosition(cc.p(0,532.94*self.scaleY_))
     self:addChild(self.uiGunUpGrade,FishCD.ORDER_SCENE_UI)
     self.uiGunUpGrade:setScale(self.scaleMin_)
 
     --抽奖面板
     self.uiLotteryPanel = require("Game/Lottery/LotteryPanel").create()
-    self.uiLotteryPanel:setPosition(cc.p(0,390.56*self.scaleY_))
+    self.uiLotteryPanel:setPosition(cc.p(0,415.56*self.scaleY_))
     self:addChild(self.uiLotteryPanel,FishCD.ORDER_SCENE_UI)
     self.uiLotteryPanel:setScale(self.scaleMin_)
 
@@ -220,7 +219,7 @@ function GameScene:initUILayer()
     end
 
     self.uiNewbieTask = require("Game/NewbieTask/NewbieTask").create()
-    self.uiNewbieTask:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height+70*self.scaleMin_))
+    self.uiNewbieTask:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height+60*self.scaleMin_))
     self:addChild(self.uiNewbieTask,FishCD.ORDER_GAME_player)
     self.uiNewbieTask:setScale(self.scaleMin_)
     self.uiNewbieTask:setVisible(false)
@@ -262,6 +261,13 @@ function GameScene:initUILayer()
     self:addChild(self.uiSelectCannon,FishCD.ORDER_LAYER_TRUE)
     self.uiSelectCannon:setScale(self.scaleMin_)
     self.uiSelectCannon:setVisible(false)
+
+    --解锁炮倍层
+    self.uiUnlockCannon = require("Game/UnlockCannon/UnlockCannon").create()
+    self.uiUnlockCannon:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    self:addChild(self.uiUnlockCannon,FishCD.ORDER_LAYER_TRUE)
+    self.uiUnlockCannon:setScale(self.scaleMin_)
+    self.uiUnlockCannon:setVisible(false)
 
 end
 
@@ -318,6 +324,7 @@ end
 
 function GameScene:onExit( )
     print("GameScene:onExit( )")
+    FishGI.lockCount = 0;
     FishGI.isAutoFire = false
     FishGMF.clearRefreshData()
     FishGI.AudioControl:pauseMusic()
@@ -325,9 +332,19 @@ function GameScene:onExit( )
     self:exitGame()
     --移除监听器
     FishGI.eventDispatcher:removeAllListener();
+    self:removeListener()
 
     FishGF.waitNetManager(true,nil,"exitGame")
 
+end
+
+function GameScene:removeListener()
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("startMyLock");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("startOtherLock");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("bulletTargetChange");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("sendChangeAimFish");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("ViolentTimeOut");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("UseViolentResult");
 end
 
 function GameScene:startGame(data)

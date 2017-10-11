@@ -50,7 +50,7 @@ end
 --------------
 
 function SkillTimeRevert:startCheck(useType)
-    local body = FishGF.getChByIndex(800000254) .. "\n" .. FishGF.getChByIndex(800000255)
+    local body = FishGF.getChByIndex(800000254) .. "$" .. FishGF.getChByIndex(800000255)
     self:doCheck(nil, body, function ()
     
         if self.useType == 1 then
@@ -427,7 +427,7 @@ function SkillTimeRevert:getBufferPos(playerId)
 
     local gameRect = cc.Director:getInstance():getWinSize()
 
-    local marginX = 35*self.scaleMin_
+    local marginX = 165*self.scaleMin_
     local marginY = 103*self.scaleMin_
     
     if chairId == FishCD.DIRECT.LEFT_DOWN then

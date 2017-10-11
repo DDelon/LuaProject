@@ -9,20 +9,23 @@ end
 function ShareHelper:init()
 end
 
-function ShareHelper:setBottomCallData(luaData)
-	self.luaBottomCallData = luaData
+function ShareHelper:initBottomCallData()
+	local extendShareData = SmallGamesGI.ExtendGameConf:getShareData()
+	self.luaBottomCallData = {}
+	if extendShareData.wechat[device.platform] then
+		self.luaBottomCallData.wechat = extendShareData.wechat[device.platform]
+	end
 end
 
 function ShareHelper:createShare(type)
 	print("ShareHelper:createShare "..type)
 	self.curShareSdk = require(SmallGamesGI.commonSrcPath..".sdk.share.module.Share"..type).create()
-	if self.luaBottomCallData[device.platform] then
-		if self.luaBottomCallData[device.platform].list[type] then
-			self.curShareSdk:setLuaBottomCallData(self.luaBottomCallData[device.platform].list[type])
-		elseif self.luaBottomCallData[device.platform].common then
-			self.curShareSdk:setLuaBottomCallData(self.luaBottomCallData[device.platform].common)
+	if type == SmallGamesGI.ShareSDKType.Wechat then
+		if self.luaBottomCallData.wechat then
+			self.curShareSdk:setLuaBottomCallData(self.luaBottomCallData.wechat)
 		end
 	end
+	SmallGamesGI.ExtendGameConf.share_type = string.lower( type )
 end
 
 function ShareHelper:doShare(type, shareInfo)
@@ -32,7 +35,7 @@ function ShareHelper:doShare(type, shareInfo)
 	if device.platform ~= "android" and device.platform ~= "ios" then
 		return
 	end
-	
+
     self:createShare(type)
     self.curShareSdk:doShare(shareInfo)
 end

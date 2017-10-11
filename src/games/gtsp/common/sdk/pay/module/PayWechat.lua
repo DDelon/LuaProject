@@ -11,8 +11,8 @@ function PayWechat:init()
 	self.type = SmallGamesGI.PaySDKType.Wechat
 end
 
-function PayWechat:doPay(payInfo)
-	self.super.doPay(self, payInfo)
+function PayWechat:doPay(payInfo, extendData)
+	self.super.doPay(self, payInfo, extendData)
 end
 
 return PayWechat

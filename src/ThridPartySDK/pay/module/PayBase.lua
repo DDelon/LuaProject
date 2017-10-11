@@ -19,9 +19,12 @@ function PayBase:doPay(payInfo)
 		--调起sdk
 		if device.platform == "ios" then
 			print("发起苹果支付")
+			self.info = sdkCallInfo
 			self:doPayIOS(sdkCallInfo);
 		elseif device.platform == "android" then
 			print("发起安卓支付")
+			self.info = sdkCallInfo;
+			
 			self:doPayAndroid(sdkCallInfo);
 		else
 			print("暂未开放此平台的支付功能")
@@ -180,22 +183,32 @@ function PayBase:onCallback_(luastr)
 	if FishGI.GAME_STATE == 3 then
 		FishGI.gameScene.net:sendBackFromCharge()
 	end		
-
+	dump(resultInfo)
+	print("pay base 184")
+	
 	if ok then
 		if resultInfo.status == 0 then
 			--成功
 			FishGF.print("------recharge succeed----")
 			if not FishGI.WebUserData:isActivited() then	--"游客"
-				FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000175),nil) 
+				FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000175),nil, nil, nil, 0.5) 
 			end
 			
 			if FishGI.GAME_STATE == 2 then
 				FishGF.waitNetManager(true,nil,"doPaySDK")
 				FishGI.IS_RECHARGE = 5
 				--FishGI.hallScene.net.roommanager:sendDataGetInfo();
+				--local str = ""
+				--if self.info.rechargeType == 1 then str = FishGF.getChByIndex(800000353) else str = FishGF.getChByIndex(800000352) end
+				--FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000351)..self.info.name.."\n"..str,nil, nil, nil, 3)
 			elseif FishGI.GAME_STATE == 3 then
 				FishGI.gameScene.net:sendReChargeSucceed()
 				FishGI.WebUserData:initWithUserId(FishGI.WebUserData:GetUserId());
+				if self.info.rechargeType ~= 3 then
+					local str = ""
+					if self.info.rechargeType == 1 then str = FishGF.getChByIndex(800000353) else str = FishGF.getChByIndex(800000352) end
+					FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000351)..self.info.name.."\n"..str,nil, nil, nil, 0.5)
+				end
 			end
 			FishGI.eventDispatcher:dispatch("BuySuccessCall", resultInfo);
 		else

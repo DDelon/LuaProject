@@ -14,6 +14,7 @@ OptionTitle.RESOURCE_BINDING  = {
             spr_tip           = { parent = "btn_pic", varname = "spr_tip" },
 
         img_gold_bg         = { parent = "panel", varname = "img_gold_bg" },
+            spr_gold        = { parent = "img_gold_bg", varname = "spr_gold"},
             btn_buy           = { parent = "img_gold_bg", varname = "btn_buy", events={event=SmallGamesGI.bindingEvents.ClickScale, method="onClickBuyGold"} },
             txt_gold           = { parent = "img_gold_bg", varname = "txt_gold"},
 
@@ -32,6 +33,7 @@ OptionTitle.RESOURCE_BINDING  = {
 
 function OptionTitle:onCreate()
     self.spr_tip:setVisible(false)
+    self.spr_gold:initWithFile(SmallGamesGI.extend_res_path.."/"..SmallGamesGI.extend_money_prop_res)
 end
 
 function OptionTitle:setGoldCount(count)

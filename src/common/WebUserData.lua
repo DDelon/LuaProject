@@ -117,6 +117,8 @@ local function onuserinit_(data)
             FishGI.hallScene:addHallNotice();
         end
     end
+
+    FishGI.eventDispatcher:dispatch("onUserInit", data)
     
 end
 
@@ -281,6 +283,11 @@ end
 function UserData:isActivited()
     lazyInit_()
    return  checkint(userWebData.attr)>0
+end
+
+function UserData:isVerifyRealName()
+    lazyInit_()
+    return userWebData.is_card == 1 and true or false
 end
 
 --手机激活

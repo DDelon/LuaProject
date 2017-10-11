@@ -2,7 +2,7 @@ cc.exports.FishGI = {}
 
 FishGI.eventDispatcher = require("Other/EventDispatcher").create()
 --0外网   1，内网无秘籍   2，内网有秘籍  3.外网225测试房间
-FishGI.SYSTEM_STATE = 2
+FishGI.SYSTEM_STATE = 0
 
 --MainManager instance
 FishGI.mainManagerInstance = require("MainManager").create();
@@ -109,6 +109,7 @@ FishGI.deskId = 0;
 
 FishGI.isAutoFire = false	--是否自动开炮
 FishGI.isLock = false	--是否锁定中
+FishGI.lockCount = 0    --锁定计数
 
 FishGI.gameClientIsNil = false;	
 

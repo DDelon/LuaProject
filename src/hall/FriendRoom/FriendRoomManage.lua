@@ -53,7 +53,7 @@ function FriendRoomManage:OnGetFriendHistory(data)
     FishGF.waitNetManager(false,nil,"MSGC2SGetFriendHistory")
     FishGI.hallScene.uiRecord:setUnreadRecordData( data )
     FishGI.hallScene.uiRecord:loadRecord()
-    FishGI.hallScene.uiRecord:showLayer()
+    --FishGI.hallScene.uiRecord:showLayer()
 end
 
 --获取朋友场状态
@@ -105,7 +105,8 @@ function FriendRoomManage:sendCreateFriendRoom(propType,countType,timeType)
     local data = {
         roomPropType = propType,
         roomPeopleCountType = countType,
-        roomDurationType = timeType
+        roomDurationType = timeType,
+        appId = APP_ID
     }
     self:sendJMsg("MSGC2SCreateFriendRoom", data)
 end
@@ -126,6 +127,7 @@ function FriendRoomManage:sendJoinFriendRoom(friendRoomNo,friendGameId)
     local data = {
         friendRoomNo = friendRoomNo,
         friendGameId = friendGameId,
+        appId = APP_ID
     }
     self:sendJMsg("MSGC2SJoinFriendRoom",data)
     --self:sendJMsg("MSGC2SJoinFriendRoom",data)

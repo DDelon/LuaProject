@@ -11,8 +11,8 @@ function PayUnionpay:init()
 	self.type = SmallGamesGI.PaySDKType.Unionpay
 end
 
-function PayUnionpay:doPay(payInfo)
-	self.super.doPay(self, payInfo)
+function PayUnionpay:doPay(payInfo, extendData)
+	self.super.doPay(self, payInfo, extendData)
 end
 
 return PayUnionpay

@@ -30,6 +30,7 @@ VipRight.RESOURCE_BINDING  = {
     
     ["btn_get"]          = { ["varname"] = "btn_get" ,         ["events"]={["event"]="click",["method"]="onClickget"}},   
 
+    ["listview"]            = { ["varname"] = "listview"  ,    ["nodeType"]="viewlist"  },
 }
 
 function VipRight:onCreate( ... )
@@ -42,6 +43,7 @@ function VipRight:init()
     self.curindex = 1
     self.panel:setSwallowTouches(false)
     self:initView()
+    self.listview:setScrollBarEnabled(false)
 
     self:upDataLayerByVIPLV(self.curindex)
     self.btn_left:setVisible(false)
@@ -280,19 +282,23 @@ function VipRight:createRightByStrArr( wordTab )
     if wordTab == nil then
         return
     end
-
-    for k,child in pairs(self.richTextArr) do
-        child:removeFromParent()
-    end
+    self.listview:removeAllChildren()
+    local fontSize = 28
     self.richTextArr = {}
     local heightSize = 200/#wordTab
-    for i=1,#wordTab do
+    if #wordTab > 5 then
+        fontSize = 24
+        self.listview:setItemsMargin(16)
+    else
+        self.listview:setItemsMargin(30)
+    end
+    for i=#wordTab,1,-1 do
         local strArr = wordTab[i]  
         local richText = ccui.RichText:create() 
         richText:ignoreContentAdaptWithSize(true) 
         self.richTextArr[i] =  richText
         local dot = cc.Sprite:create("common/vip/vip_pic_dot.png" )  
-        dot:setPosition(cc.p(-30,14));
+        dot:setPosition(cc.p(-20,14));
         richText:addChild(dot);
         if strArr ~= nil then
             for j=1,#strArr do
@@ -302,17 +308,27 @@ function VipRight:createRightByStrArr( wordTab )
                     color = strArr["numArr"]
                     Front = ccui.RichElementText:create( i+1, cc.c3b(color["r"], color["g"], color["b"]), color["a"], color["word"], "Arial", color["size"] )    
                 else
-                    Front = ccui.RichElementText:create( i+1, cc.c3b(255, 244, 89), 255, strArr[j], "Arial", 28 )  
+                    Front = ccui.RichElementText:create( i+1, cc.c3b(255, 244, 89), 255, strArr[j], "Arial", fontSize )  
                 end
                 richText:pushBackElement(Front)
             end
 
         end
         richText:setAnchorPoint(cc.p(0,0.5))
-        richText:setPosition(cc.p(73.65,12- (i-1)*heightSize));
-        self.panel:addChild(richText);
-    end
 
+        -- 创建一个布局  
+        local custom_item = ccui.Layout:create() 
+        custom_item.nodeType = "cocosStudio"
+        -- 设置内容大小  
+        custom_item:setContentSize(cc.size(420,fontSize))  
+        -- 设置位置  
+        richText:setPosition(cc.p(40, custom_item:getContentSize().height / 2.0))  
+        -- 往布局中添加一个按钮  
+        custom_item:addChild(richText)  
+        -- 往ListView中添加一个布局  
+        self.listview:insertCustomItem(custom_item,0) 
+
+    end
 end
 
 function VipRight:GetVipDailyReward( data )

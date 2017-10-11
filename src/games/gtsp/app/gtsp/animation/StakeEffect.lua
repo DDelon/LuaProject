@@ -14,7 +14,6 @@ function StakeEffect:onCreate()
 
     self.coin:runAction(action)
     self:setVisible(false)
-  --  print("dsx x :" .. tostring(x) "  dsx y:" .. tostring(y))
     self:addChild(self.coin)
     --self:runAction(action)
 end

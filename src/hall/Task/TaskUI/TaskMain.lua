@@ -21,7 +21,7 @@ function TaskMain:onTaskEvent(valTab)
         local task = {}
         task.nTaskID = valTab.taskId
         task.taskType = valTab.taskType
-        self:hideLayer(false)
+        
         self:doEventUtil(task)
 
     elseif valTab.eventType == "DO_TASK_GET" then
@@ -89,6 +89,18 @@ function TaskMain:onClickClose()
     self:hideLayer()
 end
 
+function TaskMain:onTaskSigned(netData)
+    local isSuccess = netData.isSuccess
+    if isSuccess then
+    else
+        return
+    end
+    
+    self.taskItems[33]:setProcess(1,1)
+    self.taskItems[33]:setPercentage(1,1)
+    self.taskItems[33]:setButtonDisplay(false, 1, 1)
+end
+
 function TaskMain:onCreate( ... )
     log("dsx TaskMain:onCreate")
     self:setScale(self.scaleMin_)
@@ -106,7 +118,12 @@ end
 
 --------------------------------------------------------------------
 function TaskMain:checkAndShowTaskButton()
-    local isJumping = #self.getableTable > 0 or #self.processbar:getActiveItems() > 0
+    local isNoPlayGetAct = (bit.band(FUN_SWITCH, 8) == 8)
+    local isOpenWechat = not (bit.band(FUN_SWITCH, 1) == 1)
+    
+    local boolJumpForShare = (isNoPlayGetAct or isOpenWechat) and  not FishGI.hallScene.uiWeChatShare.shareLinkUsed
+
+    local isJumping = #self.getableTable > 0 or #self.processbar:getActiveItems() > 0 or boolJumpForShare
 
     FishGI.hallScene.view:setBtnIsLight(2, isJumping)
 end
@@ -217,6 +234,7 @@ end
 
 function TaskMain:doTaskInfoUtil(taskInfos)  -- 排序 筛选 大厅是否跳跃
     local tableNew = {}
+    local tableNormal = {}
     local head = 0
     local special = 0
     local getable = 0
@@ -256,16 +274,30 @@ function TaskMain:doTaskInfoUtil(taskInfos)  -- 排序 筛选 大厅是否跳跃
 
             else
                 normal = normal + 1
-                table.insert(tableNew, head + getable + special + normal, task)
-                
+                table.insert(tableNormal, normal, task)
             end
-
+            
         else
             if not self:isSpecialTask(task) then
-                table.insert(tableNew, #tableNew + 1, task)
+                table.insert(tableNormal, #tableNormal + 1, task)
             end
         end
     end
+
+    table.sort( tableNormal, function (task1, task2)
+        if task1.isReward then
+            return false
+        elseif task2.isReward then
+            return true
+        end
+
+        return self.taskDatas:isTaskOrderPri(task1.nTaskID, task2.nTaskID)
+    end )
+    
+    for i = 1, #tableNormal do
+        table.insert( tableNew, #tableNew + 1, tableNormal[i] )
+    end
+
 
     return tableNew
 end
@@ -418,8 +450,9 @@ function TaskMain:doEventUtil(valTab)
         self:doQuikStart()
 
     elseif type == "6" then
-        self:doCheckin()
-
+       -- self:doCheckin()
+        FishGI.hallScene.net.roommanager:sendSignIn()
+        return
     elseif type == "7" then
         self:showConsumePanel()
 
@@ -435,7 +468,13 @@ function TaskMain:doEventUtil(valTab)
     elseif type == "11" then
         FishGI.hallScene.uiInviteFriend:showLayer()
 
+    elseif type == "12" then
+        FishGI.wechatShareType = 0
+        local shareInfo = FishGI.WebUserData:GetShareDataTable();
+        FishGI.ShareHelper:doShareWebType(shareInfo.text,shareInfo.icon,shareInfo.url, nil, nil, shareInfo.id)
     end
+    
+    self:hideLayer(false)
 end
 
 function TaskMain:showPlayerInfoPanel()
@@ -455,7 +494,7 @@ function TaskMain:doQuikStart()
 end
 
 function TaskMain:doCheckin()
-    FishGI.hallScene.uiCheck:showLayer() 
+    --FishGI.hallScene.uiCheck:showLayer() 
 end
 
 return TaskMain

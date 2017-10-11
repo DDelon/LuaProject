@@ -12,7 +12,7 @@ function SmallGamesGMF.LoadPackages(...)
     for _, name in ipairs(names) do
         assert(type(name) == "string", string.format("SmallGamesGMF.LoadPackages - invalid package name \"%s\"", tostring(name)))
         if not loaded_packages[name] then
-            local packageName = string.format(SmallGamesCD.rootSrcPath..".packages.%s.init", name)
+            local packageName = string.format(SmallGamesGI.rootSrcPath..".packages.%s.init", name)
             local cls = require(packageName)
             assert(cls, string.format("SmallGamesGMF.LoadPackages - package class \"%s\" load failed", packageName))
             loaded_packages[name] = cls

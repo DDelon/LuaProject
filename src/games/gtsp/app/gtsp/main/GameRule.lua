@@ -22,7 +22,9 @@ end
 
 function GameRule:onClickClose( ... )
     DogGI.ui_manager:resume()
+    self:release()
     self:onQuit()
+    DogGI.main.rule = nil
 end
 
 function GameRule:onEnterAni()

@@ -1251,6 +1251,7 @@ function GameEffect:playDropProp(dataTab)
     local isShowCount = dataTab.isShowCount
     local parent = dataTab.parent
     local endPos = dataTab.endPos
+    local Zorder = dataTab.Zorder
 
     local seniorPropData = dataTab.seniorPropData
     if seniorPropData ~= nil and next(seniorPropData) ~= nil then
@@ -1273,8 +1274,11 @@ function GameEffect:createDropProp(dataTab)
     local isShowCount = dataTab.isShowCount
     local dropType = dataTab.dropType
     local parent = dataTab.parent
+    local Zorder = dataTab.Zorder
 
-
+    if Zorder == nil then
+        Zorder = FishCD.ORDER_LAYER_TRUE
+    end
     if parent == nil then
         parent = cc.Director:getInstance():getRunningScene()
         if dataTab.dropType ~= nil and dataTab.dropType == "friend" then
@@ -1283,9 +1287,9 @@ function GameEffect:createDropProp(dataTab)
     end
     local node = cc.Node:create()
     if FishGI.GAME_STATE == 2 then
-        parent:addChild(node,FishCD.ORDER_LAYER_TRUE + 10)
+        parent:addChild(node,Zorder + 10)
     else
-        parent:addChild(node,FishCD.ORDER_GAME_prop)
+        parent:addChild(node,Zorder)
     end
 
     local propname = ""
@@ -1436,6 +1440,31 @@ function GameEffect:propRunAct(dataTab)
 
 end
 
+--播放抽奖中动画
+function GameEffect:playLotteryState(palyerId) 
+    local player = FishGI.gameScene.playerManager:getPlayerByPlayerId(palyerId)
+    local chairId = player.playerInfo.chairId
+    local cannon = player.cannon
+    local pos = FishGI.gameScene.playerManager:getPlayerPos(playerId)
+    local spr = cc.Sprite:create("battle/lottery/lottery_pic_cjz.png")
+    local spr = cannon:getChildByName("Lottery")
+    if spr == nil then
+        spr = cc.Sprite:create("battle/lottery/lottery_pic_cjz.png")
+        cannon:addChild(spr,1000)
+        spr:setPosition(cc.p(0,170))
+        if chairId > 2 then
+            spr:setRotation(180)
+        end
+    end
+
+    spr:stopAllActions()
+    spr:setOpacity(255);
+    local RemoveAct = cc.Sequence:create(cc.DelayTime:create(3),cc.RemoveSelf:create())
+    spr:runAction(RemoveAct)
+    local seq1 = cc.Sequence:create(cc.FadeTo:create(0.5,0.75*255),cc.FadeTo:create(0.5,255))
+    local RepeatAct = cc.RepeatForever:create(seq1)
+    spr:runAction(RepeatAct)
+end
 
 
 return GameEffect;

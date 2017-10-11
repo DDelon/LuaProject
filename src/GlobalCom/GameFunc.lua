@@ -95,7 +95,11 @@ function FishGMF.CppToLua(valTab)
     elseif typeName == "playBossRateChange" then
         FishGI.GameEffect:bossRateChange( dataTab)
     elseif typeName == "sendChangeAimFish" then
-        FishGI.gameScene.uiSkillView.Skill_4:sendChangeAimFish(dataTab.timelineId, dataTab.fishArrayId)
+        --FishGI.gameScene.uiSkillView.Skill_4:sendChangeAimFish(dataTab.timelineId, dataTab.fishArrayId)
+        local event = cc.EventCustom:new("sendChangeAimFish")
+        event._userdata = dataTab
+        cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
+
     end
 
 end
@@ -449,16 +453,6 @@ function FishGMF.setGameType(gameType)
     dataTab.gameType = gameType
     LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
     
-end
-
---设置c++方面的目标鱼
-function FishGMF.setCppAimFish(playerId, timelineId,fishArrayId)
-    local dataTab = {}
-    dataTab.funName = "setAimFish"
-    dataTab.playerId = playerId
-    dataTab.timelineId = timelineId
-    dataTab.fishArrayId = fishArrayId
-    LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
 end
 
 --播放c++方面的特效   1.爆炸   2.爆金币   3.爆光圈   4.背景震动

@@ -15,8 +15,10 @@ HallLayer.RESOURCE_BINDING  = {
     ["btn_option_exit"]    = { ["varname"] = "btn_option_exit" ,    ["events"]={["event"]="click",["method"]="onClickexit"}}, 
     ["btn_option_service"] = { ["varname"] = "btn_option_service" , ["events"]={["event"]="click",["method"]="onClickservice"}}, 
     ["btn_mail"]           = { ["varname"] = "btn_mail" ,           ["events"]={["event"]="click",["method"]="onClickmail"}}, 
-    
-    
+    ["btn_real_name"]      = { ["varname"] = "btn_real_name" ,      ["events"]={["event"]="click",["method"]="onClickreal_name"}},   
+    ["image_real_name_bg"] = { ["varname"] = "image_real_name_bg"} ,   
+    ["text_real_name_award"]           = { ["varname"] = "text_real_name_award"} , 
+
     ["image_coin_bg"]      = { ["varname"] = "image_coin_bg" }, 
     ["image_diamond_bg"]   = { ["varname"] = "image_diamond_bg" }, 
     ["btn_addcoin"]        = { ["varname"] = "btn_addcoin" ,        ["events"]={["event"]="click",["method"]="onClickcoin"}},
@@ -109,6 +111,8 @@ function HallLayer:onCreate( ... )
     self.spr_head_edge:setLocalZOrder(node:getLocalZOrder() + 1)
 
     self:openTouchEventListener()
+
+    FishGI.eventDispatcher:registerCustomListener("onUserInit", self, function(valTab) self:onUserInit(valTab) end)
 end
 
 --初始化背景
@@ -123,6 +127,9 @@ function HallLayer:initBg()
     local emitter2 = FishGI.GameEffect.createBubble(1) 
     emitter2:setPosition(cc.p(967.39*self.scaleX_,-35.27*self.scaleY_))
     self.node_bg:addChild(emitter2,0)
+    local dataStr = FishGI.GameConfig:getConfigData("config",tostring(990000102), "data")
+    local val = string.split(dataStr,",")
+    self.text_real_name_award:setString(val[2])
 
 end
 
@@ -368,7 +375,7 @@ function HallLayer:onClickAlm( sender )
 end
 
 function HallLayer:onClickcheck( sender )
-    FishGI.hallScene.uiCheck:showLayer() 
+    --FishGI.hallScene.uiCheck:showLayer() 
 end
 
 function HallLayer:onClickrank( sender )
@@ -474,5 +481,26 @@ function HallLayer:getHallPropAimByID(propId)
     pos = child:convertToWorldSpace(pos)
     return pos
 end
+
+function HallLayer:onClickreal_name( sender )
+    print("-----HallLayer:onClickreal_name-------")
+    FishGI.hallScene.uiRealName:showLayer()
+    local function callback()
+        self.image_real_name_bg:setVisible(false)
+        self.btn_real_name:setVisible(false)
+    end
+    FishGI.hallScene.uiRealName:setCallback(callback) 
+end
+
+function HallLayer:onUserInit( valTab )
+    if FishGI.WebUserData:isVerifyRealName() then
+        self.image_real_name_bg:setVisible(false)
+        self.btn_real_name:setVisible(false)
+    else
+        self.image_real_name_bg:setVisible(true)
+        self.btn_real_name:setVisible(true)
+    end
+end
+
 
 return HallLayer;

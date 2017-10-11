@@ -464,7 +464,7 @@ end
 --核弹申请使用结果
 function GameNet:OnNBombUseResult(data)
     local event = cc.EventCustom:new("NBombUseResult")
-    event._usedata = data
+    event._userdata = data
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
 end
 
@@ -494,7 +494,9 @@ function GameNet:OnUseViolentResult(data)
     if FishGI.SERVER_STATE == 0 then
         return;
     end
-    FishGI.eventDispatcher:dispatch("UseViolentResult", data);
+    local event = cc.EventCustom:new("UseViolentResult")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
 end
 
 --狂暴技能结束
@@ -502,7 +504,10 @@ function GameNet:OnViolentTimeOut(data)
     if FishGI.SERVER_STATE == 0 then
         return;
     end
-    FishGI.eventDispatcher:dispatch("ViolentTimeOut", data);
+    local event = cc.EventCustom:new("ViolentTimeOut")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
+    
 end
 
 --锁定技能转换目标
@@ -513,7 +518,7 @@ function GameNet:OnBulletTargetChange(data)
 --    FishGI.eventDispatcher:dispatch("bulletTargetChange", data);
 
     local event = cc.EventCustom:new("bulletTargetChange")
-    event._usedata = data
+    event._userdata = data
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
 
 end
@@ -525,12 +530,16 @@ end
 
 --自己锁定技能结果
 function GameNet:OnMyAimResult(data)
-    FishGI.eventDispatcher:dispatch("startMyLock", data);
+    local event = cc.EventCustom:new("startMyLock")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
 end
 
 --其他人锁定
 function GameNet:OnOtherAim(data)
-    FishGI.eventDispatcher:dispatch("startOtherLock", data);
+    local event = cc.EventCustom:new("startOtherLock")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
 end
 
 --自己申请冰冻结果
@@ -882,6 +891,18 @@ end
 --解锁炮倍申请
 function GameNet:sendUpgradeCannon()
     local data = {}
+    local ifNotice = FishGI.gameScene.uiSkillView.Skill_17:ifNoticeRate()
+    if ifNotice then
+        local function callback(sender)
+            local tag = sender:getTag()
+            if tag == 2 then
+                self:sendJMsg("MSGC2SUpgradeCannon", data)
+            end
+        end
+        local str = FishGF.getChByIndex(800000349)
+        FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,str,callback);
+        return
+    end
     self:sendJMsg("MSGC2SUpgradeCannon", data)
 end
 

@@ -3,10 +3,9 @@ local NewbieTask = class("NewbieTask", cc.load("mvc").ViewBase)
 NewbieTask.AUTO_RESOLUTION   = true
 NewbieTask.RESOURCE_FILENAME = "ui/battle/newbietask/uinewbietask"
 NewbieTask.RESOURCE_BINDING  = {
---    ["spr_deng_left"]           = { ["varname"] = "spr_deng_left" },
---    ["spr_deng_right"]          = { ["varname"] = "spr_deng_right" },
     ["spr_prop"]                = { ["varname"] = "spr_prop" },
-    ["spr_prop_num"]            = { ["varname"] = "spr_prop_num" },
+    ["fnt_prop_num"]            = { ["varname"] = "fnt_prop_num" },
+    ["img_desc_bg"]             = { ["varname"] = "img_desc_bg" },
     ["text_desc"]               = { ["varname"] = "text_desc" },
     ["img_process_bg"]          = { ["varname"] = "img_process_bg" },
     ["loading_bar_process"]     = { ["varname"] = "loading_bar_process" },
@@ -42,6 +41,7 @@ end
 function NewbieTask:initView( )
     self.scaleX_,self.scaleY_,self.scaleMin_  = FishGF.getCurScale()
     self.isNewTask = true
+    self:runAction(self.resourceNode_["animation"])
 end
 
 function NewbieTask:onEnter( )
@@ -56,11 +56,11 @@ function NewbieTask:onExit( )
 end
 
 function NewbieTask:startAni()
-    self:runAction(cc.Sequence:create(cc.MoveBy:create(0.5, cc.p(0, -140*self.scaleMin_))))
+    self:runAction(cc.Sequence:create(cc.MoveBy:create(0.5, cc.p(0, -120*self.scaleMin_))))
 end
 
 function NewbieTask:endAni(callback)
-    self:runAction(cc.Sequence:create(cc.MoveBy:create(0.5, cc.p(0, 140*self.scaleMin_)), cc.CallFunc:create(callback)))
+    self:runAction(cc.Sequence:create(cc.MoveBy:create(0.5, cc.p(0, 120*self.scaleMin_)), cc.CallFunc:create(callback)))
 end
 
 function NewbieTask:onTaskProcess( taskID, taskData )
@@ -80,6 +80,7 @@ function NewbieTask:onTaskProcess( taskID, taskData )
     self:refreshProcessData()
     if self.iCurTaskData >= self.iTotalTaskData then
         self:setIfTaskExecuting(false)
+        self.resourceNode_["animation"]:play("animation0", true)
     end
 end
 
@@ -96,22 +97,20 @@ function NewbieTask:setIfTaskExecuting(bTaskExecuting)
         bTaskExecuting = false
     end
     self.bTaskExecuting = bTaskExecuting
---    self.spr_deng_left:setVisible(bTaskExecuting)
---    self.spr_deng_right:setVisible(bTaskExecuting)
+    self.img_desc_bg:setVisible(bTaskExecuting)
     self.text_desc:setVisible(bTaskExecuting)
     self.img_process_bg:setVisible(bTaskExecuting)
     self.btn_draw:setVisible(not bTaskExecuting)
 end
 
 function NewbieTask:refreshPropData()
-    --self.spr_prop:initWithFile("common/prop/"..FishGI.GameConfig:getConfigData("item", tostring(200000000 + self.iPorpId), "res"))
     self.spr_prop:initWithFile("common/prop/"..FishGI.GameTableData:getItemTable(self.iPorpId).res)
     if self.iPorpId == "1002" or self.iPorpId == "1003" then
         self.spr_prop:setScale(0.8)
     else
         self.spr_prop:setScale(1)
     end
-    self.spr_prop_num:setString(tostring(self.iPropCount))
+    self.fnt_prop_num:setString(FishGF.changePropUnitByID(self.iPorpId,self.iPropCount,false))
     self.text_desc:setString(self.strTaskDesc)
 end
 

@@ -5,12 +5,14 @@ PointUpgrade.RESOURCE_FILENAME = SmallGamesGF.getCurAppResUIPath("main.uiPointUp
 PointUpgrade.RESOURCE_BINDING  = {
     txt_upg_level         = { parent = nil, varname = "txt_upg_level" },    
     bg            = { parent = nil, varname = "bg" },        
+        prop_001                = { parent = "bg", varname = "prop_001" },
         txt_reward            = { parent = "bg", varname = "txt_reward" },        
 }
 
 function PointUpgrade:onCreate()
     self:runAction(self.resourceNode_.animation)
     self.resourceNode_.animation:play("play_upg", false)
+    self.prop_001:initWithFile(SmallGamesGI.extend_res_path.."/"..SmallGamesGI.extend_money_prop_res)
     local path = SmallGamesGF.getCurAppResPath("sound/lvup_02.mp3")
     AudioEngine.playEffect(path)
 end

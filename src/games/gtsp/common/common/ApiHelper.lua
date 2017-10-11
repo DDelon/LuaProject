@@ -12,7 +12,7 @@ function(err,data);
 -- local API_DOMAIN = "http://api.test."..WEB_DOMAIN;
 
 -- 返回状态码
-cc.exports.ApiStatus=
+local ApiStatus=
 {
     Ok = 0,
     ShowMsg = 100,
@@ -58,35 +58,35 @@ local Http = SmallGamesGI.Http
 
 local function getPayApi_(name, channelId)
     if channelId == nil then
-        channelId = CHANNEL_ID
+        channelId = SmallGamesGI.lobbyData.ChannelId
     end
     local ver_str = SmallGamesGF.getHallVerison()
-    return string.format("%s%s/%s/%d/%s/%s", payapi_, name,  APP_ID, channelId, ver_str, REGION_CODE)
+    return string.format("%s%s/%s/%d/%s/%s", payapi_, name,  SmallGameApp.AppId, channelId, ver_str, REGION_CODE)
 end
 
 local function getVerifyApi_(name, channelId)
     if channelId == nil then
-        channelId = CHANNEL_ID
+        channelId = SmallGamesGI.lobbyData.ChannelId
     end
     local ver_str = SmallGamesGF.getHallVerison()
-    return string.format("%s%s/%s/%d/%s/%s", payback_, name,  APP_ID, channelId, ver_str, REGION_CODE)
+    return string.format("%s%s/%s/%d/%s/%s", payback_, name,  SmallGameApp.AppId, channelId, ver_str, REGION_CODE)
 end
 
 local function getUserApi_(name, channelId)
     if channelId == nil then
-        channelId = CHANNEL_ID
+        channelId = SmallGamesGI.lobbyData.ChannelId
     end
     local ver_str = SmallGamesGF.getHallVerison()
-    return string.format("%s%s/%s/%d/%s/%s", userapi_, name, APP_ID, channelId, ver_str, REGION_CODE)
+    return string.format("%s%s/%s/%d/%s/%s", userapi_, name, SmallGameApp.AppId, channelId, ver_str, REGION_CODE)
 end
 
 --第三方登陆
 local function getThirdApi_(name, channelId)
     if channelId == nil then
-        channelId = CHANNEL_ID
+        channelId = SmallGamesGI.lobbyData.ChannelId
     end
 	local ver_str = SmallGamesGF.getHallVerison()
-    return string.format("%s%s/%s/%d/%s/%s", thirdapi_, name, APP_ID, channelId, ver_str, REGION_CODE)
+    return string.format("%s%s/%s/%d/%s/%s", thirdapi_, name, SmallGameApp.AppId, channelId, ver_str, REGION_CODE)
 end
 
 local function getToken_()
@@ -164,7 +164,7 @@ function Dapi:OrderNew(args, callback, debug)
     args.udid = args.udid or deviceid;
     args.type = args.type or ""
     if checkvalues_(args.type, args.money, args.autobuy) then
-        local url = getPayApi_("/order/new", CHANNEL_ID)
+        local url = getPayApi_("/order/new", SmallGamesGI.lobbyData.ChannelId)
         print("pay url:"..url)
         table.merge(args, getToken_())
         Http:Post(url, errorhandler_(callback), args, true)

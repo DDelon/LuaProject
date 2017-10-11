@@ -2,28 +2,6 @@ local ShareBase = class("ShareBase")
 
 function ShareBase:init()
 	self.type = 0
-	local funDoShare = {
-		android = {
-			Buyu = self.doShareAndroidBuyu,
-			Qipai = self.doShareAndroidQipai,
-		},
-		ios = {
-			Buyu = self.doShareIosBuyu,
-			Qipai = self.doShareIosQipai,
-		},
-	}
-	local funOnShareResult = {
-		android = {
-			Buyu = self.onShareResultAndroidBuyu,
-			Qipai = self.onShareResultAndroidQipai,
-		},
-		ios = {
-			Buyu = self.onShareResultIosBuyu,
-			Qipai = self.onShareResultIosQipai,
-		},
-	}
-	self.funDoShare = funDoShare[device.platform][SmallGamesGI.lobbyName]
-	self.funOnShareResult = funOnShareResult[device.platform][SmallGamesGI.lobbyName]
 end
 
 function ShareBase:setLuaBottomCallData(luaBottomCallData)
@@ -31,29 +9,21 @@ function ShareBase:setLuaBottomCallData(luaBottomCallData)
 end
 
 function ShareBase:doShare(shareInfo)
-	if self.funDoShare then
-		self.funDoShare(self, shareInfo)
+	shareInfo.handlerCallback = handler(self, self.onShareResult)
+	if device.platform == "android" then
+		local shareData = SmallGamesGI.ExtendGameConf:makeAndroidShareParams(shareInfo)
+		self:doShareAndroid(shareData)
+	elseif device.platform == "ios" then
+		local shareData = SmallGamesGI.ExtendGameConf:makeIosShareParams(shareInfo)
+		self:doShareIos(shareData)
 	end
 end
 
-function ShareBase:doShareAndroidBuyu(shareInfo)
-	self:doShareAndroid(self:getAndroidBuyuShareInfo(shareInfo))
-end
-
-function ShareBase:doShareAndroidQipai(shareInfo)
-	self:doShareAndroid(self:getAndroidQipaiShareInfo(shareInfo))
-end
-
-function ShareBase:doShareIosBuyu(shareInfo)
-	self:doShareIos(self:getIosBuyuShareInfo(shareInfo))
-end
-
-function ShareBase:doShareIosQipai(shareInfo)
-	self:doShareIos(self:getIosBuyuShareInfo(shareInfo))
-end
-
-function ShareBase:doShareAndroid(javaParams, javaMethodSig)
-	local luaBridge = require(SmallGamesGI.luaj)
+function ShareBase:doShareAndroid(javaParams)
+	local luaBridge = require("cocos.cocos2d.luaj")
+	if self.luaBottomCallData.callbackResult then
+    	luaBridge.callStaticMethod(self.luaBottomCallData.className, self.luaBottomCallData.callbackResult, { handler(self, self.onShareResult) })
+	end
 	local javaMethodName = self.luaBottomCallData.methodName
     luaBridge.callStaticMethod(self.luaBottomCallData.className, javaMethodName, javaParams, javaMethodSig)
 end
@@ -64,14 +34,25 @@ function ShareBase:doShareIos(shareInfo)
 	end
 	local iosClassName = self.luaBottomCallData.className
 	local methodName = self.luaBottomCallData.methodName
-    local luaoc = require(SmallGamesGI.luaoc)
+    local luaoc = require("cocos.cocos2d.luaoc")
 	local ok, ret = luaoc.callStaticMethod(iosClassName, methodName, shareInfo)
 	if not ok then
 		print("call oc class:"..iosClassName.." method:"..methodName.." failure")
 	end
 end
 
-function ShareBase:onShareResult(luastr)
+function ShareBase:onShareResult(...)
+	local resultStatus = -1
+	if device.platform == "android" then
+		resultStatus = SmallGamesGI.ExtendGameConf:makeAndroidShareResultData(...)
+	elseif device.platform == "ios" then
+		resultStatus = SmallGamesGI.ExtendGameConf:makeIosShareResultData(...)
+	end
+	if resultStatus == 0 then
+		print("share success")
+	else
+		print("share failed")
+	end
 end
 
 return ShareBase

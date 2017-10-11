@@ -7,6 +7,7 @@ ResultAnimate.RESOURCE_BINDING  = {
     photo            = { parent = "panel", varname = "photo" },    
     img_gold            = { parent = "panel", varname = "img_gold" },
         fnt_money            = { parent = "img_gold", varname = "fnt_money" },
+            prop_001            = { parent = "fnt_money", varname = "prop_001" },
         fnt_point            = { parent = "img_gold", varname = "fnt_point" },
         
     fnt_rate            = { parent = "panel", varname = "fnt_rate" },
@@ -17,6 +18,7 @@ ResultAnimate.RESOURCE_BINDING  = {
 
 function ResultAnimate:onCreate()
     self:runAction(self.resourceNode_.animation)
+    self.prop_001:initWithFile(SmallGamesGI.extend_res_path.."/"..SmallGamesGI.extend_money_prop_res)
     self:play("star_", false)
     
     local frameEventCallFunc = function (frameEventName)
@@ -66,7 +68,7 @@ function ResultAnimate:setAnimal( spr , parent)
     actions[#actions + 1] = cc.CallFunc:create(function ( ... )
         local path = SmallGamesGF.getCurAppResPath("sound/finish_01.mp3")
         AudioEngine.playEffect(path)
-
+        spr:release()
         spr:removeFromParent()
         local size = self.photo:getContentSize()
         spr:setRotation(0)
@@ -245,7 +247,7 @@ function ResultAnimate:CoinAnimate_5thAction(delayTime)
 end
 
 function ResultAnimate:getCoinImg()
-    local coin = cc.Sprite:create(SmallGamesGF.getCurAppResPath("common/prop/prop_001.png"))
+    local coin = cc.Sprite:create(SmallGamesGI.extend_res_path.."/"..SmallGamesGI.extend_money_prop_res)
     local action = cc.RepeatForever:create(cc.Animate:create(DogGI.preload:getCoin()))
     coin:setVisible(false)
     coin:runAction(action)

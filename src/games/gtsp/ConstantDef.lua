@@ -1,13 +1,7 @@
-cc.exports.SmallGamesCD = {}
-
-local function initGame(rootSrcPath, rootResPath)
-    -- 模块目录结构
-    SmallGamesCD.rootSrcPath = string.gsub(rootSrcPath, "/", ".")
-    SmallGamesCD.rootResPath = rootResPath
-    SmallGamesCD.rootResUIPath = string.gsub(rootResPath, '/', '.')
-
+local function initGame(rootSrcPath, rootResPath, lobbyName, appName, lobbyData)
     -- 加载全局配置
-    require(SmallGamesCD.rootSrcPath..".global.GlobalInstance")
+    require(rootSrcPath..".global.GlobalFunc")(rootSrcPath, rootResPath)
+    SmallGamesGF.start(lobbyName, appName, lobbyData)
 end
 
 return initGame
