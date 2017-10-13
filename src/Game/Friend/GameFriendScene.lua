@@ -162,7 +162,6 @@ function GameFriendScene:exitGame()
     end
     
     FishGI.isPlayerFlip = false;
-    FishGI.isLogin = true
 
     FishGI.isExitRoom = true
     FishGI.isNoticeClose = false
@@ -185,7 +184,7 @@ function GameFriendScene:onExit( )
     --移除监听器
     FishGI.eventDispatcher:removeAllListener();
     FishGI.gameScene = nil
-    FishGF.waitNetManager(true,nil,"exitGame")
+    FishGF.waitNetManager(true,nil,"exitGame",0)
 end
 
 function GameFriendScene:buttonClicked(viewTag, btnTag)

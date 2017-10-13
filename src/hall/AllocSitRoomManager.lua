@@ -296,7 +296,7 @@ function AllocSitRoomManager:OnHallInfo(data)
         LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
 		FishGI.isWirteLog = true;
     end
-    FishGI.isLogin = false
+
     FishGF.waitNetManager(false,nil,"MSGC2SGetHallInfo")
     
     --玩家数据

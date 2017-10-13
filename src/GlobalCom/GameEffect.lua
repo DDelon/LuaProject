@@ -1496,7 +1496,6 @@ function GameEffect:playLotteryState(palyerId)
     local chairId = player.playerInfo.chairId
     local cannon = player.cannon
     local pos = FishGI.gameScene.playerManager:getPlayerPos(playerId)
-    local spr = cc.Sprite:create("battle/lottery/lottery_pic_cjz.png")
     local spr = cannon:getChildByName("Lottery")
     if spr == nil then
         spr = cc.Sprite:create("battle/lottery/lottery_pic_cjz.png")

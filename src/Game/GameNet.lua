@@ -903,6 +903,8 @@ function GameNet:sendUpgradeCannon()
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,str,callback);
         return
     end
+
+    FishGF.waitNetManager(true,nil,"UpgradeCannon")
     self:sendJMsg("MSGC2SUpgradeCannon", data)
 end
 

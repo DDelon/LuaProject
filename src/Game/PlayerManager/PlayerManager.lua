@@ -440,6 +440,7 @@ function PlayerManager:CannonUpgrade(valTab)
 	local dropProps = valTab.dropProps
 
 	if self.selfIndex == playerId then
+		FishGF.waitNetManager(false,nil,"UpgradeCannon")
 	    local aimCrystal = FishGI.gameScene.uiGunUpGrade:getAimCrystal()
 	    FishGMF.isSurePropData(FishGI.gameScene.playerManager.selfIndex,FishCD.PROP_TAG_02,aimCrystal,true)
 	end

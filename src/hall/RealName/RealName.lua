@@ -23,6 +23,11 @@ end
 function RealName:init()
 end
 
+function RealName:initEditBoxStr(str)
+    self.tf_name:setString(str);
+    self.tf_idcard:setString(str);
+end
+
 function RealName:initView()
     self:openTouchEventListener()
     self:initWinEditBox("tf_name")
@@ -79,13 +84,13 @@ function RealName:onClickCommit()
             propTab.dropType = "normal"
             propTab.isShowCount = false
             FishGI.GameEffect:playDropProp(propTab)
-            FishGF.waitNetManager(false, nil, "RealNameVerify")
             self:hideLayer()
             if self.funCallback then
                 self.funCallback()
             end
             strMsg = FishGF.getChByIndex(800000354)
         end
+        FishGF.waitNetManager(false, nil, "RealNameVerify")
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,strMsg)
     end
     FishGF.waitNetManager(true, nil, "RealNameVerify")

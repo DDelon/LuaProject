@@ -136,7 +136,7 @@ end
 function HallNet:enterRoom(roomLv)
     print("-HallNet-enterRoom----")
     FishGF.waitNetManager(false,nil,"startConnect")
-    FishGI.isLogin = false
+
     --进入房间
     local room = nil
     local roomId = self.roomId
@@ -236,6 +236,9 @@ function evt.OnSocketClose( obj,nErr )
         FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000036),"hallOnSocketClose")
     elseif sceneName == "game" then
         FishGF.doMyLeaveGame(9)
+    elseif sceneName == "login" then
+        FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000036),"LoginOnSocketClose")
+        FishGF.clearSwallowLayer({})
     end
     
     print("与大厅服务器连接断开，请重新登录0")
@@ -302,7 +305,6 @@ end
 function evt.OnJoinHallFailed( hall,result )
     print("hall OnJoinHallFailed");
     FishGF.waitNetManager(false,nil,"startConnect")
-    FishGI.isLogin = false
     
     local str = nil
     if result == 1 then

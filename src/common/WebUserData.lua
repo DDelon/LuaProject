@@ -127,7 +127,7 @@ local function lazyInit_()
     userWebData.status=checkint(userWebData.status)
     if userWebData.status>1 then
         userWebData.status=1
-        FishGF.waitNetManager(true,nil,"web")
+        FishGF.waitNetManager(true,nil,"web",0)
         FishGI.Dapi:UserInit(onuserinit_)
     elseif userWebData.status==1 then
      --todo 拉取数据中。。

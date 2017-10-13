@@ -338,7 +338,7 @@ function FishGF.showSystemTip(message,keyId,delaytime)
 end
 
 --等待框
-function FishGF.waitNetManager(isAdd,message,waitId)
+function FishGF.waitNetManager(isAdd,message,waitId,delaytime)
     if message == nil then
         message = FishGF.getChByIndex(800000178)
     end
@@ -352,7 +352,7 @@ function FishGF.waitNetManager(isAdd,message,waitId)
     else
         FishGF.delSwallowLayer(waitId)
     end
-    FishGF.updataSwallowLayer(swallowLayer)
+    FishGF.updataSwallowLayer(swallowLayer,delaytime)
 end
 
 --创建等待框
@@ -363,12 +363,20 @@ function FishGF.getSwallowLayer()
     local swallowLayer = cc.Director:getInstance():getRunningScene():getChildByName("swallowLayer_list")
     if swallowLayer == nil then
         local size = cc.Director:getInstance():getWinSize();
-        swallowLayer = ccui.Button:create("common/layerbg/com_pic_graybg.png");
-        swallowLayer:setScale9Enabled(true);
+        swallowLayer = cc.Layer:create();
         swallowLayer:setContentSize(size);
         swallowLayer:setName("swallowLayer_list")
-        swallowLayer:setPosition(cc.p(size.width/2, size.height/2));
         cc.Director:getInstance():getRunningScene():addChild(swallowLayer, 2001, FishCD.TAG.WAIT_NET_CALLBACK);
+        swallowLayer:setVisible(false)
+
+        local grayBg = ccui.ImageView:create()
+        grayBg:ignoreContentAdaptWithSize(false)
+        grayBg:loadTexture("common/layerbg/com_pic_graybg.png",0)
+        grayBg:setScale9Enabled(true)
+        grayBg:setContentSize(size);
+        grayBg:setLayoutComponentEnabled(true)
+        swallowLayer:addChild(grayBg)
+        grayBg:setPosition(cc.p(size.width/2,size.height/2))
 
         local rotateSpr = cc.Sprite:create("common/com_pic_loading_circle.png")
         swallowLayer:addChild(rotateSpr)
@@ -380,6 +388,21 @@ function FishGF.getSwallowLayer()
         swallowLayer:addChild(textLab)
         textLab:setName("textLab")
         textLab:setPosition(cc.p(size.width/2,size.height/2- rotateSpr:getContentSize().height*2/3))
+
+        local function onTouchBegan(touch, event)
+            if swallowLayer.isDelayShow== nil or swallowLayer.isDelayShow then
+                return true;
+            end
+            return false;
+        end        
+
+        local listener = cc.EventListenerTouchOneByOne:create()
+        listener:setSwallowTouches(true)
+        listener:registerScriptHandler(onTouchBegan, cc.Handler.EVENT_TOUCH_BEGAN)
+
+        local eventDispatcher = swallowLayer:getEventDispatcher()
+        eventDispatcher:addEventListenerWithSceneGraphPriority(listener, swallowLayer) 
+
     end
     return swallowLayer
 end
@@ -484,28 +507,41 @@ function FishGF.waitOverTime()
         swallowLayer:setVisible(false)
         FishGF.clearSwallowLayer()
         FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000036)..".","waitOverTime")
-        FishGF.print("-----------------waitOverTime--------------waitId="..waitId)
+        print("-----------------waitOverTime--------------waitId="..waitId)
     else
         swallowLayer:stopActionByTag(FishCD.OVER_TIME_ACT_TAG)
         --没等待超时
-        FishGF.print("------------超时处理---------")
+        print("------------超时处理---------")
     end
 end
 
 --更新等待框界面
-function FishGF.updataSwallowLayer(swallowLayer)
+function FishGF.updataSwallowLayer(swallowLayer,delayTime)
     swallowLayer:stopActionByTag(FishCD.OVER_TIME_ACT_TAG)
     local IdCount,noIdCount = FishGF.getWaitListSize()
     if IdCount > 0 or noIdCount > 0 then
-        swallowLayer:setVisible(true)
         local function overTimeFunc()
             FishGF.waitOverTime()
         end
+        if delayTime == nil then
+            delayTime = 0.5
+        elseif delayTime == 0 then
+            swallowLayer:stopActionByTag(FishCD.OVER_TIME_ACT_TAG + 1)
+            swallowLayer.isDelayShow = false
+        end
+        if not swallowLayer.isDelayShow then
+            swallowLayer.isDelayShow = true
+            local delayShowAct = cc.Sequence:create(cc.DelayTime:create(delayTime),cc.Show:create());
+            delayShowAct:setTag(FishCD.OVER_TIME_ACT_TAG + 1);
+            swallowLayer:runAction(delayShowAct);
+        end
         local delayTimeAct = cc.Sequence:create(cc.DelayTime:create(FishCD.OVER_TIME), cc.CallFunc:create(overTimeFunc));
         delayTimeAct:setTag(FishCD.OVER_TIME_ACT_TAG);
-        swallowLayer:runAction(delayTimeAct);     
+        swallowLayer:runAction(delayTimeAct);
     else
         swallowLayer:setVisible(false)
+        swallowLayer.isDelayShow = false
+        swallowLayer:stopActionByTag(FishCD.OVER_TIME_ACT_TAG + 1)
     end
 
 end
@@ -1061,7 +1097,7 @@ function FishGF.isRechargeSucceed(newData)
              print("--------isRechargeSucceed------333---------")
             if FishGI.GAME_STATE == 2 then
                 FishGF.waitNetManager(false,nil,"doPaySDK")
-                FishGF.waitNetManager(true,nil,"doPaySDK")
+                FishGF.waitNetManager(true,nil,"doPaySDK",0)
                 FishGI.hallScene.net.roommanager:sendDataGetInfo();
             elseif FishGI.GAME_STATE == 3 then
                 FishGI.gameScene.net:sendBackFromCharge()

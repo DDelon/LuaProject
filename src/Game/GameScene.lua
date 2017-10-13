@@ -334,7 +334,7 @@ function GameScene:onExit( )
     FishGI.eventDispatcher:removeAllListener();
     self:removeListener()
 
-    FishGF.waitNetManager(true,nil,"exitGame")
+    FishGF.waitNetManager(true,nil,"exitGame",0)
 
 end
 
@@ -636,7 +636,6 @@ function GameScene:exitGame()
     self:closeAllSchedule();
     LuaCppAdapter:getInstance():exitGame();
     FishGI.isPlayerFlip = false;
-    FishGI.isLogin = true
     print("------GameScene---exitGame-----2-----")
 end
 

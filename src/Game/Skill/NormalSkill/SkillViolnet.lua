@@ -14,12 +14,17 @@ function SkillViolnet:ctor(...)
     local dataStr = tostring(FishGI.GameConfig:getConfigData("config",tostring(990000101), "data"));
     local list = string.split(dataStr,";")
     self.rateDataList = {}
+    self.needNoticeRate = {}
     for k,v in pairs(list) do
         local valTab = string.split(v,",")
         local data = {}
         data.rate = tonumber(valTab[1])
         data.propCount = tonumber(valTab[2])
         table.insert( self.rateDataList, data )
+
+        local index = FishGI.GameTableData:getCannonIndex(data.rate)
+        local priorRate = FishGI.GameTableData:getCannonTable(index - 1).times
+        self.needNoticeRate[priorRate] = 1
     end
 
 end
@@ -130,7 +135,9 @@ function SkillViolnet:isCanUse()
 end
 
 function SkillViolnet:checkIsEnd()
+    
     local curTime = os.time();
+    
     if curTime >= self.endTime then
         local playerId = FishGI.gameScene.playerManager.selfIndex;
         local player = FishGI.gameScene.playerManager:getPlayerByPlayerId(playerId)
@@ -163,6 +170,7 @@ function SkillViolnet:useViolentResult(evt)
 
         local isShow = nil
         if myPlayerId == playerId then
+            self.endTime = os.time()+self.duration
             self:runTimer()
             isShow = false
             self.btn.parentClasss:setState(2)
@@ -179,15 +187,18 @@ function SkillViolnet:useViolentResult(evt)
             self:clearDataFromPool(useType)
         end
 
+
         local player = FishGI.gameScene.playerManager:getPlayerByPlayerId(playerId)
         player:startEffectId(self.propId);
-        if self.lockFunc ~= nil then
-            self.lockFunc:start(playerId);
+        if myPlayerId == playerId then
+            if self.lockFunc ~= nil then
+                self.lockFunc:start(playerId);
+            end
         else
-            self.lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
-            self.lockFunc:lockFish(playerId, timelineId, fishArrayId);
-            self.lockFunc:over(playerId);
-            self.lockFunc = nil;
+            local lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+            lockFunc:lockFish(playerId, timelineId, fishArrayId);
+            lockFunc:over(playerId);
+            lockFunc = nil;
         end
     end
 end
@@ -213,17 +224,13 @@ function SkillViolnet:bulletTargetChange(evt)
     local data = evt._userdata;
     local selfId = FishGI.gameScene.playerManager.selfIndex;
     if data.playerId ~= selfId then
-        print("violent bullet change target");
+        local lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+        lockFunc:lockFish(data.playerId, data.timelineId, data.fishArrayId);
+        lockFunc:over(data.playerId);
+        lockFunc = nil;
+    else
         if self.lockFunc ~= nil then
             self.lockFunc:lockFish(data.playerId,data.timelineId,data.fishArrayId)
-            print("violent bullet change target1");
-        else
-            dump(data);
-            self.lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
-            self.lockFunc:lockFish(data.playerId, data.timelineId, data.fishArrayId);
-            self.lockFunc:over(data.playerId);
-            self.lockFunc = nil;
-            print("violent bullet change target2");
         end
     end 
 end
@@ -239,8 +246,9 @@ function SkillViolnet:ifNoticeRate( )
     local playerInfo = self.playerSelf.playerInfo;
     --提示炮倍不足
     local maxGunRate = playerInfo.maxGunRate;
-    if maxGunRate == 150 then
-        local count = self.btn.parentClasss:getFntCount()
+    if self.needNoticeRate[maxGunRate] == 1 then
+        local count = FishGMF.getPlayerPropData(playerInfo.playerId,17,nil).realCount
+        --local count = self.btn.parentClasss:getFntCount()
         if count > 0  then
             return true
         end
@@ -269,14 +277,6 @@ function SkillViolnet:GunUpgrade( maxGunRate )
     end
 
 
-end
-
-function SkillViolnet:playGunUpgradeAct( rate )
-    if rate == 100 or rate == 200 then
-        self.btn.parentClasss:playBtnUpAct(2)
-    elseif rate == 800 then
-        self.btn.parentClasss:playBtnUpAct(3)
-    end
 end
 
 function SkillViolnet:updateBtnIfCanUsed( )

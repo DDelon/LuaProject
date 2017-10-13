@@ -237,7 +237,24 @@ function SkillBtn:playBtnUpAct(index)
         self.node_light_3.animation:play("activation1", false);
     elseif index == 3 then      --解锁动作2
         self.node_light_3.animation:play("activation2", false);
+        self:palyReleaseViolnet()
     end
+
+end
+
+--狂暴解锁图片
+function SkillBtn:palyReleaseViolnet()
+    local spr = cc.Sprite:create("battle/skill/bl_pic_kb_yjjs.png")
+    local playerSelf =  FishGI.gameScene.playerManager:getMyData()
+    local chairId = playerSelf.playerInfo.chairId
+    local cannon = playerSelf.cannon
+    cannon:addChild(spr)
+    spr:setPosition(cc.p(0,170))
+    if chairId > 2 then
+        spr:setRotation(180)
+    end
+    local act = cc.Sequence:create(cc.DelayTime:create(3),cc.RemoveSelf:create())
+    spr:runAction(act)
 
 end
 

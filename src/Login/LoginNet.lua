@@ -63,10 +63,13 @@ function LoginNet:startConnect()
 	else
 		print("--------------------------startConnect");
 		--弹出等待服务器返回的屏蔽层
-		if not FishGI.isLogin then
-			FishGF.waitNetManager(true,self.autoLogin and FishGF.getChByIndex(800000163) or nil,"startConnect")
-			FishGI.isLogin = true
+		local curScene = cc.Director:getInstance():getRunningScene();
+		local sceneName = curScene.sceneName
+		if sceneName == "login" then
+			FishGF.clearSwallowLayer({})
 		end
+		FishGF.waitNetManager(true,self.autoLogin and FishGF.getChByIndex(800000163) or nil,"startConnect",0)
+
 		local serverInfo = FishGI.serverConfig[self.serverIndex];
 		local isExist = cc.FileUtils:getInstance():isFileExist("accountlist.plist");
 		if FishGI.serverConfig["url"] ~= nil then
@@ -170,15 +173,6 @@ end
 function LoginNet:OnLoginError(strMsg)
 	FishGF.pring("---OnLoginError---strMsg="..strMsg)
 	FishGF.waitNetManager(false,nil,"startConnect")
-	FishGI.isLogin = false
-    -- local function callback(sender)
-    --     local tag = sender:getTag()
-    --     if tag == 1 then
-    --         local curScene = cc.Director:getInstance():getRunningScene()
-    --         curScene.view:changeAccount();
-    --     end
-    -- end
-    -- FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,strMsg,callback)
     FishGF.createCloseSocketNotice(strMsg,"OnLoginError")
 end
 
@@ -216,7 +210,7 @@ function evt.OnConnect(login, connected)
 			FishGI.connectCount = FishGI.connectCount +1
 			if FishGI.connectCount < 5 then
 				--在大厅帮玩家登陆
-				FishGF.waitNetManager(true,nil,"startAllConnect")
+				FishGF.waitNetManager(true,nil,"startAllConnect",0)
 				local  seq = cc.Sequence:create(cc.DelayTime:create(0.8),cc.CallFunc:create(function ( ... )
 					FishGF.waitNetManager(false,nil,"startAllConnect")
 					FishGI.loginScene.net:DoAutoLogin()
@@ -224,11 +218,8 @@ function evt.OnConnect(login, connected)
 				curScene:runAction(seq)
 				return 
 			end
-			if  FishGI.isLogin then
-				FishGI.isLogin = false
-				FishGI.connectCount = 0
-				FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000033),"LoginOnOnConnect")
-			end
+			FishGI.connectCount = 0
+			FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000033),"LoginOnOnConnect")
 		end
 	end
 end
@@ -299,16 +290,6 @@ function evt.OnMsgLoginFailed( obj,result)
     print(msgs[result] or "登录失败，未知错误,请与管理员联系");
 	
     FishGF.waitNetManager(false,nil,"startConnect")
-	FishGI.isLogin = false
-    -- local function callback(sender)
-    --     local tag = sender:getTag()
-    --     if tag == 1 then
-    --         --FishGI.showLayerData:hideLayer(sender:getParent():getParent():getParent(),true) 
-    --         local curScene = cc.Director:getInstance():getRunningScene()
-    --         curScene.view:changeAccount();
-    --     end
-    -- end   
-    -- FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,msgs[result] or FishGF.getChByIndex(800000034)..result,callback) 
 	FishGF.createCloseSocketNotice(msgs[result] or FishGF.getChByIndex(800000034)..result,"OnMsgLoginFailed")
 end
 

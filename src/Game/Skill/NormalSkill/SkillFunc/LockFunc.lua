@@ -2,7 +2,6 @@
 local LockFunc = class ("LockFunc")
 
 function LockFunc.create()
-    print("create-------------------------------")
     local obj = LockFunc.new();
     obj:init();
     FishGI.lockCount = FishGI.lockCount+1;

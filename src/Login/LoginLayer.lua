@@ -109,7 +109,7 @@ function LoginLayer:onEnter( )
     -- if FishGI.GAME_STATE ~= 2 then
     --     FishGI.AudioControl:playLayerBgMusic()
     -- end
-    FishGI.isLogin = false
+
     FishGI.AudioControl:playLayerBgMusic()
     FishGI.CIRCLE_COUNT = 0
     FishGMF.setGameState(1)
@@ -173,7 +173,7 @@ function LoginLayer:onClickStart( sender )
             end
         end
         print("third log----------------------------")
-        FishGF.waitNetManager(true)
+        FishGF.waitNetManager(true,nil,nil,0)
         FishGI.GameCenterSdk:trySDKLogin({type = 1},loginResult)
         return
     end
@@ -220,7 +220,7 @@ function LoginLayer:onClickaccountstart( sender )
                 FishGI.loginScene.net:loginByThird(valTab);
             end
         end
-        FishGF.waitNetManager(true)
+        FishGF.waitNetManager(true,nil,nil,0)
         FishGI.GameCenterSdk:trySDKLogin({type = 2},loginResult)
         return
     end

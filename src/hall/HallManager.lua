@@ -419,7 +419,7 @@ function HallManager:doAutoLogin(delayTime)
         FishGI.hallScene.net:dealloc();
         local noDelList = {"doPaySDK"}
         FishGF.clearSwallowLayer(noDelList)
-        FishGF.waitNetManager(true,nil,"delayAutoLogin")
+        FishGF.waitNetManager(true,nil,"delayAutoLogin",0)
         FishGF.print("------------FishGI.loginScene.net:DoAutoLogin-------------")
         local seq = cc.Sequence:create(cc.DelayTime:create(delayTime),cc.CallFunc:create(function ( ... )
             FishGF.waitNetManager(false,nil,"delayAutoLogin")

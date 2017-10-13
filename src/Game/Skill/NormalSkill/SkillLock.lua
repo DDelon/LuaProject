@@ -250,7 +250,6 @@ end
 
 --收到玩家改变目标消息
 function SkillLock:bulletTargetChange(data )
-    print("-0-OnBulletTargetChange----")
     data = data._userdata
     local selfId = FishGI.gameScene.playerManager.selfIndex;
     if data.playerId ~= selfId then
