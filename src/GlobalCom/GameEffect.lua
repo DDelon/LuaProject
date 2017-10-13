@@ -111,6 +111,28 @@ function GameEffect:initGameEff()
         self.fishGroup.animation:play("fishgroupcome", false);
     end
 
+    --加载潮汐来临
+    local  timelineCome = cc.Director:getInstance():getRunningScene():getChildByName("timelineCome")
+    if timelineCome == nil then
+        local uiTimelineCome = require("ui/battle/friend/uifriendtidecome.lua").create()
+        self.timelineCome = uiTimelineCome.root
+        self.timelineCome.animation = uiTimelineCome["animation"]
+        cc.Director:getInstance():getRunningScene():addChild(self.timelineCome,FishCD.ORDER_LAYER_VIRTUAL)
+        self.timelineCome:setName("timelineCome")
+        self.timelineCome:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+        --self.fishGroup:setVisible(false)
+        self.timelineCome:runAction(uiTimelineCome["animation"])
+        uiTimelineCome["animation"]:clearFrameEventCallFunc() 
+        local function frameEvent( frameEventName)
+            if frameEventName:getEvent() == "moveEnd" then
+                --FishGI.showLayerData:hideGrayBgByLayer()
+                self.timelineCome:setVisible(false)
+            end
+        end
+        uiTimelineCome["animation"]:setFrameEventCallFunc(frameEvent)
+        self.timelineCome.animation:play("fishgroupcome", false);
+    end
+
     --玩家升级特效
     local  levelUp = cc.Director:getInstance():getRunningScene():getChildByName("levelUp")
     if levelUp == nil then
@@ -197,7 +219,13 @@ function GameEffect:hideEffect()
     local fishGroup = cc.Director:getInstance():getRunningScene():getChildByName("fishGroup")
     if fishGroup ~= nil then
         fishGroup:setVisible(false)
+    end
+
+    local timelineCome = cc.Director:getInstance():getRunningScene():getChildByName("timelineCome")
+    if timelineCome ~= nil then
+        timelineCome:setVisible(false)
     end 
+
     local levelUp = cc.Director:getInstance():getRunningScene():getChildByName("levelUp")
     if levelUp ~= nil then
         levelUp:setVisible(false)
@@ -595,6 +623,20 @@ function GameEffect:fishGroupCome(valTab)
     self.fishGroup:setVisible(true)
 
     self.fishGroup.animation:play("fishgroupcome", false);
+
+end
+
+function GameEffect:timelineComeEffect() 
+    FishGI.AudioControl:playEffect("sound/music_fishgroup.mp3",false)
+
+    local timelineCome = cc.Director:getInstance():getRunningScene():getChildByName("timelineCome")    
+     if timelineCome == nil then
+        --初始化特效
+        FishGI.GameEffect:initGameEff() 
+    end
+    self.timelineCome:setVisible(true)
+
+    self.timelineCome.animation:play("fishgroupcome", false);
 
 end
 
@@ -1003,11 +1045,19 @@ end
 
 --技能文字效果
 function GameEffect.skillWordEffect(picPath, lightPic, pos, callfunc)
-    local wordEffect = cc.Director:getInstance():getRunningScene():getChildByTag(4322);
+    local word = require("ui/battle/friend/uifriendskill").create()
+    local wordEffect = word.root
+    wordEffect.animation = word["animation"]
+    wordEffect:setName("WordEffect")
+    wordEffect:runAction(word["animation"])
+    wordEffect.animation:play("wordani", false);
+    cc.Director:getInstance():getRunningScene():addChild(wordEffect, 1000)
+
     wordEffect:setPosition(pos)
     local function frameEvent( frameEventName)
         if frameEventName:getEvent() == "playeffect" then
             wordEffect:setVisible(false)
+            wordEffect:removeFromParent();
             callfunc()
         end
     end
@@ -1016,9 +1066,9 @@ function GameEffect.skillWordEffect(picPath, lightPic, pos, callfunc)
     wordEffect:getChildByName("text_2"):setTexture(picPath)
     wordEffect:getChildByName("light_1"):setTexture(lightPic)
     wordEffect:getChildByName("light_2"):setTexture(lightPic)
-    wordEffect.animation:stop()
+    --wordEffect.animation:stop()
     wordEffect["animation"]:clearFrameEventCallFunc()
-    wordEffect.animation:play("wordani", false)
+    --wordEffect.animation:play("wordani", false)
     wordEffect["animation"]:setFrameEventCallFunc(frameEvent)
     return wordEffect
 end

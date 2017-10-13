@@ -596,7 +596,7 @@ function GameFriendNet:OnBulletTargetChange(data)
 end
 
 function GameFriendNet:onFriendStartTimeline(data)
-    FishGI.GameEffect:fishGroupCome()
+    FishGI.GameEffect:timelineComeEffect()
     data.index = data.timelineId;
     LuaCppAdapter:getInstance():fishTimeLineCome(data);
 end

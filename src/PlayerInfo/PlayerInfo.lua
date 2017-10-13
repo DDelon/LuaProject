@@ -22,7 +22,7 @@ PlayerInfo.RESOURCE_BINDING  = {
 
     ["btn_change_password"] = { ["varname"] = "btn_change_password" ,   ["events"]={["event"]="click",["method"]="onClickchange_password"}},  
     --["btn_phone_bind"]      = { ["varname"] = "btn_phone_bind" ,        ["events"]={["event"]="click",["method"]="onClickphone_bind"}},  
-    ["btn_photo"]           = { ["varname"] = "btn_photo" ,             ["events"]={["event"]="click",["method"]="onClickphoto"}}, 
+    --["btn_photo"]           = { ["varname"] = "btn_photo" ,             ["events"]={["event"]="click",["method"]="onClickphoto"}}, 
     ["btn_setname"]         = { ["varname"] = "btn_setname" ,           ["events"]={["event"]="click",["method"]="onClicksetname"}}, 
     ["btn_copy"]            = { ["varname"] = "btn_copy" ,              ["events"]={["event"]="click",["method"]="onClickcopy"}},   
     ["text_copy"]           = { ["varname"] = "text_copy" },   
@@ -115,11 +115,11 @@ function PlayerInfo:upDataBtnState( isActivited,isBindPhone )
     self.btn_phone_act:setVisible(false)
 
     if FishGF.isThirdSdk() and FishGF.isThirdSdkLogin() then
-        if self.noticeSpr == nil then
-            self.noticeSpr = cc.Sprite:create("playerinfo/pinf_pic_zhsx.png")
-            self.panel:addChild(self.noticeSpr)
-            self.noticeSpr:setPosition(0,-200)
-        end
+        -- if self.noticeSpr == nil then
+        --     self.noticeSpr = cc.Sprite:create("playerinfo/pinf_pic_zhsx.png")
+        --     self.panel:addChild(self.noticeSpr)
+        --     self.noticeSpr:setPosition(0,-200)
+        -- end
         return
     end
 

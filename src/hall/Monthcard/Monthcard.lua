@@ -2,7 +2,7 @@
 local Monthcard = class("Monthcard", cc.load("mvc").ViewBase)
 
 Monthcard.AUTO_RESOLUTION   = false
-Monthcard.RESOURCE_FILENAME = "ui/hall/uimonthcard"
+Monthcard.RESOURCE_FILENAME = "ui/monthcard/uimonthcard"
 Monthcard.RESOURCE_BINDING  = {  
     ["panel"]         = { ["varname"] = "panel" },
     ["btn_close"]     = { ["varname"] = "btn_close" ,         ["events"]={["event"]="click",["method"]="onClickClose"}},   
@@ -48,7 +48,8 @@ function Monthcard:initView()
 
     self.rewardTab = {}
     for i,val in ipairs(resultTab) do
-        local node = self:child("image_prop_"..(i-1))
+        local uinode = (self:child("node_prop_"..(i-1)))
+        local node = uinode:getChildByName("panel")
         if node == nil then
             return 
         end
@@ -125,6 +126,7 @@ function Monthcard:setShowType( showType )
     end
 
     self["spr_word_"..self.showType]:setVisible(true)
+    self.btn_threetype:setVisible(true)
     if showType == 3 then
         self.btn_threetype:setVisible(false)
         self.node_leave:setVisible(true)

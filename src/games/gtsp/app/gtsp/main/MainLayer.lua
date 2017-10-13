@@ -115,6 +115,7 @@ function MainLayer:onMessage(type, data)
     --dump(data)
 
     if type == "ready" then
+        self.node_test_data:setVisible(data.debug)
         DogGI.ui_manager:onReady(data)
         --SmallGamesGI.RoomManager:sendGetPlayerInfo()
         --self:playDark()
@@ -348,6 +349,7 @@ function MainLayer:onCreate()
     self:play("close", false)
     self:play("hangup", true)
     self.spr_hungeffect:setVisible(false)
+    self.node_test_data:setVisible(false)
 end
 
 function MainLayer:play(type, loop)
@@ -417,6 +419,10 @@ function MainLayer:onExit()
         end
     end
     
+    if self.lightschedulerID ~= nil then
+        scheduler:unscheduleScriptEntry(self.lightschedulerID)
+    end
+
     DogGI.ui_manager:releaseDog()
 end
 

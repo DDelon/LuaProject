@@ -64,6 +64,7 @@ function RealName:onClickCommit()
         return
     end
     local function callback(data)
+        local strMsg = data.msg
         if data.status == 0 then
             --更新数据
             FishGMF.addTrueAndFlyProp(FishGI.myData.playerId,FishCD.PROP_TAG_02,self.presentCount,false)
@@ -78,13 +79,16 @@ function RealName:onClickCommit()
             propTab.dropType = "normal"
             propTab.isShowCount = false
             FishGI.GameEffect:playDropProp(propTab)
+            FishGF.waitNetManager(false, nil, "RealNameVerify")
             self:hideLayer()
             if self.funCallback then
                 self.funCallback()
             end
+            strMsg = FishGF.getChByIndex(800000354)
         end
-        FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,data.msg)
+        FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,strMsg)
     end
+    FishGF.waitNetManager(true, nil, "RealNameVerify")
     FishGI.Dapi:RealNameVerify(strName, strIdcard, callback)
 end
 

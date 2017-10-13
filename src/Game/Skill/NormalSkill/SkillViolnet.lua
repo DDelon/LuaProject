@@ -94,7 +94,7 @@ function SkillViolnet:clickCallBack( )
     data.useType = useType
     self:sendNetMessage(data)
     self.btn:setTouchEnabled(false)
-    self:runTimer()
+    
     self.endTime = os.time()+self.duration
     if self.lockFunc == nil then
         self.lockFunc =  require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
@@ -157,11 +157,13 @@ function SkillViolnet:useViolentResult(evt)
     local useType = data.useType;
     local newCrystal = data.newCrystal;
     if data.isSuccess then
+        
         self.playerSelf = FishGI.gameScene.playerManager:getMyData()
         local myPlayerId = self.playerSelf.playerInfo.playerId
 
         local isShow = nil
         if myPlayerId == playerId then
+            self:runTimer()
             isShow = false
             self.btn.parentClasss:setState(2)
         end

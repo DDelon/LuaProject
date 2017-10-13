@@ -315,10 +315,33 @@ function FriendMainLayer:onTouchEnded(touch, event)
     FishGI.gameScene.playerManager:onTouchEnded(touch, event);
 end
 
+--设置炮倍数据
+function FriendMainLayer:setRateData(roomDurationType )
+    local key = 0
+    if roomDurationType == 0 then  --8分钟
+        key = 990000079
+    elseif roomDurationType == 1 then  --24分钟
+        key = 990000099
+    end
+    local dataStr = tostring(FishGI.GameConfig:getConfigData("config", tostring(key), "data"))
+    self.RateData = {}
+    local tab = string.split(dataStr,";")
+    for i,val in ipairs(tab) do
+        local data = string.split(val,",")
+        data.Rate = tonumber(FishGI.GameConfig:getConfigData("cannon", tostring(920000000+tonumber(data[2])), "times"))
+        table.insert( self.RateData, data )
+    end
+end
+--得到炮倍数据
+function FriendMainLayer:getRateData( )
+    return self.RateData
+end
+
 function FriendMainLayer:onGameLoaded(data)
     self.tGameInfo = data.roomInfo
     self.uiBox:initData(self.tGameInfo.roomPropType, self.tGameInfo.roomDurationType)
     self.uiGameCountdown:initData(self.tGameInfo.roomDurationType, self.tGameInfo.startedMs)
+    self:setRateData(self.tGameInfo.roomDurationType)
     self.uiSelectProp:initData(self.tGameInfo.roomPropType)
     self.uiPropList:initData(self.tGameInfo.roomPropType)
     if  self.tGameInfo ~= nil then
@@ -326,6 +349,13 @@ function FriendMainLayer:onGameLoaded(data)
         self.uiGameCountdown:setGameTimeout(newData.time)
     end
     if self.tGameInfo.started then 
+        for k,val in pairs(self.tGameInfo.playerInfos) do
+            if val.isSelf then
+                for i, v in pairs(val.friendProps) do
+                    self:setPropCount(v.propId-FishCD.FRIEND_INDEX, v.propCount)
+                end
+            end
+        end
         self.uiPropList:setVisible(true)
         self.uiGameCountdown:updateGameStatus(true)
         self.uiPlayerInfoLayer:setVisible(true)

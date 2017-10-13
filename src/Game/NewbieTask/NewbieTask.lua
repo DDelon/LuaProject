@@ -10,6 +10,7 @@ NewbieTask.RESOURCE_BINDING  = {
     ["img_process_bg"]          = { ["varname"] = "img_process_bg" },
     ["loading_bar_process"]     = { ["varname"] = "loading_bar_process" },
     ["process_percentage"]      = { ["varname"] = "process_percentage" },
+    ["spr_draw_effect"]         = { ["varname"] = "spr_draw_effect" },
     ["btn_draw"]                = { ["varname"] = "btn_draw", ["events"]={["event"]="click",["method"]="onClickDraw"}},
 }
 
@@ -100,6 +101,7 @@ function NewbieTask:setIfTaskExecuting(bTaskExecuting)
     self.img_desc_bg:setVisible(bTaskExecuting)
     self.text_desc:setVisible(bTaskExecuting)
     self.img_process_bg:setVisible(bTaskExecuting)
+    self.spr_draw_effect:setVisible(not bTaskExecuting)
     self.btn_draw:setVisible(not bTaskExecuting)
 end
 

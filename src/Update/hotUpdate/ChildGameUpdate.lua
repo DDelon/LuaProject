@@ -21,7 +21,7 @@ function ChildGameUpdate:ctor()
     self.text_message:setString("")
     self.text_status_pos = cc.p(self.text_status:getPositionX(), self.text_status:getPositionY());
     self.sliderScale = self.slider_loading:getScale()
-
+    self.text_status:setPositionX(self.spr_logo:getPositionX());
     self.curPercent = 0
     self:openTips(4)
     self:checkProgress(1)
@@ -79,6 +79,7 @@ function ChildGameUpdate:isCheckVer(isCheck)
         self.text_status:setPositionY(text_sizeper:getPositionY());
     else
         self:setItemVisible(true);
+        self.text_status:setPositionX(self.text_status_pos.x);
         self.text_status:setPositionY(self.text_status_pos.y);
     end
 end

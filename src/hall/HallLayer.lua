@@ -407,17 +407,17 @@ function HallLayer:onClickfriend( sender )
         return     
     end
 
-    -- --判断玩家是否手机激活
-    -- if not FishGI.WebUserData:isActivited() then
-    --     local function callback(sender)
-    --         local tag = sender:getTag()
-    --         if tag == 2 then --ok
-    --             FishGI.hallScene.uiPhoneAct:showLayer() 
-    --         end
-    --     end
-    --     FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000331),callback, nil)
-    --     return 
-    -- end
+    --判断玩家是否手机激活
+    if true and (not FishGI.WebUserData:isActivited()) then
+        local function callback(sender)
+            local tag = sender:getTag()
+            if tag == 2 then --ok
+                FishGI.hallScene.uiPhoneAct:showLayer() 
+            end
+        end
+        FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000331),callback, nil)
+        return 
+    end
     FishGI.hallScene:setIsToFriendRoom(true)
 
 end
