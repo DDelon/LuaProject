@@ -106,6 +106,8 @@ local function onuserinit_(data)
         if isBindPhone then
             print("已经绑定");
         end
+
+        FishGI.eventDispatcher:dispatch("onUserInit", data)
     else     
         if DEBUG>0 then
              FishGF.print("Web接口初始化失败，请联系东海！")
@@ -117,8 +119,6 @@ local function onuserinit_(data)
             FishGI.hallScene:addHallNotice();
         end
     end
-
-    FishGI.eventDispatcher:dispatch("onUserInit", data)
     
 end
 

@@ -9,7 +9,7 @@ MagicProp.RESOURCE_BINDING  = {
     ["scroll_list"]           = { ["varname"] = "scroll_list"  ,         ["nodeType"]="viewlist"   },
     ["img_bg"]                = { ["varname"] = "img_bg" }, 
 }
-
+MagicProp.isInit = false
 local selRect = {
 {-50, -50},
 {50, -50},
@@ -36,9 +36,11 @@ local curIndex2ChairId = {}
 local timestamp = 0
 
 function MagicProp:onCreate()
+    MagicProp.isInit = false
 end
 
 function MagicProp:init()
+
     self.magicPropInterval = tonumber(FishGI.GameConfig:getConfigData("config", tostring(990000070), "data"))
     self:registerEvent()
     self.animationInstance = require("Game/MagicProp/MagicPlay").create()
@@ -253,8 +255,14 @@ function MagicProp:onMagicPropS2C(valTab)
 end
 
 function MagicProp:registerEvent()
+
+
     self:openTouchEventListener()
 
+    if MagicProp.isInit then
+        return
+    end
+    MagicProp.isInit = true
     FishGI.eventDispatcher:registerCustomListener("MaigcPropPlayerLeave", self, function(valTab) self:onPlayerLeave(valTab) end);
     FishGI.eventDispatcher:registerCustomListener("onMagicprop", self, function(valTab) self:onMagicPropS2C(valTab) end);
 end

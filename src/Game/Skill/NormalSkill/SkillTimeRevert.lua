@@ -50,7 +50,7 @@ end
 --------------
 
 function SkillTimeRevert:startCheck(useType)
-    local body = FishGF.getChByIndex(800000254) .. "$" .. FishGF.getChByIndex(800000255)
+    local body = '\n'..FishGF.getChByIndex(800000254) .. "$" .. FishGF.getChByIndex(800000255)
     self:doCheck(nil, body, function ()
     
         if self.useType == 1 then

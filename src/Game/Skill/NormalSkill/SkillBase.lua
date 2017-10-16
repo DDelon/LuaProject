@@ -91,7 +91,7 @@ function SkillBase:judgeUseType()
                     FishGI.gameScene.uiShopLayer:setShopType(1)
                 end
             end
-            local str = FishGF.getChByIndex(800000111)..requireVip..FishGF.getChByIndex(800000112)..propDes
+            local str = "\n"..FishGF.getChByIndex(800000111)..requireVip..FishGF.getChByIndex(800000112)..propDes
             --local des = itemData.pack_text
             FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,str,callback);
             return
