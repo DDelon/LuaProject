@@ -216,6 +216,10 @@ function GameScene:initUILayer()
         self.playerInfoLayer[i]:setPosByChairid(i)
         self:addChild(self.playerInfoLayer[i],FishCD.ORDER_LAYER_VIRTUAL+10);
         self.playerInfoLayer[i]:setVisible(false)
+
+        if i == 1 then
+            self.playerInfoLayer[i]:registPropEvent()
+        end
     end
 
     self.uiNewbieTask = require("Game/NewbieTask/NewbieTask").create()

@@ -36,13 +36,13 @@ local curIndex2ChairId = {}
 local timestamp = 0
 
 function MagicProp:onCreate()
-    MagicProp.isInit = false
 end
 
 function MagicProp:init()
 
     self.magicPropInterval = tonumber(FishGI.GameConfig:getConfigData("config", tostring(990000070), "data"))
-    self:registerEvent()
+    self:openTouchEventListener()
+    --self:registerEvent()
     self.animationInstance = require("Game/MagicProp/MagicPlay").create()
     self:initPropItem()
 end
@@ -256,13 +256,6 @@ end
 
 function MagicProp:registerEvent()
 
-
-    self:openTouchEventListener()
-
-    if MagicProp.isInit then
-        return
-    end
-    MagicProp.isInit = true
     FishGI.eventDispatcher:registerCustomListener("MaigcPropPlayerLeave", self, function(valTab) self:onPlayerLeave(valTab) end);
     FishGI.eventDispatcher:registerCustomListener("onMagicprop", self, function(valTab) self:onMagicPropS2C(valTab) end);
 end

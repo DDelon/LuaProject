@@ -200,7 +200,9 @@ function GameEffect:closeAllSchedule()
     if self.bossRateCahnge ~= nil then
         self.bossRateCahnge:closeAllSchedule()
     end
-    
+    if self.sid ~= nil then
+        cc.Director:getInstance():getScheduler():unscheduleScriptEntry(self.sid)
+    end
 end
 --预先播放一次
 function GameEffect:hideEffect()

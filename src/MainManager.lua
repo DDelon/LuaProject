@@ -1,5 +1,17 @@
 local evt = {};
-local MainManager = FishGF.ClassEx("MainManager", function()
+local function ClassEx(clsname,fncreate)
+    local cls;
+    local function _create() 
+        local obj = fncreate();
+        for k,v in pairs(cls) do
+            obj[k] = v;
+        end
+        return obj;
+    end
+    cls = class(clsname, _create)
+    return cls;
+end
+local MainManager = ClassEx("MainManager", function()
     local  obj = CGameHallApp.New();
 	obj.event= evt;
 	return obj ;
@@ -57,9 +69,9 @@ end
 function MainManager:init()
     self.isReconnecting = false;
     
-    FishGI.eventDispatcher:registerCustomListener("CreateLoginManager", self, function() self:createLoginManager() end);
-    FishGI.eventDispatcher:registerCustomListener("CreateHallManager", self, function(valTab) self:createHallManager(valTab) end);
-    FishGI.eventDispatcher:registerCustomListener("CreateGameScene", self, function(valTab) self:createGameScene(valTab) end);
+    --FishGI.eventDispatcher:registerCustomListener("CreateLoginManager", self, function() self:createLoginManager() end);
+    --FishGI.eventDispatcher:registerCustomListener("CreateHallManager", self, function(valTab) self:createHallManager(valTab) end);
+    --FishGI.eventDispatcher:registerCustomListener("CreateGameScene", self, function(valTab) self:createGameScene(valTab) end);
 end
 
 function MainManager:createLoginManager()

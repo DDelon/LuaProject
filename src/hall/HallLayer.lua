@@ -424,6 +424,7 @@ end
 
 function HallLayer:onClickgame1( sender )
     print("-----HallLayer:onClickgame1-------")
+    FishGF.waitNetManager(true,nil,"enteringChildGame")
     FishGF.checkUpdate("gtsp")
 end
 

@@ -78,17 +78,17 @@ function MessageDialog:setData(modeType ,strData, callBack,strHook)
         self.btn_hook:addClickEventListener(callBack)
     end
    
-    if modeType == FishCD.MODE_MIN_OK_ONLY then
+    if modeType == 1 then     --FishCD.MODE_MIN_OK_ONLY
         self.node_min:setVisible(true) 
         self.btn_min_only_OK:setVisible(true)  
-    elseif modeType == FishCD.MODE_MIDDLE_OK_ONLY then 
+    elseif modeType == 2 then  --FishCD.MODE_MIDDLE_OK_ONLY
         self.node_middle:setVisible(true)
         self.btn_middle_only_OK:setVisible(true)     
-    elseif modeType == FishCD.MODE_MIDDLE_OK_CLOSE then 
+    elseif modeType == 3 then --FishCD.MODE_MIDDLE_OK_CLOSE
         self.node_middle:setVisible(true)
         self.btn_middle_OK:setVisible(true)
         self.btn_middle_CANCEL:setVisible(true)
-    elseif modeType == FishCD.MODE_MIDDLE_OK_CLOSE_HOOK then
+    elseif modeType == 4 then --FishCD.MODE_MIDDLE_OK_CLOSE_HOOK
         self.node_middle:setVisible(true)
         self.btn_middle_OK:setVisible(true)
         self.btn_middle_CANCEL:setVisible(true)

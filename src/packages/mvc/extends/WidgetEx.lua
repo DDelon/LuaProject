@@ -49,7 +49,9 @@ function Widget:onClickScaleEffect(callbackEnd, callbackBegin, callbackMove, cal
             callbackEnd(sender,state)
 
             -- 播放点击音效
-            FishGI.AudioControl:playEffect("sound/com_btn01.mp3")
+            if FishGI ~= nil then
+                FishGI.AudioControl:playEffect("sound/com_btn01.mp3")
+            end
         else    --cancel
             sender:setScaleX(sender.curScaleX*1.0)
             sender:setScaleY(sender.curScaleY*1.0)

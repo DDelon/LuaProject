@@ -31,6 +31,10 @@ function ChildGameUpdate:onCreate( ... )
 
 end
 
+function ChildGameUpdate:onEnter()
+    --FishGF.waitNetManager(false,nil,"enteringChildGame")
+end
+
 function ChildGameUpdate:setVersion(version)
     local versionStr = table.concat(version, ".");
     self.text_version:setString(versionStr)

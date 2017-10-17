@@ -47,7 +47,7 @@ function UpDateScene:init(urlkey, appid, channelid, version)
 	self.version = version;
 
 
-    FishGI.AudioControl:pauseMusic()
+    --FishGI.AudioControl:pauseMusic()
 
 	self.oldKey = URLKEY;
 	URLKEY = urlkey;
@@ -93,6 +93,12 @@ function UpDateScene:init(urlkey, appid, channelid, version)
     end
     self:registerScriptHandler(onNodeEvent)
 
+	cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("updateComplete");
+	cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("updateError");
+	cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("updateNotice");
+	cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("beginDownload");
+	cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("updating");
+
 	--注册热更新模块所需的监听器
 	self.listener = {}
 	local updateCompelteListener=cc.EventListenerCustom:create("updateComplete",handler(self, self.updateFinish))  
@@ -120,8 +126,10 @@ function UpDateScene:init(urlkey, appid, channelid, version)
 end
 
 function UpDateScene:onEnter()
-	FishGI.CommonLayer:addLayerToParent(self)
+	--FishGI.CommonLayer:addLayerToParent(self)
 	self:checkVersion();
+
+	--self.view:onEnter();
 end
 
 function UpDateScene:checkVersion()
@@ -146,8 +154,43 @@ function UpDateScene:checkVersionRetry()
         	os.exit(0);
         end
     end
-    FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,"版本检测失败，请重试！",callback)
+    self:showMessageLayer(3,"版本检测失败，请重试！",callback)
 
+end
+
+function UpDateScene:isWifiConnect()
+	if device.platform == "android" then
+		local luaBridge = require("cocos.cocos2d.luaj");
+        local javaClassName = "com.weile.api.GameBaseActivity";
+        local javaMethodName = "isNetworkConnected";
+        local javaParams = {
+        }
+        local javaMethodSig = "()Z";
+        local isSuccess, isWifi = luaBridge.callStaticMethod(javaClassName, javaMethodName, javaParams, javaMethodSig);
+		return isWifi;
+    else
+        return false
+	end
+end
+
+function UpDateScene:showMessageLayer(messageType,strMsg,callback,scene,strHook)
+	local curScene = (scene == nil and cc.Director:getInstance():getRunningScene() or scene);
+    if curScene == nil or type(curScene) == "number" then
+        return
+    end
+    
+    local noticeType = curScene:getChildByName("MessageDialog")
+    if noticeType == nil then
+        noticeType = require("Message/MessageDialog").create()
+        noticeType:setData(messageType,strMsg,callback,strHook)
+        noticeType:setName("MessageDialog")
+        curScene:addChild(noticeType,3000)
+        noticeType:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+		noticeType:setVisible(true);
+    else
+        noticeType:setData(messageType,strMsg,callback,strHook)
+        noticeType:setVisible(true);
+    end
 end
 
 function UpDateScene:showUpdateDialog(evt)
@@ -159,7 +202,7 @@ function UpDateScene:showUpdateDialog(evt)
 
 
 	local function wifiTips()
-		local isWifiConnect = FishGF.isWifiConnect()
+		local isWifiConnect = self:isWifiConnect()
 		if isWifiConnect then
 			func()
 		else
@@ -176,7 +219,7 @@ function UpDateScene:showUpdateDialog(evt)
 					end
                 end
 			end
-			FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,"您当前网络环境为非WIFI模式，是否使用流量继续下载更新资源？",callback);
+			self:showMessageLayer(3,"您当前网络环境为非WIFI模式，是否使用流量继续下载更新资源？",callback);
 		end
 	end
 	local version = version;
@@ -236,6 +279,9 @@ function UpDateScene:runNextScene()
 		LuaCppAdapter:getInstance():loadDataBin();
 		self:reloadFiles();
 		require("Other/LoadFile");
+		FishGI.serverConfig[1].url = self.update:getData("ip");
+        FishGI.serverConfig[1].port = self.update:getData("port");
+
 		FishGI.mainManagerInstance:createLoginManager();
 
 		if FishGF.isThirdSdk() and FishGF.isThirdSdkLogin() then

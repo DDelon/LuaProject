@@ -20,6 +20,7 @@ end
 function Update:init()
     self.constant = require("Update/UpdateModule/UpdateConstant")
     self.commandQueue = {}
+    self.dataTab = {}
     
     print("update init")
 
@@ -134,6 +135,14 @@ function Update:updateComplete()
     cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("startUpdate");
 	cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("cleanUpdate");
 
+end
+
+function Update:addPairToDataTab(key, val)
+    self.dataTab[key] = val;
+end
+
+function Update:getData(key)
+    return self.dataTab[key];
 end
 
 

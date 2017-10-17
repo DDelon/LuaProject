@@ -477,10 +477,18 @@ function ViewBase:hideLayer(isAct,isRemove,isScale,allActTime)
     end
     isRemove = isRemove or false
     if isAct then
-      FishGI.AudioControl:playEffect("sound/exit_01.mp3")
-      FishGI.showLayerData:hideLayer(self,isRemove,isScale,allActTime)
+        if FishGI ~= nil then
+            FishGI.AudioControl:playEffect("sound/exit_01.mp3")
+            FishGI.showLayerData:hideLayer(self,isRemove,isScale,allActTime)
+        else
+            self:setVisible(false);
+        end
     else
-      FishGI.showLayerData:hideLayerByNoAct(self,isRemove,isScale)
+        if FishGI ~= nil then
+            FishGI.showLayerData:hideLayerByNoAct(self,isRemove,isScale)
+        else
+            self:setVisible(false);
+        end
     end
 end
 

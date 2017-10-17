@@ -36,8 +36,14 @@ function FriendPlayerInfoLayer:initView()
         self["btn_player_info_"..i]:setVisible(self.bShowBtns)
         self["btn_player_info_"..i]:setPositionX(self["btn_player_info_"..i]:getPositionX()*self.scaleMin_)
         self["btn_player_info_"..i]:setScale(self.scaleMin_)
+        self.playerInfo[i] = require("PlayerInfo/GamePlayerInfo").new(self, self["node_player_info_"..i])
+        self.playerInfo[i]:setChairId(i)
+        self.playerInfo[i]:setVisible(false)
+        self.playerInfo[i]:setPositionX(self.playerInfo[i]:getPositionX()*self.scaleMin_)
+        self.playerInfo[i]:setScale(self.scaleMin_)
         if i == 1 then 
             self["node_"..i]:setPosition(cc.p(0, 0))
+            self.playerInfo[i]:registPropEvent()
         elseif i == 2 then 
             self["node_"..i]:setPosition(cc.p(display.width, 0))
         elseif i == 3 then 
@@ -45,11 +51,6 @@ function FriendPlayerInfoLayer:initView()
         elseif i == 4 then 
             self["node_"..i]:setPosition(cc.p(0, display.height))
         end 
-        self.playerInfo[i] = require("PlayerInfo/GamePlayerInfo").new(self, self["node_player_info_"..i])
-        self.playerInfo[i]:setChairId(i)
-        self.playerInfo[i]:setVisible(false)
-        self.playerInfo[i]:setPositionX(self.playerInfo[i]:getPositionX()*self.scaleMin_)
-        self.playerInfo[i]:setScale(self.scaleMin_)
     end 
 end
 

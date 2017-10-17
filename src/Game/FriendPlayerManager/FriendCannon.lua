@@ -67,9 +67,9 @@ function FriendCannon:setDir( dir, isSelf ,playerId)
         self.node_touch:addChild(self.uiCannonChange)
         self.uiCannonChange:setPosition(cc.p(0,62))
         self.uiCannonChange:setVisible(false)
+        self:gameStartAct()
     end
-
-    self:gameStartAct()
+    
 end
 
 function FriendCannon:gameStartAct() 

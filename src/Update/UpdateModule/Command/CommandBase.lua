@@ -33,7 +33,6 @@ function CommandBase:doCommand()
 end
 
 function CommandBase:finish()
-    
 end
 
 function CommandBase:onHttpComplete()
@@ -52,7 +51,6 @@ end
 
 -------------------------------------------------event
 function evt.OnHttpComplete(http)
-
     local ret, msg = pcall(http.manager.onHttpComplete, http.manager)
     if not ret then
         print("pcall onHttpComplete error msg:"..msg)
