@@ -86,7 +86,7 @@ local function getThirdApi_(name, channelId)
         channelId = CHANNEL_ID
     end
 	local ver_str = FishGF.getHallVerison()
-    return string.format("%s%s/%s/%d/%s/%s", thirdapi_, name, APP_ID, channelId, ver_str, REGION_CODE)
+    return string.format("%s%s/%s/%d/%s/%s/%s", thirdapi_, name, APP_ID, channelId, ver_str, REGION_CODE)
 end
 
 local function getToken_()
@@ -733,7 +733,7 @@ function Dapi:RealNameVerify(name, idcard, callback)
     local url = getUserApi_("/realname/cert");
     local data = {idcard = idcard, realname = name}
     table.merge( data, getToken_() )
-     Http:Post(url, errorhandler_(callback), data, true)
+    Http:Post(url, errorhandler_(callback), data, true)
 end
 
 function Dapi:feedBackUrl(callback)
@@ -744,7 +744,7 @@ end
 
 function Dapi:thirdLogin(channel, data, callback)
     data.type = channel
-
+    data.udid = Helper.GetDeviceCode()
 	local url = getThirdApi_("/login");
 	Http:Post(url, callback, data, true)
 end
