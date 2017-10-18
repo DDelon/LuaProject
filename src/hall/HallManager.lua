@@ -76,6 +76,7 @@ function HallManager:firstInit( )
         self:initPlayerDataLayer()
         self.isFirstInit = true
     end
+    --FishGI.CommonLayer:addLayerToParent(self)
 end
 
 function HallManager:initLayer( )
@@ -335,7 +336,9 @@ function HallManager:disposeExit()
 
     FishGI.isNoticeClose = true
     --nil 第一次进入大厅 0 正常退出 1超出房间最高倍数被踢   2朋友场被踢   3朋友场被解散   4朋友场结束   5自己强退   6.等待时间过长 7朋友场主动解散 8房间关闭被踢 9.断线被踢出游戏 100.未知原因 1000.小游戏退出
-    if FishGI.exitType == 1 then
+    if FishGI.exitType == nil then
+        self.net.roommanager:sendDataGetInfo();
+    elseif FishGI.exitType == 1 then
         FishGI.isEnterBg = true
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000088),nil)
         self:doAutoLogin(0.1)

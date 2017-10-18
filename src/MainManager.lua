@@ -106,7 +106,6 @@ function MainManager:createHallManager(valTab)
 	--大厅场景最好等待网络正常连接成功后再转入大厅场景
 	local hallNet = require("hall/HallNet").create();
     print("连接到大厅1111");
-    dump(valTab)
     if hallNet ~= nil then
         if hallNet:ConnectToHall(session,userid,serverip,serverport) then
             if FishGI.isEnterBg then

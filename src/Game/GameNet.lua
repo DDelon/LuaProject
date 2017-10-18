@@ -373,6 +373,7 @@ function GameNet:OnPlayerShoot(data)
         dataTab.effectId = (data.isViolent and FishCD.SKILL_TAG_VIOLENT or 0)
         dataTab.cost = (data.isViolent and dataTab.bulletRate*2 or dataTab.bulletRate)
         dataTab.fireType = 2
+        dataTab.bulletId = data.bulletId;
         FishGMF.pushRefreshData(dataTab)
         return;
     end   
@@ -423,6 +424,7 @@ function GameNet:OnPlayerShoot(data)
     dataTab.effectId = (data.isViolent and FishCD.SKILL_TAG_VIOLENT or 0)
     dataTab.cost = (data.isViolent and dataTab.bulletRate*2 or dataTab.bulletRate)
     dataTab.fireType = 0
+    dataTab.bulletId = data.bulletId;
     FishGMF.pushRefreshData(dataTab)
 
     --其他玩家炮塔转动

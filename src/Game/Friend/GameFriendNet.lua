@@ -76,7 +76,7 @@ end
 function GameFriendNet:OnJMsg(msg)
     local ptr = msg:ReadData(0)
     local data, typeName = jmsg.decodeBinary(proto, ptr)
-    if self.isWaitLoaded ~= nil and self.isWaitLoaded == true and  typeName ~= "MSGS2CFriendGameLoaded" then
+    if self.isWaitLoaded == nil and  typeName ~= "MSGS2CFriendGameLoaded" then
         return
     end
     self.isWaitLoaded = false
@@ -623,7 +623,6 @@ end
 客户端准备就绪
 ]]
 function  GameFriendNet:sendClientGameLoadedMessage()
-    self.isWaitLoaded = true
     self:sendJMsg("MSGC2SFriendGameLoaded", {})
 end
 

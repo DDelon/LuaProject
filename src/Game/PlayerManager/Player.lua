@@ -43,7 +43,7 @@ function Player:init(val)
     --是否使用狂暴
     local effectId = val.playerInfo.effectId;
     if effectId ~= 0 then
-        self.cannon:playEffectAni(effectId);
+        self.cannon:playEffectAni(self, effectId);
     end
 end
 
@@ -91,7 +91,7 @@ function Player:startEffectId(effectId)
     self.playerInfo.effectId = effectId;
 
     if effectId ~= 0 then
-        self.cannon:playEffectAni(effectId);
+        self.cannon:playEffectAni(self, effectId);
     end
 end
 

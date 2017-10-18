@@ -1,3 +1,4 @@
+local TIME_VAL = 9999999999
 local SkillBase = import("Game.Skill.NormalSkill.SkillBase")
 local SkillViolnet = class("SkillViolnet",SkillBase)
 
@@ -7,7 +8,7 @@ function SkillViolnet:ctor(...)
     self:initBg()
     self:openTouchEventListener(false)
     self.isChose = false
-    self.endTime = 0
+    self.endTime = TIME_VAL
     
     --self.lockUI =  require("Game/Skill/NormalSkill/SkillUI/LockViolentUI").create(self);
 
@@ -142,7 +143,7 @@ function SkillViolnet:checkIsEnd()
         local playerId = FishGI.gameScene.playerManager.selfIndex;
         local player = FishGI.gameScene.playerManager:getPlayerByPlayerId(playerId)
         player:endEffectId();
-        self.endTime = 0;
+        self.endTime = TIME_VAL;
         self.btn.parentClasss:setState(1)
         if self.lockFunc ~= nil then
             self.lockFunc:over(playerId);
@@ -214,7 +215,7 @@ function SkillViolnet:violentTimeOut(evt)
             self.lockFunc:over(playerId);
             self.lockFunc = nil;
         end
-        self.endTime = 0;
+        self.endTime = TIME_VAL;
         self.btn.parentClasss:setState(1);
     end
     

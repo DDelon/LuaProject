@@ -170,6 +170,7 @@ function HallNet:enterRoom(roomLv)
     end
 
     self.roomId = roomId
+    FishGF.print("enter room id:"..self.roomId)
     if room and self:joinGame(room.gameid) then
         FishGF.waitNetManager(true,FishGF.getChByIndex(800000163),"joinGame")
 		self:joinRoom(room.id);
@@ -348,8 +349,8 @@ function evt.OnMsgJoinRoom(hall,result,lockedroomid)
             FishGI.hallScene:firstInit()
             cc.Director:getInstance():pushScene(FishGI.hallScene);
             FishGI.hallScene:release();
-            hall.roommanager:sendDataGetInfo();
-            
+            --hall.roommanager:sendDataGetInfo();
+            FishGI.exitType = nil
         elseif FishGI.FRIEND_ROOM_STATUS == 4 then
             hall.roommanager:sendDataGetInfo();
         end

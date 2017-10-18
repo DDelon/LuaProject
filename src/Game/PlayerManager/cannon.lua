@@ -120,8 +120,9 @@ function cannon:setDir( dir, isSelf ,playerId)
     self:gameStartAct()
 end
 
-function cannon:playEffectAni(effectId)
+function cannon:playEffectAni(player, effectId)
     if effectId == FishCD.SKILL_TAG_VIOLENT then
+        
         self.loopkbEffect:setVisible(false)
         local beginkb = require("ui/battle/skill/uiskill_kb_1").create()
         local kbBeginEffect = beginkb.root
@@ -134,8 +135,9 @@ function cannon:playEffectAni(effectId)
         local function frameEvent1(frameEventName)
             if frameEventName:getEvent() == "end" then
                 kbBeginEffect:removeFromParent();
-
-                self.loopkbEffect:setVisible(true)
+                if player:getEffectId() == FishCD.SKILL_TAG_VIOLENT then
+                    self.loopkbEffect:setVisible(true)
+                end
             end
         end
         kbBeginEffect["animation"]:clearFrameEventCallFunc()

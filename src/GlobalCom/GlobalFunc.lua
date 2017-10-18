@@ -1541,7 +1541,7 @@ function FishGF.checkUpdate(shortName)
     local isExistWritePath = cc.FileUtils:getInstance():isFileExist(versionPath)
 	local isExistLocalPath = cc.FileUtils:getInstance():isFileExist(info.FILE_NAME.."version.lua")
     local version = info.VER
-    if (isExist or isExistLocalPath) then version = require(info.FILE_NAME.."version.lua") end
+    if isExistLocalPath then version = require(info.FILE_NAME.."version.lua") end
     local hotScene = require("Update/UpDateScene").create(info.APP_ID..info.APP_KEY..info.APP_ID, info.APP_ID, info.CHANNEL_ID, version)
     cc.Director:getInstance():pushScene(hotScene)
 end
