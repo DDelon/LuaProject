@@ -123,6 +123,7 @@ function Shopitem:onClickBuy( sender )
     data["money"] = self.recharge;
     data["price"] = self.recharge/100;
     data["rechargeType"] = tonumber(self.recharge_type);
+    data["type"] = self.recharge_type;
     data["autobuy"] = 1;
     data["subject"] = self.unit;
     data["num"] = self.recharge_num;

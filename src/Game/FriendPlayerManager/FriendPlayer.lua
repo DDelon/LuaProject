@@ -442,6 +442,11 @@ function FriendPlayer:setRotateByPos(pos)
 end
 
 function FriendPlayer:endShoot()
+    if FishGI.isLock then
+        self.isEnd = false;
+        return
+    end
+    
     if FishGI.isAutoFire then
         self.isEnd = false;
     else

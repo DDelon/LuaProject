@@ -131,7 +131,7 @@ function GameFriendScene:onEnter()
     FishGMF.setGameState(3)
     FishGI.SERVER_STATE = 0
     FishGI.FRIEND_ROOM_STATUS = 3
-
+    FishGI.isLock = false
     self:startLoad()
 
     FishGMF.clearRefreshData()
@@ -175,7 +175,7 @@ function GameFriendScene:onExit( )
     FishGI.FRIEND_ROOM_STATUS = 0
     FishGI.FRIEND_ROOMID = nil
     FishGI.isExitRoom = true
-
+    FishGI.isLock = false
     FishGI.isAutoFire = false
     FishGMF.clearRefreshData()
     FishGI.AudioControl:pauseMusic()

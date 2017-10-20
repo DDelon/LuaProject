@@ -139,18 +139,21 @@ function NewbieTask:onClickDraw( sender )
 end
 
 function NewbieTask:sendGetNewTaskInfo()
+    FishGF.waitNetManager(true,nil,"GetNewTaskInfo")
     self.isNewTask = true
     local valTab = {}
     FishGI.gameScene.net:sendGetNewTaskInfo(valTab)
 end
 
 function NewbieTask:sendGetNewTaskReward()
+    FishGF.waitNetManager(true,nil,"NewTaskReward")
     local valTab = {}
     valTab.nTaskID = self.iCurTaskID
     FishGI.gameScene.net:GetNewTaskReward(valTab)
 end
 
 function NewbieTask:onGetNewTaskInfo(valTab)
+    FishGF.waitNetManager(false,nil,"GetNewTaskInfo")
     if valTab.isSuccess then
         if valTab.nTaskID ~= -1 or valTab.nTaskData ~= -1 then
             if self.isNewTask then
@@ -167,6 +170,7 @@ function NewbieTask:onGetNewTaskInfo(valTab)
 end
 
 function NewbieTask:onGetNewTaskReward(valTab)
+    FishGF.waitNetManager(false,nil,"NewTaskReward")
     local playerId = valTab.playerID
     local propId = valTab.nPropID
     local propCount = valTab.nPropNum

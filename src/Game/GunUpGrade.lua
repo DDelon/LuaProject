@@ -43,18 +43,19 @@ function GunUpGrade:onCreate( ... )
 end
 
 function GunUpGrade:setCurMultiple(multiple)
-    local nextRate,gunData = FishGMF.getNextRateBtType(4)
-    if nextRate == nil or nextRate == 0 then
-        return
+    local nextData = FishGI.GameTableData:getNextCannon(multiple)
+    if nextData == nil then
+        print("---GunUpGrade--rate is no exist--------")
+        return 
     end
 
-    self.nextRate = nextRate
+    self.nextRate = nextData.times
     self:child("fnt_multiple_1"):setString(self.nextRate)
     self:child("fnt_multiple_2"):setString(self.nextRate)
     self:child("fnt_multiple_3"):setString(self.nextRate)
 
-    local unlock_gem = tonumber(gunData["unlock_gem"])
-    local unlock_award = tonumber(gunData["unlock_award"])
+    local unlock_gem = tonumber(nextData["unlock_gem"])
+    local unlock_award = tonumber(nextData["unlock_award"])
     
     self:setAimCrystal(unlock_gem)
     self.fnt_coin:setString(unlock_award)

@@ -598,7 +598,6 @@ end
 function GameNet:OnFishGroupNotify(data)
     local  message = FishGF.getChByIndex(800000085)
     FishGF.showSystemTip(message)
-    FishGI.isFishGroupCome = true
 
     local function clearFunc()
         if FishGI.gameScene.isFishCome then
@@ -607,6 +606,7 @@ function GameNet:OnFishGroupNotify(data)
         end
         FishGI.GameEffect:fishGroupCome()
         LuaCppAdapter:getInstance():fishAccelerateOut();
+        
         
     end
     FishGF.delayExcute(14-FishCD.FISH_GROUP_COMING_CLEAR_TIME, clearFunc)
@@ -784,7 +784,6 @@ end
 
 --锁定变换目标
 function GameNet:sendBulletTargetChange(data)
-    FishGF.print("-0-sendBulletTargetChange----")
     if data == nil then
         return
     end

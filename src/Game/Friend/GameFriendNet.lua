@@ -657,7 +657,6 @@ end
 
 --锁定变换目标
 function GameFriendNet:sendBulletTargetChange(data)
-    FishGF.print("-0-sendBulletTargetChange----")
     if data == nil then
         return
     end

@@ -75,7 +75,7 @@ function SkillViolnet:onTouchBegan(touch, event)
     local curPos = touch:getLocation()
     if self.lockFunc ~= nil then
         self.lockFunc:changeLockTarget(curPos);
-        print("lock func send message change target")
+        --FishGF.print("lock func send message change target")
     else
         print("lock func is nil")
     end
@@ -102,10 +102,11 @@ function SkillViolnet:clickCallBack( )
     self.btn:setTouchEnabled(false)
     
     self.endTime = os.time()+self.duration
-    if self.lockFunc == nil then
+    --[[if self.lockFunc == nil then
         self.lockFunc =  require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
         self.lockUI:rebind(self);
-    end
+        FishGF.print("violent lock func created");
+    end]]--
     --self.lockFunc:start(FishGI.gameScene.playerManager.selfIndex);
 end
 
@@ -146,6 +147,7 @@ function SkillViolnet:checkIsEnd()
         self.endTime = TIME_VAL;
         self.btn.parentClasss:setState(1)
         if self.lockFunc ~= nil then
+            FishGF.print("violent lock func over on checkIsEnd")
             self.lockFunc:over(playerId);
             self.lockFunc = nil;
         end
@@ -165,7 +167,11 @@ function SkillViolnet:useViolentResult(evt)
     local useType = data.useType;
     local newCrystal = data.newCrystal;
     if data.isSuccess then
-        
+        if self.lockFunc == nil then
+            self.lockFunc =  require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+            self.lockUI:rebind(self);
+            FishGF.print("violent lock func created");
+        end
         self.playerSelf = FishGI.gameScene.playerManager:getMyData()
         local myPlayerId = self.playerSelf.playerInfo.playerId
 
@@ -194,6 +200,7 @@ function SkillViolnet:useViolentResult(evt)
         if myPlayerId == playerId then
             if self.lockFunc ~= nil then
                 self.lockFunc:start(playerId);
+                FishGF.print("violent lock func start")
             end
         else
             local lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
@@ -212,6 +219,7 @@ function SkillViolnet:violentTimeOut(evt)
     
     if playerId == FishGI.gameScene.playerManager.selfIndex then
         if self.lockFunc ~= nil then
+            FishGF.print("violent lock func over on violentTimeOut")
             self.lockFunc:over(playerId);
             self.lockFunc = nil;
         end

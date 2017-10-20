@@ -244,10 +244,10 @@ function FriendPlayerManager:onTouchEnded(touch, event)
 end
 
 function FriendPlayerManager:onTouchCancelled(touch, event)
-	local playerSelf = self.playerTab[self.selfIndex];
-    if playerSelf ~= nil then
-        playerSelf:endShoot();
-    end
+	-- local playerSelf = self.playerTab[self.selfIndex];
+    -- if playerSelf ~= nil then
+    --     playerSelf:endShoot();
+    -- end
 end
 
 function FriendPlayerManager:isAcross(selfChairId, otherChairId)

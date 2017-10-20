@@ -178,10 +178,10 @@ function PlayerManager:onTouchEnded(touch, event)
 end
 
 function PlayerManager:onTouchCancelled(touch, event)
-	local playerSelf = self.playerTab[self.selfIndex];
-    if playerSelf ~= nil then
-        playerSelf:endShoot();
-    end
+	-- local playerSelf = self.playerTab[self.selfIndex];
+    -- if playerSelf ~= nil then
+    --     playerSelf:endShoot();
+    -- end
 end
 
 --通过玩家id获取Cluaplayer的结构体
@@ -451,20 +451,6 @@ function PlayerManager:CannonUpgrade(valTab)
 		return
 	end
 
-	local playerSelf = self.playerTab[self.selfIndex]
-	if self.selfIndex == playerId then
-
-	    local propData = FishGMF.getPlayerPropData(playerId,1)
-
-		local data = {};
-	    data.playerId = playerId
-	    data.chairId = FishGI.gameScene.playerManager:getPlayerChairId(valTab.playerId)
-	    data.moneyCount = valTab.newFishIcon - propData.realCount
-	    --显示得到多少特效
-	    data.showType = "gunUpGrade"
-	    FishGI.GameEffect:playGunUpGrade(data)
-	end
-
 	--更新鱼币水晶
 	FishGMF.CannonUpgrade(playerId,valTab.newFishIcon,valTab.newCrystal)
 
@@ -472,13 +458,27 @@ function PlayerManager:CannonUpgrade(valTab)
 		local playerSelf =  FishGI.gameScene.playerManager:getMyData()
 
 		--根据自己的最高炮倍得到下一个炮倍
-	    local nextRate = FishGMF.getNextRateBtType(4)
+	    --local nextRate = FishGMF.getNextRateBtType(4)
+		local nextData = FishGI.GameTableData:getNextCannon(playerSelf.playerInfo.maxGunRate)
+		if nextData == nil then
+			print("-----rate is no exist--------")
+			return 
+		end
+		local nextRate = nextData.times
+		local addCoin = nextData.unlock_award
 
+		local data = {};
+	    data.playerId = playerId
+	    data.chairId = FishGI.gameScene.playerManager:getPlayerChairId(playerId)
+	    data.moneyCount = addCoin
+	    --显示得到多少特效
+	    data.showType = "gunUpGrade"
+		FishGI.GameEffect:playGunUpGrade(data)
+		
         --保存lua玩家最高炮倍
         playerSelf.playerInfo.currentGunRate = nextRate
         playerSelf.playerInfo.maxGunRate = nextRate
 		playerSelf.cannon:setMultiple(nextRate)
-
 		FishGMF.changeGunRate(nil,nextRate,nextRate)
 		
 		--发送切换炮倍

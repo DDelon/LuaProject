@@ -41,7 +41,6 @@ function LockFunc:over(playerId)
     if FishGI.lockCount > 0 or playerId ~= FishGI.gameScene.playerManager.selfIndex then
         return false;
     end
-    print("over-------------------------------")
     FishGMF.setLockData(playerId,2,0,0)
     FishGI.isLock = false;
     local player = FishGI.gameScene.playerManager:getMyData();

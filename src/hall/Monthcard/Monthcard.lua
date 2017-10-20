@@ -96,6 +96,7 @@ function Monthcard:onClickByType( sender )
         data["price"] = self.recharge/100;
         data["type"] = tonumber(self.recharge_type);
         data["rechargeType"] = 3;
+        data["type"] = 3
         data["autobuy"] = 1;
         data["subject"] = self.unit;
         data["ingame"] = (FishGI.GAME_STATE == 3 and GAME_ID or 0);

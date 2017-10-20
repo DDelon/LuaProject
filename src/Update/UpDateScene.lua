@@ -14,7 +14,6 @@ function UpDateScene:getHotUpdatrUrl(appid, channelid, version)
     local c_id = "/" .. channelid
     local verstr="/"..table.concat(version,".")
     local preStr = PREFIX_DOMAIN;
-	
     local up_url = "http://client."..WEB_DOMAIN .. "/update"..a_id..c_id..verstr.. "/" .. Helper.GetDeviceCode()
     return up_url;
 end
@@ -46,7 +45,7 @@ function UpDateScene:init(urlkey, appid, channelid, version)
 	self.appid = appid or APP_ID;
 	self.channelid = channelid or CHANNEL_ID;
 	self.version = version;
-	print("update scene version:"..table.concat(self.version, "."))
+
 
     --FishGI.AudioControl:pauseMusic()
 

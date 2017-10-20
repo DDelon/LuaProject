@@ -77,7 +77,7 @@ function GameTableData:getCannonTable(index)
     index = tonumber(index)
     return self.cannonTab[index]
 end
---得到当前炮倍附近范围内数据
+--得到当前炮倍索引
 function GameTableData:getCannonIndex(curRate)
     local index = nil
     if self.cannonTab == nil then
@@ -91,6 +91,25 @@ function GameTableData:getCannonIndex(curRate)
     end
 
     return index
+end
+
+--得到下一个炮倍
+function GameTableData:getNextCannon(curRate)
+    local nextRate = nil
+    
+    if self.cannonTab == nil then
+        self:initCannonTable()
+    end
+    local index = #(self.cannonTab)
+    for i,v in ipairs(self.cannonTab) do
+        if v.times == curRate then
+            index = i
+            break
+        end
+    end
+    nextRate = self.cannonTab[index + 1]
+
+    return nextRate
 end
 
 --得到当前炮倍附近范围内数据  curRate.当前炮倍  range.炮倍区间  limitRate.最高炮倍

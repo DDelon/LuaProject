@@ -83,6 +83,9 @@ function VersionCheckCommand:getIpPort(address)
     --[[if FishGI.SYSTEM_STATE ~= 0 then
         return "192.168.67.6", 6532;
     end]]--
+    if self.updateManager:isLocalNetTest() then
+        return "192.168.67.6", 6532;
+    end
     if address and #address ~= 0 then
         local pos = string.find(address, ":");
         if pos ~= nil then
