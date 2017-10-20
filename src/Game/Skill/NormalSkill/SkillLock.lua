@@ -59,6 +59,8 @@ function SkillLock:endLock()
     if self.lockFunc ~= nil then
         self.lockFunc:over(FishGI.gameScene.playerManager.selfIndex)
         self.lockFunc = nil
+    else
+        print("--------endLock------self.lockFunc = nil-----------")
     end
     self.touchStartTime = 0
     self.btn.parentClasss:setState(1)
@@ -113,17 +115,20 @@ function SkillLock:clickCallBack( )
         self.lockFunc:over(FishGI.gameScene.playerManager.selfIndex)
         self.lockFunc = nil;
     end
-    self.lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
-    self.lockUI:rebind(self);
 
-    local timelineId, fishArrayId = self.lockFunc:getLockFishByScore();
+    local lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+    local timelineId, fishArrayId = lockFunc:getLockFishByScore();
     if timelineId == nil then
         return;
     end
     self:pushDataToPool(useType)
     self.useType = useType
 
-    self.lockFunc:sendStartLock(useType);
+    
+    lockFunc:sendStartLock(useType);
+    lockFunc:over(FishGI.gameScene.playerManager.selfIndex)
+    lockFunc = nil;
+
     self:runTimer()
     self.btn:setTouchEnabled(false)
 	
@@ -161,7 +166,9 @@ function SkillLock:startMyLock(evt)
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000087),nil)
         
     else
-        
+        self.lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+        self.lockUI:rebind(self);
+
         --记录锁定开始时间
         self.startTime = os.time()
         --播放声音
@@ -212,6 +219,7 @@ function SkillLock:upDateUserTime(disTime )
 
     self:upDateTimer()
     if curdisTime > self.lock_userTime then
+        self:stopActionByTag(10006)
         self:endLock()
     else
         self:stopActionByTag(10006)
@@ -230,12 +238,11 @@ function SkillLock:startOtherLock(evt)
     local playerId = data.playerId
     local timelineId = data.timelineId
     local fishArrayId = data.fishArrayId
-    if self.lockFunc == nil then
-        self.lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
-        self.lockFunc:lockFish(playerId, timelineId, fishArrayId);
-        self.lockFunc:over(playerId);
-        self.lockFunc = nil;
-    end
+
+    local lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+    lockFunc:lockFish(playerId, timelineId, fishArrayId);
+    lockFunc:over(playerId);
+    lockFunc = nil;
     
     --更新水晶
     FishGMF.upDataByPropId(playerId,2,data.newCrystal)
@@ -245,6 +252,11 @@ function SkillLock:sendChangeAimFish(data)
     data = data._userdata
     if self.lockFunc ~= nil then
         self.lockFunc:sendChangeTarget(data.timelineId, data.fishArrayId)
+    else
+        local lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+        lockFunc:lockFish(data.playerId, data.timelineId, data.fishArrayId);
+        lockFunc:over(data.playerId);
+        lockFunc = nil;
     end
 end
 
@@ -256,10 +268,10 @@ function SkillLock:bulletTargetChange(data )
         if self.lockFunc ~= nil then
             self.lockFunc:lockFish(data.playerId,data.timelineId,data.fishArrayId)
         else
-            self.lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
-            self.lockFunc:lockFish(data.playerId, data.timelineId, data.fishArrayId);
-            self.lockFunc:over(data.playerId);
-            self.lockFunc = nil;
+            local lockFunc = require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+            lockFunc:lockFish(data.playerId, data.timelineId, data.fishArrayId);
+            lockFunc:over(data.playerId);
+            lockFunc = nil;
         end
     end 
     

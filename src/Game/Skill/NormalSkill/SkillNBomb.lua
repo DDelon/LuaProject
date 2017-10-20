@@ -449,7 +449,7 @@ function SkillNBomb:NBombUseResult(data)
     if self.propId ~= data.nPropID then
         return
     end
-    dump(data);
+    --dump(data);
     if data.isSuccess ~= true then
         self:stopTimer()
         self:onChoseState(false)

@@ -77,7 +77,7 @@ function SkillViolnet:onTouchBegan(touch, event)
         self.lockFunc:changeLockTarget(curPos);
         --FishGF.print("lock func send message change target")
     else
-        print("lock func is nil")
+        --print("lock func is nil")
     end
     return true
 
@@ -167,16 +167,18 @@ function SkillViolnet:useViolentResult(evt)
     local useType = data.useType;
     local newCrystal = data.newCrystal;
     if data.isSuccess then
-        if self.lockFunc == nil then
-            self.lockFunc =  require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
-            self.lockUI:rebind(self);
-            FishGF.print("violent lock func created");
-        end
+        
         self.playerSelf = FishGI.gameScene.playerManager:getMyData()
         local myPlayerId = self.playerSelf.playerInfo.playerId
 
         local isShow = nil
         if myPlayerId == playerId then
+            if self.lockFunc == nil then
+                self.lockFunc =  require("Game/Skill/NormalSkill/SkillFunc/LockFunc").create();
+                self.lockUI:rebind(self);
+                FishGF.print("violent lock func created");
+            end
+
             self.endTime = os.time()+self.duration
             self:runTimer()
             isShow = false
