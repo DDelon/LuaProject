@@ -328,6 +328,11 @@ end
 
 --按键按下的处理
 function SkillNBomb:clickCallBack()
+    --收起核弹列表
+    local isOpen = self:getParent():getParent().node_left.isOpen
+    if not isOpen then
+        return 
+    end
     self:getParent():getParent():clearAllbomb()
     local useType = self:judgeUseType()
     if useType == nil then
@@ -336,7 +341,7 @@ function SkillNBomb:clickCallBack()
     self.useType = useType
     if useType == 0 then
         self:onChoseState(true)
-        self:useNBomb();
+        self:useNBomb( );
     else
         local isNoticeNBombCost = FishGI.isNoticeNBombCost
         if isNoticeNBombCost then
@@ -395,6 +400,7 @@ function SkillNBomb:onTouchBegan(touch, event)
     if self.isChose == false then
         return false
     end
+    self.isChose = false;
     local touchBeginPos = touch:getLocation()
 
     local size = self.btn:getContentSize()
@@ -412,7 +418,32 @@ function SkillNBomb:onTouchBegan(touch, event)
         return true
     end
 
+    self.playerSelf = FishGI.gameScene.playerManager:getMyData()
+    local myWinCrystal = self.playerSelf.cannon:getDiamonds()
+    if myWinCrystal < self.price then
+        self:stopTimer()
+        self:cancelUseNBomb()
+        self:onChoseState(false)
+        print("---NBombUseResult---failure----cancelUseNBomb---")
+        local itemData = FishGI.GameTableData:getItemTable(self.propId)
+        local propDes = "$".."("..FishGF.getChByIndex(800000337)..FishGF.getChByIndex(800000218)..itemData.pack_text..")"
+        --提示钻石不够
+        log("--提示钻石不够购买--")
+        local function callback(sender)
+            local tag = sender:getTag()
+            if tag == 2 then
+                FishGI.gameScene.uiShopLayer:showLayer() 
+                FishGI.gameScene.uiShopLayer:setShopType(2)
+            end
+        end
+        FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,"\n"..FishGF.getChByIndex(800000093).."\n"..propDes,callback)
+        return
+    end
+
     FishGI.AudioControl:playEffect("sound/lock_01.mp3")
+    
+    self:pushDataToPool(self.useType)
+    FishGMF.updateInline()
     
     --适配成1280, 720的位置
     local scaleX_,scaleY_,scaleMin_  = FishGF.getCurScale()
@@ -425,7 +456,8 @@ function SkillNBomb:onTouchBegan(touch, event)
     data.useType = self.useType
     data.sendType = "sendNBomb"
     self:sendNetMessage(data)
-    
+    FishGF.waitNetManager(true,nil,"NBomb")
+
     local function callback( ... )
         print("---local function callback----")
         self:onChoseState(false)
@@ -434,7 +466,7 @@ function SkillNBomb:onTouchBegan(touch, event)
     self:runTimer(callback)
 
     self:cancelUseNBomb()
-
+    
     return true
 end
 
@@ -444,32 +476,29 @@ end
 
 --收到申请核弹结果
 function SkillNBomb:NBombUseResult(data)
+    
     local scaleX_,scaleY_,scaleMin_  = FishGF.getCurScale();
     local data = data._userdata
     if self.propId ~= data.nPropID then
         return
     end
+
+    local myPlayerId = FishGI.gameScene.playerManager.selfIndex
+    if data.playerId == myPlayerId then
+        FishGF.waitNetManager(false,nil,"NBomb")
+    end
+    local netUseType = data.useType
     --dump(data);
     if data.isSuccess ~= true then
         self:stopTimer()
         self:onChoseState(false)
-        print("---NBombUseResult---isSuccess=failureId")
+
+        self:clearDataFromPool(netUseType)
         return;
     end
     local chairId = FishGI.gameScene.playerManager:getPlayerChairId(data.playerId);
     local dataValue = data;
     dataValue.chairId = chairId;
-
-    --修改鱼币水晶
-    local useType = data.useType
-    self.playerSelf = FishGI.gameScene.playerManager:getMyData()
-    if self.playerSelf == nil then
-        return;
-    end
-    local myPlayerId = self.playerSelf.playerInfo.playerId
-    if  data.isSuccess and data.playerId == myPlayerId then
-        self:pushDataToPool(useType)
-    end
 
     local function delayKillFishes(param)
         if param.chairId == FishGI.gameScene.playerManager:getMyChairId() then

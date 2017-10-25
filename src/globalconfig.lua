@@ -58,6 +58,10 @@ CHANNEL_ID_LIST = {
     jrtt = 723,
     --广点通
     gdt = 209,
+    --三星
+    samsung = 230,
+    --魅族
+    mz = 229,
 }
 CHANNEL_ID = CHANNEL_ID_LIST.tencent
 

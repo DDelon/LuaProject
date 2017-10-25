@@ -67,6 +67,21 @@ end
 
 --判断使用方式  0，个数     1，水晶      核弹数据不存缓存
 function SkillBase:judgeUseType()
+    -- --防止同时操作
+    -- if FishGI.isTouchBtn == nil then
+    --     FishGI.isTouchBtn = false
+    -- end
+
+    -- if FishGI.isTouchBtn == true then
+    --     return 
+    -- end
+
+    -- FishGI.isTouchBtn = true
+    -- local seq = cc.Sequence:create(cc.DelayTime:create(0.1),cc.CallFunc:create(function ( ... )
+    --     FishGI.isTouchBtn = false
+    -- end))
+
+
     local count = self.btn.parentClasss:getFntCount()
     local price = self.btn.parentClasss:getFntPrice()
     

@@ -249,7 +249,7 @@ function SkillBtn:palyReleaseViolnet()
     local chairId = playerSelf.playerInfo.chairId
     local cannon = playerSelf.cannon
     cannon:addChild(spr)
-    spr:setPosition(cc.p(0,170))
+    spr:setPosition(cc.p(0,160))
     if chairId > 2 then
         spr:setRotation(180)
     end

@@ -35,6 +35,7 @@ function UnlockCannon:initView()
     FishGI.eventDispatcher:registerCustomListener("myGunUpData", self, function(valTab) self:onGunUpData(valTab) end)
     FishGI.eventDispatcher:registerCustomListener("GunUpgrade", self, function(valTab) self:onGunUpgrade(valTab) end)
 
+    self:openTouchEventListener()
     self.panel:setSwallowTouches(false)
     self:runAction(self.resourceNode_["animation"])
 end

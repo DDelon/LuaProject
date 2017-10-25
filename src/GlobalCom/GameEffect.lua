@@ -1330,7 +1330,7 @@ function GameEffect:createDropProp(dataTab)
     local Zorder = dataTab.Zorder
 
     if Zorder == nil then
-        Zorder = FishCD.ORDER_LAYER_TRUE
+        Zorder = FishCD.ORDER_LAYER_TRUE - 1
     end
     if parent == nil then
         parent = cc.Director:getInstance():getRunningScene()

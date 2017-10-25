@@ -361,6 +361,7 @@ function VipRight:GetVipDailyReward( data )
         propTab.firstPos = self:getFirstPosByPropId(val.propId)
         propTab.dropType = "normal"
         propTab.isShowCount = false
+        propTab.Zorder = FishCD.ORDER_LAYER_TRUE+1
         FishGI.GameEffect:playDropProp(propTab)
     end
 
@@ -383,10 +384,11 @@ function VipRight:GetVipDailyReward( data )
         propTab.dropType = "normal"
         propTab.isShowCount = false
         propTab.seniorPropData = val
+        propTab.Zorder = FishCD.ORDER_LAYER_TRUE+1
         FishGI.GameEffect:playDropProp(propTab)
 
     end
-
+    self:hideLayer()
 end
 
 --得到飞行道具的初始位置
@@ -396,6 +398,7 @@ function VipRight:getFirstPosByPropId( propId )
     local child = self.proplist[propId]
     pos = cc.p(child:getPositionX(),child:getPositionY())
     pos = self.node_proplist:convertToWorldSpace(pos)
+
     return pos
 end
 
@@ -419,7 +422,7 @@ function VipRight:onClickget( sender )
     elseif FishGI.GAME_STATE == 2 then
         FishGI.hallScene.net.roommanager:sendGetVipDailyReward()
     end
-    self:hideLayer()
+    --self:hideLayer()
 end
 
 

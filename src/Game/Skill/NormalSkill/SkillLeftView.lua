@@ -84,6 +84,9 @@ function SkillLeftView:onClickOpen( sender )
 end
 
 function SkillLeftView:onTouchBegan(touch, event) 
+    if not self.isOpen then
+        return 
+    end
     local curPos = touch:getLocation()
     for k,v in pairs(FishCD.SKILLS) do
         local child = self.image_skill_bg
@@ -109,7 +112,7 @@ function SkillLeftView:setIsOpen()
         self.node_skill:runAction(cc.MoveTo:create(0.2,cc.p(self.firstPosX,self.node_skill:getPositionY())))
     else
         self.node_skill:stopAllActions()
-        self.node_skill:runAction(cc.MoveTo:create(0.2,cc.p(-262,self.node_skill:getPositionY())))
+        self.node_skill:runAction(cc.MoveTo:create(0.2,cc.p(-268,self.node_skill:getPositionY())))
     end
 end
 

@@ -149,6 +149,32 @@ SDKInterface.ChannelInfoList = {
         "midas",
         true,
         false,
+    },
+    samsung = {
+        "三星",
+        "",
+        "",
+        "",
+        "weile.buyu.samsung",
+        "",
+        "",
+        "samsung",
+        "samsung",
+        true,
+        false,
+    },
+    mz = {
+        "魅族",
+        "",
+        "",
+        "",
+        "weile.buyu.mz",
+        "",
+        "",
+        "mz",
+        "mz",
+        true,
+        false,
     }
 }
 

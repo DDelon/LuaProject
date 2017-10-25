@@ -472,10 +472,13 @@ end
 
 --核弹爆炸
 function GameNet:OnNBombHit(data)
-    dump(data)
+    --dump(data)
     if data.isSuccess ~= true then
         local failureId = data.failReason
-        print("--OnNBombHit---failReason-")
+        local useType = data.useType
+        local nPropID = data.nPropID
+        FishGF.print("--OnNBombHit-fail---failureId="..failureId.."-useType="..useType.."---nPropID="..nPropID)
+        local node  = FishGI.gameScene.uiSkillView["Skill_"..nPropID]:clearDataFromPool(useType)
         return;
     end
     local chairId = FishGI.gameScene.playerManager:getPlayerChairId(data.playerId);

@@ -319,6 +319,9 @@ function cannon:onClickAdd( sender )
         self:setMultiple(nextRate)
         FishGMF.changeGunRate(nil,nextRate,0)
         FishGI.gameScene.net:sendNewGunRate(nextRate)
+
+        local player = FishGI.gameScene.playerManager:getMyData()
+        player:isShootlockRate(nextRate)
     end
 end
 
@@ -337,6 +340,9 @@ function cannon:onClickMinus( sender )
         self:setMultiple(nextRate)
         FishGMF.changeGunRate(nil,nextRate,0)
         FishGI.gameScene.net:sendNewGunRate(nextRate)
+
+        local player = FishGI.gameScene.playerManager:getMyData()
+        player:isShootlockRate(nextRate)
     end
 end
 

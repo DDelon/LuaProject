@@ -507,11 +507,11 @@ function FishGF.waitOverTime()
         swallowLayer:setVisible(false)
         FishGF.clearSwallowLayer()
         FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000036)..".","waitOverTime")
-        print("-----------------waitOverTime--------------waitId="..waitId)
+        FishGF.print("-----------------waitOverTime--------------waitId="..waitId)
     else
         swallowLayer:stopActionByTag(FishCD.OVER_TIME_ACT_TAG)
         --没等待超时
-        print("------------超时处理---------")
+        FishGF.print("------------超时处理---------")
     end
 end
 
