@@ -14,7 +14,7 @@ RuleIntroduction.RESOURCE_BINDING  = {
 
 function RuleIntroduction:onCreate( ... )
     self:openTouchEventListener()
-    for i=0,3 do
+    for i=3,0,-1 do
         local strData = FishGF.getChByIndex(800000275 + i)
         local newStrData = string.gsub( strData,"\\n","\n")
         self:setVersionsData(newStrData)
@@ -63,7 +63,7 @@ function RuleIntroduction:setVersionsData( itemdata )
     -- 往布局中添加一个按钮  
     custom_item:addChild(text_title)  
     -- 往ListView中添加一个布局  
-    self.list_update:addChild(custom_item) 
+    self.list_update:insertCustomItem(custom_item,0) 
 
 end
 

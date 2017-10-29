@@ -85,7 +85,7 @@ local function getThirdApi_(name, channelId)
     if channelId == nil then
         channelId = CHANNEL_ID
     end
-	local ver_str = FishGF.getHallVerison()
+    local ver_str = FishGF.getHallVerison()
     return string.format("%s%s/%s/%d/%s/%s", thirdapi_, name, APP_ID, channelId, ver_str, REGION_CODE)
 end
 
@@ -728,6 +728,14 @@ function Dapi:PackAward( id, callback )
     end
 end
 
+--实名验证
+function Dapi:RealNameVerify(name, idcard, callback)
+    local url = getUserApi_("/realname/cert");
+    local data = {idcard = idcard, realname = name}
+    table.merge( data, getToken_() )
+     Http:Post(url, errorhandler_(callback), data, true)
+end
+
 function Dapi:feedBackUrl(callback)
     local url = getUserApi_("/feedback/old");
     local data = getToken_();
@@ -736,8 +744,9 @@ end
 
 function Dapi:thirdLogin(channel, data, callback)
     data.type = channel
-
-	local url = getThirdApi_("/login");
+    data.udid = Helper.GetDeviceCode()
+    local url = getThirdApi_("/login");
+    dump(data)
 	Http:Post(url, callback, data, true)
 end
 

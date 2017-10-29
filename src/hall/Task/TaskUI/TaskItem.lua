@@ -23,7 +23,6 @@ TaskItem.RESOURCE_BINDING  = {
     ["img_done"]            = { ["varname"] = "img_done" },                 -- 已完成
     ["Image_2"]             = { ["varname"] = "Image_2" },                 -- 已完成
     ["btn_share"]           = { ["varname"] = "btn_share" ,["events"]={["event"]="click",["method"]="onClickShare"}},                 -- 已完成
-    
 }
 
 function TaskItem:onCreate( ... )
@@ -31,6 +30,8 @@ function TaskItem:onCreate( ... )
     self.btn_get_reward:setVisible(true)
     self.isSpecial = false
     self:displayTaskCompleteBtn(false)
+    
+    self:runAction(self.resourceNode_.animation)
 end
 
 function TaskItem:onClickGo()
@@ -54,9 +55,10 @@ function TaskItem:onClickGet()
 end
 
 function TaskItem:onClickShare()
-    FishGI.wechatShareType = 0
-    local shareInfo = FishGI.WebUserData:GetShareDataTable();
-    FishGI.ShareHelper:doShareWebType(shareInfo.text,shareInfo.icon,shareInfo.url, nil, nil, shareInfo.id);
+    local event = {}
+    event.eventType = "DO_TASK_GO"
+    event.taskType = self.taskType
+    FishGI.eventDispatcher:dispatch("onTaskEvent", event)
 end
 
 function TaskItem:initItem(taskId, process, isReward, task)
@@ -163,14 +165,18 @@ end
 
 function TaskItem:setButtonDisplay(isReward, process, total)
 
-    if self.taskType == "10" then 
-        return
-    elseif self.taskType == "12" then
+   if self.taskType == "12" or self.taskType == "10"then
         self.btn_go:setVisible(false)
         self.btn_get_reward:setVisible(false)
         self.img_done:setVisible(false)
 
         self.btn_share:setVisible(true)
+        
+        if not self:isTaskComplete(process, total) then
+            self.resourceNode_.animation:play("prompt", true)
+            return
+        end
+
         return
     end
 
@@ -180,6 +186,13 @@ function TaskItem:setButtonDisplay(isReward, process, total)
         self.img_done:setVisible(isReward)
         return
     end
+
+    if not self:isTaskComplete(process, total) and self.taskType == "6" then
+        local spr = self.btn_go:getChildByName("img_go")
+        spr:loadTexture("res/hall/task" .. "/task_pic_qd.png")
+        return
+    end
+
 
     self:displayTaskCompleteBtn(self:isTaskComplete(process, total))
 end

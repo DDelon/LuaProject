@@ -176,6 +176,7 @@ MSGS2CUpgradeCannonResult = 27 {
 	newCrystal : int = 4
 	costProps : []MSGProp = 5
 	dropSeniorProps : []MSGSeniorProp = 6
+	dropProps: []MSGProp = 7
 }
 
 MSGC2SAlmInfo = 28 {	
@@ -609,7 +610,7 @@ MSGS2CGetFriendStatus = 96 {
 	friendRoomNo : string = 4;friendStatus=1,2才有效，朋友场中房间id
 	friendGameId : string = 5;friendStatus=1,2才有效，场次id
 	startTime : string = 6;friendStatus=1,2才有效，场次id，开始时间
-	unreadFriendGameId : string = 7;friendStatus=4才有效，结算未读的朋友场id
+	unreadFriendGameId : string = 7;friendStatus=4才有效，结算未读的朋友场id	
 }
 
 MSGFriendServerItem = 97 {
@@ -629,6 +630,8 @@ MSGFriendHistoryItem = 100 {
 	creatorNickName : string = 2;
 	friendRoomNo : string = 3;房间号
 	friendGameId : string = 4;场次id
+	items : []MSGFriendDetailItem = 5;名次数据
+	creatorPlayerId : int = 6;创建者玩家id
 }
 
 MSGC2SGetFriendDetail = 101 {;获取朋友场详细信息
@@ -650,18 +653,23 @@ MSGFriendDetailItem = 103 {
 }
 
 MSGC2SCreateFriendRoom = 104 {
+	roomPropType : int = 1;道具类型,0:不带怼人道具，1:带怼人道具
+	roomPeopleCountType : int = 2;人数类型，0:2人，1:3人，2:4人
+	roomDurationType : int = 3;时长类型,0:8分钟，1,24分钟
+	appId : string = 4;appId
 }
 
 MSGS2CCreateFriendRoom = 105 {
 	success : bool = 1
 	friendRoomNo : string = 2
 	deskId : int = 3
-	errorCode : int = 4; 0:成功， 1:已经在房间，2:无可用房间,3:无房卡,4:朋友场服务器已关闭
+	errorCode : int = 4; 0:成功， 1:已经在房间，2:无可用房间,3:无房卡,4:朋友场服务器已关闭,5,参数不合法
 }
 
 MSGC2SJoinFriendRoom = 106 {;加入朋友场
 	friendRoomNo : string = 1;房间Id
 	friendGameId : string = 2;场次id,用于断线重连的用户，新用户请置空
+	appId : string = 3;appId
 }
 
 MSGS2CJoinFriendRoom = 107 {
@@ -685,6 +693,11 @@ MSGFriendGameInfo = 110 {
 	started : bool = 6;是否开始
 	leftTime : int = 7;剩余时间
 	creatorPlayerId : int = 8;创建者玩家id
+	
+	roomPropType : int = 9;道具类型,0:不带怼人道具，1:带怼人道具
+	roomPeopleCountType : int = 10;人数类型，0:2人，1:3人，2:4人
+	roomDurationType : int = 11;时长类型,0:8分钟，1,24分钟
+	startedMs : int = 12;已开始时间，毫秒
 }
 
 MSGFriendPlayerInfo = 111 {
@@ -1004,6 +1017,8 @@ MSGS2CForbidAccount = 178 {
 	msg : string = 2;错误描述
 }
 
-
+MSGS2CFriendStartTimeline = 179 {
+	timelineId : int = 1;鱼线id
+}
 ]]
 return a

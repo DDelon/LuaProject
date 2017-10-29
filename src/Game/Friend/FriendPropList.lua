@@ -17,33 +17,46 @@ function FriendPropList:onCreate( ... )
 end
 
 function FriendPropList:init( )
-    self.tPropList = {
-        {FishCD.FRIEND_PROP_01, 0},
-        {FishCD.FRIEND_PROP_02, 0},
-        {FishCD.FRIEND_PROP_03, 0},
-        {FishCD.FRIEND_PROP_04, 0},
-        {FishCD.FRIEND_PROP_05, 0},
-        {FishCD.FRIEND_PROP_06, 0},
-    }
-    self:resetPropList()
+    self.tPropBtns = {}
+    for i=1,6 do
+        self.tPropBtns[i] = require("Game/Friend/FriendPropItem").new(self, self["node_prop_btn_"..i])
+    end
 end
 
 function FriendPropList:initView( )
+end
+
+function FriendPropList:initData( durationType )
+    self.durationType = durationType
+    local configId = "990000094"
+    if durationType == 1 then
+        configId = "990000095"
+    end
+    local tPropList = {}
+    local propList = string.split(FishGI.GameConfig:getConfigData("config", configId, "data"), ';')
+    for i,v in ipairs(propList) do
+        tPropList[i] = tonumber(v)
+    end
+    self:resetPropList(tPropList)
 end
 
 function FriendPropList:buttonClicked(viewTag, btnTag)
     self.parent_:buttonClicked(viewTag, btnTag)
 end
 
-function FriendPropList:resetPropList( )
-    if self.tPropBtns == nil then 
-        self.tPropBtns = {}
-        for i, v in ipairs(self.tPropList) do
-            self.tPropBtns[i] = require("Game/Friend/FriendPropItem").new(self, self["node_prop_btn_"..i])
+function FriendPropList:resetPropList( tPropList )
+    for i=1,6 do
+        if tPropList[i] then
+            self.tPropBtns[i]:setPropId(tPropList[i])
+            self.tPropBtns[i]:setVisible(true)
+        else
+            self.tPropBtns[i]:setVisible(false)
         end
     end
-    for i, v in ipairs(self.tPropList) do
-        self.tPropBtns[i]:resetData(v[1], v[2])
+    if #tPropList <= 3 then
+        for i,v in ipairs(tPropList) do
+            self.tPropBtns[i]:setPosition(cc.p(self.tPropBtns[3+i]:getPosition()))
+        end
     end
 end
 

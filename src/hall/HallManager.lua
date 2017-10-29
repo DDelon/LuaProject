@@ -76,6 +76,7 @@ function HallManager:firstInit( )
         self:initPlayerDataLayer()
         self.isFirstInit = true
     end
+    --FishGI.CommonLayer:addLayerToParent(self)
 end
 
 function HallManager:initLayer( )
@@ -111,33 +112,12 @@ function HallManager:initLayer( )
     self.uiExchange:setVisible(false)   
     self.uiExchange:setScale(self.scaleMin_)
 
-    --商店
-    self.uiShopLayer = require("Shop/Shop").create()
-    self.uiShopLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiShopLayer,FishCD.ORDER_LAYER_TRUE)
-    self.uiShopLayer:setVisible(false)   
-    self.uiShopLayer:setScale(self.scaleMin_)
-
-    --月卡
-    self.uiMonthcard = require("hall/Monthcard/Monthcard").create()
-    self.uiMonthcard:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,330*self.scaleY_))
-    self:addChild(self.uiMonthcard,FishCD.ORDER_LAYER_TRUE)
-    self.uiMonthcard:setVisible(false)   
-    self.uiMonthcard:setScale(self.scaleMin_)
-
-    --VIP特权
-    self.uiVipRight = require("VipRight/VipRight").create()
-    self.uiVipRight:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiVipRight,FishCD.ORDER_LAYER_TRUE)
-    self.uiVipRight:setVisible(false)
-    self.uiVipRight:setScale(self.scaleMin_)
-
-    --签到
-    self.uiCheck = require("hall/Check/Check").create()
-    self.uiCheck:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiCheck,FishCD.ORDER_LAYER_TRUE)
-    self.uiCheck:setVisible(false)
-    self.uiCheck:setScale(self.scaleMin_)
+    -- --签到
+    -- self.uiCheck = require("hall/Check/Check").create()
+    -- self.uiCheck:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    -- self:addChild(self.uiCheck,FishCD.ORDER_LAYER_TRUE)
+    -- self.uiCheck:setVisible(false)
+    -- self.uiCheck:setScale(self.scaleMin_)
 
     --微信分享
     self.uiWeChatShare = require("hall/WeChatShare/WeChatShare").create()
@@ -180,10 +160,25 @@ function HallManager:initLayer( )
     self.taskPanel:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
     self:addChild(self.taskPanel, FishCD.ORDER_GAME_task);
     self.taskPanel:setVisible(false)
+
+    --每日任务
+    self.uiRealName = require("hall/RealName/RealName").new()
+    self.uiRealName:setAnchorPoint(0.5, 0.5)
+    self.uiRealName:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    self:addChild(self.uiRealName, FishCD.ORDER_GAME_task)
+    self.uiRealName:setVisible(false)
 end
 
 --初始化朋友场
 function HallManager:initFriendLayer( )
+    --创建面板
+    self.uiCreateLayer = require("hall/FriendRoom/CreateLayer").create()
+    self.uiCreateLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    self:addChild(self.uiCreateLayer,FishCD.ORDER_LAYER_TRUE)
+    self.uiCreateLayer:setVisible(false)   
+    self.uiCreateLayer:setScale(self.scaleMin_)
+
+
 	self.uiFriendRoom = require("hall/FriendRoom/FriendRoom").create();
 	self:addChild(self.uiFriendRoom,1)
 
@@ -318,9 +313,11 @@ end
 
 function HallManager:onEnter( )
     print("------------HallLayer:onEnter--")
+    FishGI.CommonLayer:addLayerToParent(self)
     FishGF.waitNetManager(false,nil,"exitGame")
     FishGI.AudioControl:playLayerBgMusic()
-	FishGI.shop = self.uiShopLayer;
+	
+    FishGI.GameTableData:clearGameTable(1)
     self:disposeExit()
     
 end
@@ -339,7 +336,9 @@ function HallManager:disposeExit()
 
     FishGI.isNoticeClose = true
     --nil 第一次进入大厅 0 正常退出 1超出房间最高倍数被踢   2朋友场被踢   3朋友场被解散   4朋友场结束   5自己强退   6.等待时间过长 7朋友场主动解散 8房间关闭被踢 9.断线被踢出游戏 100.未知原因 1000.小游戏退出
-    if FishGI.exitType == 1 then
+    if FishGI.exitType == nil then
+        self.net.roommanager:sendDataGetInfo();
+    elseif FishGI.exitType == 1 then
         FishGI.isEnterBg = true
         FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_ONLY,FishGF.getChByIndex(800000088),nil)
         self:doAutoLogin(0.1)
@@ -423,7 +422,7 @@ function HallManager:doAutoLogin(delayTime)
         FishGI.hallScene.net:dealloc();
         local noDelList = {"doPaySDK"}
         FishGF.clearSwallowLayer(noDelList)
-        FishGF.waitNetManager(true,nil,"delayAutoLogin")
+        FishGF.waitNetManager(true,nil,"delayAutoLogin",0)
         FishGF.print("------------FishGI.loginScene.net:DoAutoLogin-------------")
         local seq = cc.Sequence:create(cc.DelayTime:create(delayTime),cc.CallFunc:create(function ( ... )
             FishGF.waitNetManager(false,nil,"delayAutoLogin")
@@ -520,13 +519,15 @@ function HallManager:receiveNetData( netData )
         end
 
     elseif netData.msgType == FishCD.ViewMessageType.HALL_SIGNIN then  --大厅签到
-        local isSuccess = netData.isSuccess
-        if isSuccess then
-            self.view:setBtnIsLight(FishCD.HALL_BTN_3,false)
-        else
-            self.view:setBtnIsLight(FishCD.HALL_BTN_3,true)
-        end
-        self.uiCheck:receiveCheckData(netData)
+       -- local isSuccess = netData.isSuccess
+       -- if isSuccess then
+       --     self.view:setBtnIsLight(FishCD.HALL_BTN_3,false)
+       -- else
+        --    self.view:setBtnIsLight(FishCD.HALL_BTN_3,true)
+        --end
+        self.taskPanel:onTaskSigned(netData)
+        --self.uiCheck:receiveCheckData(netData)
+        --self.
     elseif netData.msgType == FishCD.ViewMessageType.HALL_BAG_BUY then --背包购买
         self.uiBagLayer:receiveBuyData(netData)
     elseif netData.msgType == FishCD.ViewMessageType.HALL_ACCOUNT then --大厅公告
@@ -628,7 +629,7 @@ function HallManager:upDataPlayerInfo( netData )
         --绑定玩家到c++
         self:upDataPlayerToCpp(netData)
         FishGI.myData = netData
-        self.uiBagLayer:setRightPropData(self.uiBagLayer:getPropListFirst())
+        --self.uiBagLayer:setRightPropData(self.uiBagLayer:getPropListFirst())
 
         FishGI.myData.isActivited = FishGI.WebUserData:isActivited()
         FishGI.myData.isBindPhone = FishGI.WebUserData:isBindPhone()
@@ -649,7 +650,7 @@ function HallManager:upDataPlayerInfo( netData )
         self:upDataMonthCard()
 
         --是否签到
-        self:upDataCheck()
+        --self:upDataCheck()
 
         --是否普通抽奖
         self:upDataLoginDraw()
@@ -804,12 +805,12 @@ end
 
 --更新签到
 function HallManager:upDataCheck()
-    if FishGI.myData.hasSignToday then
-        self.view:setBtnIsLight(FishCD.HALL_BTN_3,false)
-    else
-        self.view:setBtnIsLight(FishCD.HALL_BTN_3,true)
-    end
-    self.uiCheck:receiveData(FishGI.myData)
+    -- if FishGI.myData.hasSignToday then
+    --     self.view:setBtnIsLight(FishCD.HALL_BTN_3,false)
+    -- else
+    --     self.view:setBtnIsLight(FishCD.HALL_BTN_3,true)
+    -- end
+    -- self.uiCheck:receiveData(FishGI.myData)
 
 end
 
@@ -840,15 +841,16 @@ end
 
 --更新vip相关数据
 function HallManager:upDataVIPData( costMoney )
-    local vipData = FishGMF.getAndSetPlayerData(FishGI.myData.playerId,true,"vipExp",costMoney)
+    local vipData = FishGI.GameTableData:getVIPByCostMoney(costMoney)
+    vipData.vipExp = costMoney
     FishGI.myData.vipExp = costMoney
     FishGI.myData.vip_level = vipData.vip_level
     FishGI.myData.extra_sign = vipData.extra_sign
     FishGI.myData.next_All_money = vipData.next_All_money
-    FishGI.myData.daily_items_reward = vipData.daily_items_reward
+    FishGI.myData.daily_items_reward = vipData.daily_items_reward    
 
     --更新vip相关界面
-    self:upDataVIPView(FishGI.myData)
+    self:upDataVIPView(vipData)
 
 end
 
@@ -983,6 +985,7 @@ function HallManager:closeAllSchedule()
     if self.uiDialVIP ~= nil then
         self.uiDialVIP:initDialAge()
     end
+    self:clearpoolData()
 end
 
 --按键关闭，--关闭一些功能
@@ -1020,6 +1023,15 @@ function HallManager:buttonClicked(viewTag, btnTag)
             FishGI.hallScene:removeChildByTag(FishCD.TAG.RANK_WEB_TAG);
         end 
     end 
+end
+
+function HallManager:loadNode( nodeName)
+    self[nodeName]:loadNode()
+end
+
+--设置是否返回大厅
+function HallManager:clearpoolData( )
+    self.uiRecord:clearRecordItemPool()
 end
 
 return HallManager;

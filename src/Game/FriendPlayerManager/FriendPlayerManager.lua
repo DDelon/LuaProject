@@ -244,10 +244,10 @@ function FriendPlayerManager:onTouchEnded(touch, event)
 end
 
 function FriendPlayerManager:onTouchCancelled(touch, event)
-	local playerSelf = self.playerTab[self.selfIndex];
-    if playerSelf ~= nil then
-        playerSelf:endShoot();
-    end
+	-- local playerSelf = self.playerTab[self.selfIndex];
+    -- if playerSelf ~= nil then
+    --     playerSelf:endShoot();
+    -- end
 end
 
 function FriendPlayerManager:isAcross(selfChairId, otherChairId)
@@ -328,12 +328,13 @@ end
 function FriendPlayerManager:PlayerNewVIP(valTab)
 	local playerId = valTab.playerId;
 	local vipExp = valTab.vipExp;
-	local backData = FishGMF.getAndSetPlayerData(playerId,true,"vipExp",vipExp)
+	local backData = FishGI.GameTableData:getVIPByCostMoney(vipExp)
+	--local backData = FishGMF.getAndSetPlayerData(playerId,true,"vipExp",vipExp)
 	if backData == nil then
 		print("----PlayerNewVIP----backData == nil------")
 		return
 	end
-
+	backData.vipExp = vipExp  
     local vip_level = backData["vip_level"]
     local player = self:getPlayerByPlayerId(playerId)
 	if player == nil then

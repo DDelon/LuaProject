@@ -79,6 +79,12 @@ function GameNet:OnJMsg(msg)
     
     local ptr = msg:ReadData(0)
     local data, typeName = jmsg.decodeBinary(proto, ptr)
+
+    if self.isWaitLoaded == nil and  typeName ~= "MSGS2CGameStatus" then
+        return
+    end
+    self.isWaitLoaded = false
+
     --log("typeName= " .. typeName)
     self.isRecv = true;
     self.isSend = false;
@@ -367,6 +373,7 @@ function GameNet:OnPlayerShoot(data)
         dataTab.effectId = (data.isViolent and FishCD.SKILL_TAG_VIOLENT or 0)
         dataTab.cost = (data.isViolent and dataTab.bulletRate*2 or dataTab.bulletRate)
         dataTab.fireType = 2
+        dataTab.bulletId = data.bulletId;
         FishGMF.pushRefreshData(dataTab)
         return;
     end   
@@ -417,6 +424,7 @@ function GameNet:OnPlayerShoot(data)
     dataTab.effectId = (data.isViolent and FishCD.SKILL_TAG_VIOLENT or 0)
     dataTab.cost = (data.isViolent and dataTab.bulletRate*2 or dataTab.bulletRate)
     dataTab.fireType = 0
+    dataTab.bulletId = data.bulletId;
     FishGMF.pushRefreshData(dataTab)
 
     --其他玩家炮塔转动
@@ -458,16 +466,19 @@ end
 --核弹申请使用结果
 function GameNet:OnNBombUseResult(data)
     local event = cc.EventCustom:new("NBombUseResult")
-    event._usedata = data
+    event._userdata = data
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
 end
 
 --核弹爆炸
 function GameNet:OnNBombHit(data)
-    dump(data)
+    --dump(data)
     if data.isSuccess ~= true then
         local failureId = data.failReason
-        print("--OnNBombHit---failReason-")
+        local useType = data.useType
+        local nPropID = data.nPropID
+        FishGF.print("--OnNBombHit-fail---failureId="..failureId.."-useType="..useType.."---nPropID="..nPropID)
+        local node  = FishGI.gameScene.uiSkillView["Skill_"..nPropID]:clearDataFromPool(useType)
         return;
     end
     local chairId = FishGI.gameScene.playerManager:getPlayerChairId(data.playerId);
@@ -488,7 +499,9 @@ function GameNet:OnUseViolentResult(data)
     if FishGI.SERVER_STATE == 0 then
         return;
     end
-    FishGI.eventDispatcher:dispatch("UseViolentResult", data);
+    local event = cc.EventCustom:new("UseViolentResult")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
 end
 
 --狂暴技能结束
@@ -496,7 +509,10 @@ function GameNet:OnViolentTimeOut(data)
     if FishGI.SERVER_STATE == 0 then
         return;
     end
-    FishGI.eventDispatcher:dispatch("ViolentTimeOut", data);
+    local event = cc.EventCustom:new("ViolentTimeOut")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
+    
 end
 
 --锁定技能转换目标
@@ -504,7 +520,12 @@ function GameNet:OnBulletTargetChange(data)
     if FishGI.SERVER_STATE == 0 then
         return;
     end
-    FishGI.eventDispatcher:dispatch("bulletTargetChange", data);
+--    FishGI.eventDispatcher:dispatch("bulletTargetChange", data);
+
+    local event = cc.EventCustom:new("bulletTargetChange")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
+
 end
 
 --玩家加钱
@@ -514,12 +535,16 @@ end
 
 --自己锁定技能结果
 function GameNet:OnMyAimResult(data)
-    FishGI.eventDispatcher:dispatch("startMyLock", data);
+    local event = cc.EventCustom:new("startMyLock")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
 end
 
 --其他人锁定
 function GameNet:OnOtherAim(data)
-    FishGI.eventDispatcher:dispatch("startOtherLock", data);
+    local event = cc.EventCustom:new("startOtherLock")
+    event._userdata = data
+    cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
 end
 
 --自己申请冰冻结果
@@ -576,15 +601,16 @@ end
 function GameNet:OnFishGroupNotify(data)
     local  message = FishGF.getChByIndex(800000085)
     FishGF.showSystemTip(message)
-    FishGI.isFishGroupCome = true
 
     local function clearFunc()
         if FishGI.gameScene.isFishCome then
-                FishGI.gameScene.isFishCome = false;
-                return;
-            end
+            FishGI.gameScene.isFishCome = false;
+            return;
+        end
         FishGI.GameEffect:fishGroupCome()
         LuaCppAdapter:getInstance():fishAccelerateOut();
+        
+        
     end
     FishGF.delayExcute(14-FishCD.FISH_GROUP_COMING_CLEAR_TIME, clearFunc)
 end
@@ -761,7 +787,6 @@ end
 
 --锁定变换目标
 function GameNet:sendBulletTargetChange(data)
-    FishGF.print("-0-sendBulletTargetChange----")
     if data == nil then
         return
     end
@@ -870,6 +895,20 @@ end
 --解锁炮倍申请
 function GameNet:sendUpgradeCannon()
     local data = {}
+    local ifNotice = FishGI.gameScene.uiSkillView.Skill_17:ifNoticeRate()
+    if ifNotice then
+        local function callback(sender)
+            local tag = sender:getTag()
+            if tag == 2 then
+                self:sendJMsg("MSGC2SUpgradeCannon", data)
+            end
+        end
+        local str = FishGF.getChByIndex(800000349)
+        FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,str,callback);
+        return
+    end
+
+    FishGF.waitNetManager(true,nil,"UpgradeCannon")
     self:sendJMsg("MSGC2SUpgradeCannon", data)
 end
 

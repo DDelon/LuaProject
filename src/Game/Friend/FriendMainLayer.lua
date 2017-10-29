@@ -73,10 +73,16 @@ function FriendMainLayer:initView()
     self.uiGameData:setPosition(cc.p(0,cc.Director:getInstance():getWinSize().height/2))
     self:addChild(self.uiGameData,FishCD.ORDER_GAME_player)
     self.uiGameData:setScale(self.scaleMin_)
+
+    --倒计时
+    self.uiGameCountdown = require("Game/Friend/FriendGameCountdown").create()
+    self.uiGameCountdown:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height-45*self.scaleMin_))
+    self:addChild(self.uiGameCountdown,FishCD.ORDER_GAME_player)
+    self.uiGameCountdown:setScale(self.scaleMin_)
     local function callBackTimeout( )
         print("callBackTimeout")
     end
-    self.uiGameData:setTimeoutCallBack(callBackTimeout)
+    self.uiGameCountdown:setTimeoutCallBack(callBackTimeout)
 
     --宝箱
     self.uiBox = require("Game/Friend/FriendBox").create()
@@ -148,33 +154,7 @@ function FriendMainLayer:initView()
     self.uiSelectCannon:setVisible(false)
     FishGI.gameScene.uiSelectCannon = self.uiSelectCannon
 
-    --商店
-    self.uiShopLayer = require("Shop/Shop").create()
-    self.uiShopLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiShopLayer,FishCD.ORDER_LAYER_TRUE)
-    self.uiShopLayer:setScale(self.scaleMin_)
-    self.uiShopLayer:setVisible(false)   
-    FishGI.gameScene.uiShopLayer = self.uiShopLayer
-
-    --VIP特权
-    self.uiVipRight = require("VipRight/VipRight").create()
-    self.uiVipRight:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiVipRight,FishCD.ORDER_LAYER_TRUE)
-    self.uiVipRight:setScale(self.scaleMin_)
-    self.uiVipRight:setVisible(false)
-    FishGI.gameScene.uiVipRight = self.uiVipRight
-
-    if not FishGI.isGetMonthCard then
-        --月卡
-        self.uiMonthcard = require("hall/Monthcard/Monthcard").create()
-        self.uiMonthcard:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-        self:addChild(self.uiMonthcard,FishCD.ORDER_LAYER_TRUE)
-        self.uiMonthcard:setScale(self.scaleMin_)
-        self.uiMonthcard:setVisible(false)
-        FishGI.gameScene.uiMonthcard = self.uiMonthcard
-    end 
-
-    self.uiGameData:updateGameStatus(false)
+    self.uiGameCountdown:updateGameStatus(false)
 end
 
 function FriendMainLayer:onClickSecret( sender )
@@ -205,8 +185,10 @@ function FriendMainLayer:buttonClicked(viewTag, btnTag)
             local tPropList = {}
             tPropList.initFriendProps = {}
             tPropList.initFriendProps[1] = self.uiSelectProp.tSelectList[1]
-            if self.tGameInfo.creatorPlayerId == FishGI.myData.playerId then 
+            if self.uiSelectProp.iSelectPropCount > 1 then
                 tPropList.initFriendProps[2] = self.uiSelectProp.tSelectList[2]
+            end
+            if self.tGameInfo.creatorPlayerId == FishGI.myData.playerId then 
                 self.uiPlayerInfoLayer:setVisible(true)
                 self.uiPlayerInfoLayer:setOwnerIndex(FishGI.gameScene.playerManager:getPlayerChairId(FishGI.myData.playerId))
                 self.uiPlayerInfoLayer:showBtns(true)
@@ -229,10 +211,17 @@ function FriendMainLayer:buttonClicked(viewTag, btnTag)
             if wechatAppId == nil then
                 wechatAppId = WX_APP_ID_LOGIN
             end
-            local title = FishGF.getChByIndex(800000241)..FishGF.getChByIndex(800000218)..FishGI.FRIEND_ROOMNO
+            local title = FishGF.getChByIndex(800000336)..FishGF.getChByIndex(800000241)..FishGF.getChByIndex(800000218)..FishGI.FRIEND_ROOMNO
+
+            local createData = self.tGameInfo
+            local roomPropType = FishGF.getChByIndex(800000333)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomPropType",createData.roomPropType).str)
+            local roomPeopleCountType = FishGF.getChByIndex(800000334)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomPeopleCountType",createData.roomPeopleCountType).str)
+            local roomDurationType = FishGF.getChByIndex(800000334)..FishGF.getChByIndex(800000218)..(FishGF.changeRoomData("roomDurationType",createData.roomDurationType).str)
+            local des = roomPropType.."\n"..roomPeopleCountType.."\n"..roomDurationType
+
             local targetPlatform = cc.Application:getInstance():getTargetPlatform()
             if (cc.PLATFORM_OS_WINDOWS ~= targetPlatform) then
-                FishGI.ShareHelper:doShareAppWebType(title,FishGF.getChByIndex(800000294),url,0,wechatAppId)
+                FishGI.ShareHelper:doShareAppWebType(title,des,url,0,wechatAppId)
             end
 
         elseif btnTag == "StartGame" then 
@@ -326,11 +315,49 @@ function FriendMainLayer:onTouchEnded(touch, event)
     FishGI.gameScene.playerManager:onTouchEnded(touch, event);
 end
 
+--设置炮倍数据
+function FriendMainLayer:setRateData(roomDurationType )
+    local key = 0
+    if roomDurationType == 0 then  --8分钟
+        key = 990000079
+    elseif roomDurationType == 1 then  --24分钟
+        key = 990000099
+    end
+    local dataStr = tostring(FishGI.GameConfig:getConfigData("config", tostring(key), "data"))
+    self.RateData = {}
+    local tab = string.split(dataStr,";")
+    for i,val in ipairs(tab) do
+        local data = string.split(val,",")
+        data.Rate = tonumber(FishGI.GameConfig:getConfigData("cannon", tostring(920000000+tonumber(data[2])), "times"))
+        table.insert( self.RateData, data )
+    end
+end
+--得到炮倍数据
+function FriendMainLayer:getRateData( )
+    return self.RateData
+end
+
 function FriendMainLayer:onGameLoaded(data)
     self.tGameInfo = data.roomInfo
+    self.uiBox:initData(self.tGameInfo.roomPropType, self.tGameInfo.roomDurationType)
+    self.uiGameCountdown:initData(self.tGameInfo.roomDurationType, self.tGameInfo.startedMs)
+    self:setRateData(self.tGameInfo.roomDurationType)
+    self.uiSelectProp:initData(self.tGameInfo.roomPropType)
+    self.uiPropList:initData(self.tGameInfo.roomPropType)
+    if  self.tGameInfo ~= nil then
+        local newData = FishGF.changeRoomData("roomDurationType",self.tGameInfo.roomDurationType)
+        self.uiGameCountdown:setGameTimeout(newData.time)
+    end
     if self.tGameInfo.started then 
+        for k,val in pairs(self.tGameInfo.playerInfos) do
+            if val.isSelf then
+                for i, v in pairs(val.friendProps) do
+                    self:setPropCount(v.propId-FishCD.FRIEND_INDEX, v.propCount)
+                end
+            end
+        end
         self.uiPropList:setVisible(true)
-        self.uiGameData:updateGameStatus(true)
+        self.uiGameCountdown:updateGameStatus(true)
         self.uiPlayerInfoLayer:setVisible(true)
         self.uiPlayerInfoLayer:showBtns(false)
     else 
@@ -370,7 +397,7 @@ end
 function FriendMainLayer:onStartGame(data)
     self.uiPlayerInfoLayer:isOpenShowBtns(false)
     self.uiStartGame:setVisible(false)
-    self.uiGameData:updateGameStatus(true)
+    self.uiGameCountdown:updateGameStatus(true)
     self.uiStartAni:showLayer(true, 127)
 end
 
@@ -567,7 +594,7 @@ function FriendMainLayer:closeAllSchedule()
         FishGI.gameScene.loadingLayer:closeAllSchedule()
     end
     FishGI.gameScene.net:closeSchedule();
-    self.uiGameData:unscheduleTimes()
+    self.uiGameCountdown:unscheduleTimes()
 end
 
 --设置是否开启微信

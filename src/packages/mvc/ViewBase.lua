@@ -69,6 +69,10 @@ function ViewBase:onEnter( )
     end 
 end
 
+function ViewBase:onExit( )
+    FishGI.eventDispatcher:removeListenerByView(self)
+end
+
 local function dispatchRemoveEvent_(listeners)
     for _,callback in ipairs(listeners) do
         callback()
@@ -435,7 +439,7 @@ function ViewBase:initWinEditBox(box,isPassword,isMediate)
                     --当编辑框EditEmail   按下return 时到此处
                     end
                 elseif strEventName == "changed" then --编辑框内容改变时调用
-                    print("---changed--text = "..pSender:getText())
+                    --print("---changed--text = "..pSender:getText())
                     --pSender.text_str:setString(pSender:getText())
                 end
             end) 
@@ -473,10 +477,18 @@ function ViewBase:hideLayer(isAct,isRemove,isScale,allActTime)
     end
     isRemove = isRemove or false
     if isAct then
-      FishGI.AudioControl:playEffect("sound/exit_01.mp3")
-      FishGI.showLayerData:hideLayer(self,isRemove,isScale,allActTime)
+        if FishGI ~= nil then
+            FishGI.AudioControl:playEffect("sound/exit_01.mp3")
+            FishGI.showLayerData:hideLayer(self,isRemove,isScale,allActTime)
+        else
+            self:setVisible(false);
+        end
     else
-      FishGI.showLayerData:hideLayerByNoAct(self,isRemove,isScale)
+        if FishGI ~= nil then
+            FishGI.showLayerData:hideLayerByNoAct(self,isRemove,isScale)
+        else
+            self:setVisible(false);
+        end
     end
 end
 

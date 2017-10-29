@@ -30,6 +30,7 @@ function FriendBox:init()
     self.tProgress = {}
     self.node_box_item = {}
     self.tLevelData = {}
+    self.scaleX_,self.scaleY_,self.scaleMin_  = FishGF.getCurScale()
 end
 
 function FriendBox:onTouchBegan(touch, event)
@@ -39,21 +40,44 @@ end
 function FriendBox:initView()
 end
 
-function FriendBox:onEnter()
-    self.scaleX_,self.scaleY_,self.scaleMin_  = FishGF.getCurScale()
-    local strBoxProgress = FishGI.GameConfig:getConfigData("config", "990000077", "data")
+function FriendBox:initData( propType, durationType )
+    self.propType = propType
+    self.durationType = durationType
+    local configId = "990000077"
+    -- 怼人道具
+    if propType == 1 then
+        -- 房间数量1
+        if durationType == 0 then
+            configId = "990000077"
+        elseif durationType == 1 then
+            configId = "990000092"
+        end
+    elseif propType == 0 then
+        -- 房间数量1
+        if durationType == 0 then
+            configId = "990000091"
+        elseif durationType == 1 then
+            configId = "990000093"
+        end
+    end
+    local strBoxProgress = FishGI.GameConfig:getConfigData("config", configId, "data")
     local tBoxData = string.split(strBoxProgress, ";")
     FriendBox.super.onEnter(self)
     for i, v in pairs(tBoxData) do 
         if string.len( v ) > 0 then 
-            self.node_box_item[i] = require("Game/Friend/FriendBoxItem").new(self, self["node_box_"..i])
-            self.node_box_item[i]:setTag(i)
-            self.node_box_item[i]:setPos(cc.p(self:getPositionX()+self["node_box_bg_"..i]:getPositionX()+self.node_box_item[i]:getPositionX(), 
-                self:getPositionY()-self.loading_bar:getContentSize().width*self.scaleMin_/2+self["node_box_bg_"..i]:getPositionY()*self.scaleMin_+self.node_box_item[i]:getPositionY()*self.scaleMin_))
             self.tProgress[i] = tonumber(string.split(v, ",")[1])
             self["fnt_box_"..i]:setString(tostring(self.tProgress[i]))
         end 
     end 
+end
+
+function FriendBox:onEnter()
+    for i=1,4 do
+        self.node_box_item[i] = require("Game/Friend/FriendBoxItem").new(self, self["node_box_"..i])
+        self.node_box_item[i]:setTag(i)
+        self.node_box_item[i]:setPos(cc.p(self:getPositionX()+self["node_box_bg_"..i]:getPositionX()+self.node_box_item[i]:getPositionX(), 
+            self:getPositionY()-self.loading_bar:getContentSize().width*self.scaleMin_/2+self["node_box_bg_"..i]:getPositionY()*self.scaleMin_+self.node_box_item[i]:getPositionY()*self.scaleMin_))
+    end
 end
 
 function FriendBox:setLevelData( score, tProps )
@@ -70,6 +94,9 @@ function FriendBox:setLevelData( score, tProps )
 end 
 
 function FriendBox:setScore( score )
+    if table.getn(self.tProgress) == 0 then
+        return
+    end
     if self.score == score then 
         return
     end 
@@ -81,7 +108,7 @@ function FriendBox:setScore( score )
         self.loading_bar:setPercent(100)
         iBoxIndex = table.getn(self.tProgress)
     elseif score < self.tProgress[1] then 
-        local pos = score/self.tProgress[1]*(self["node_box_bg_"..1]:getPositionY())
+        local pos = score/self.tProgress[1]*(self.node_box_bg_1:getPositionY())
         self.loading_bar:setPercent(pos/iTotalPos*100)
         iBoxIndex = 0
     else 

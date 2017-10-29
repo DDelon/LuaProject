@@ -23,6 +23,7 @@ function VersionCheckCommand:doCommand()
 end
 
 function VersionCheckCommand:finish()
+    
     VersionCheckCommand.super.finish(self)
     
 end
@@ -79,7 +80,10 @@ end
 
 
 function VersionCheckCommand:getIpPort(address)
-    if FishGI.SYSTEM_STATE ~= 0 then
+    --[[if FishGI.SYSTEM_STATE ~= 0 then
+        return "192.168.67.6", 6532;
+    end]]--
+    if self.updateManager:isLocalNetTest() then
         return "192.168.67.6", 6532;
     end
     if address and #address ~= 0 then
@@ -95,6 +99,7 @@ function VersionCheckCommand:getIpPort(address)
 end
 
 function VersionCheckCommand:onHttpComplete()
+    print("onHttpComplete");
     local str = self.http:GetData();  
     str= Helper.CryptStr(str,URLKEY,false,0); 
     if 0 == #str then
@@ -123,8 +128,10 @@ function VersionCheckCommand:onHttpComplete()
 
     if ret.loginip ~= nil then --登录ip
         local ip, port = self:getIpPort(ret.loginip)
-        FishGI.serverConfig[1].url = ip
-        FishGI.serverConfig[1].port = port
+        self.updateManager:addPairToDataTab("ip", ip);
+        self.updateManager:addPairToDataTab("port", port);
+        --FishGI.serverConfig[1].url = ip
+        --FishGI.serverConfig[1].port = port
     end
 
 

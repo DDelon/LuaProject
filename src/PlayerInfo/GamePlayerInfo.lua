@@ -31,6 +31,10 @@ function GamePlayerInfo:onCreate( ... )
     self.panel:addChild(self.magicprop);
 end
 
+function GamePlayerInfo:registPropEvent()
+    self.magicprop:registerEvent()
+end
+
 --初始化背景
 function GamePlayerInfo:initBg( )
     self:child("text_word_dqyb"):setString(FishGF.getChByIndex(800000183))

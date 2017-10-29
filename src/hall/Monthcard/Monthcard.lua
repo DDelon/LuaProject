@@ -2,7 +2,7 @@
 local Monthcard = class("Monthcard", cc.load("mvc").ViewBase)
 
 Monthcard.AUTO_RESOLUTION   = false
-Monthcard.RESOURCE_FILENAME = "ui/hall/uimonthcard"
+Monthcard.RESOURCE_FILENAME = "ui/monthcard/uimonthcard"
 Monthcard.RESOURCE_BINDING  = {  
     ["panel"]         = { ["varname"] = "panel" },
     ["btn_close"]     = { ["varname"] = "btn_close" ,         ["events"]={["event"]="click",["method"]="onClickClose"}},   
@@ -35,7 +35,7 @@ function Monthcard:initView()
     local data = FishGI.GameConfig:getConfigData("config", tostring(990000032), "data");
     local vatTab = string.split(data,";")
     local resultTab = {}
-    for i=0,#vatTab do
+    for i=1,#vatTab do
         if vatTab[i] == nil then
             vatTab[i] = "0,0"
         end
@@ -48,7 +48,8 @@ function Monthcard:initView()
 
     self.rewardTab = {}
     for i,val in ipairs(resultTab) do
-        local node = self:child("image_prop_"..(i-1))
+        local uinode = (self:child("node_prop_"..(i-1)))
+        local node = uinode:getChildByName("panel")
         if node == nil then
             return 
         end
@@ -56,7 +57,7 @@ function Monthcard:initView()
         local spr_prop = node:getChildByName("spr_prop")
         local spr_name = node:getChildByName("spr_name")
 
-        local sprFile = string.format("hall/monthcard/monthcard_pic_%d.png",(propId+1))
+        local sprFile = string.format("hall/monthcard/monthcard_pic_%d.png",(propId))
         local result = spr_prop:initWithFile(sprFile)
         if not result then
             print("----------result == false-----")
@@ -94,9 +95,11 @@ function Monthcard:onClickByType( sender )
         data["money"] = self.recharge;
         data["price"] = self.recharge/100;
         data["type"] = tonumber(self.recharge_type);
+        data["rechargeType"] = 3;
+        data["type"] = 3
         data["autobuy"] = 1;
         data["subject"] = self.unit;
-        data["ingame"] = 1;
+        data["ingame"] = (FishGI.GAME_STATE == 3 and GAME_ID or 0);
         data["roomid"] = 0;
         data["count"] = 1;
         data["debug"] = 0;
@@ -124,6 +127,7 @@ function Monthcard:setShowType( showType )
     end
 
     self["spr_word_"..self.showType]:setVisible(true)
+    self.btn_threetype:setVisible(true)
     if showType == 3 then
         self.btn_threetype:setVisible(false)
         self.node_leave:setVisible(true)

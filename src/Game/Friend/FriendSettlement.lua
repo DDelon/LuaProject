@@ -64,7 +64,6 @@ function FriendSettlement:initView()
     self.text_room:setString(string.format("%s:", FishGF.getChByIndex(800000314)))
     self.text_number:setString(tostring(FishGI.FRIEND_ROOMNO))
     self:runAction(self.resourceNode_["animation"])
-    FishGI.AudioControl:playEffect("sound/rolling_01.mp3")
 end
 
 function FriendSettlement:onTouchBegan(touch, event)
@@ -127,6 +126,7 @@ function FriendSettlement:resetRankList( tListInfo, tSortList )
         end
     end
     self.resourceNode_["animation"]:play("start", false)
+    FishGI.AudioControl:playEffect("sound/rolling_01.mp3")
 end
 
 function FriendSettlement:setTimeout()

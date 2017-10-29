@@ -76,8 +76,8 @@ end
 
 --收到服务器通知的玩家发射子弹成功的消息
 function FriendSkillManager:onPlayerShoot(data)
-	local playerId = data._usedata.playerId
-	for i, v in pairs(data._usedata.effects) do
+	local playerId = data._userdata.playerId
+	for i, v in pairs(data._userdata.effects) do
 		local buff = self:getBuff(playerId, v)
 		if buff then 
 			if v == FishCD.FRIEND_PROP_05 then 
@@ -124,7 +124,7 @@ function FriendSkillManager:sendDataToServer(propId)
 end
 
 function FriendSkillManager:useSkillResponse(evt)
-	local data = evt._usedata
+	local data = evt._userdata
 	local isSuccess = data.success;
 	if isSuccess then
 		local function callBack(skill)
@@ -159,7 +159,7 @@ function FriendSkillManager:useSkillResponse(evt)
 end
 
 function FriendSkillManager:updateSkillResponse(evt)
-	local data = evt._usedata
+	local data = evt._userdata
 	local playerId = data.playerId;
 	local lessBuffTab = data.effects;
     local buffTab = self:getPlayerBuff(playerId);

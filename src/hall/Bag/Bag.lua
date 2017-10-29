@@ -311,6 +311,11 @@ function Bag:GetPropList()
             isFilter = true
         end
 
+        --判断炮倍是否满足
+        if FishGI.myData ~= nil and FishGI.myData.maxGunRate ~= nil and FishGI.myData.maxGunRate < tonumber(itemData.need_cannon) then
+            isFilter = true
+        end
+
         if not isFilter then
             self.PropCount = self.PropCount + 1
             tempProp[self.PropCount] = val
@@ -364,7 +369,7 @@ function Bag:updatePropList()
             propItem:setItemData(val.propId,val.propCount)
             propItem:setSeniorData(val.seniorData)
         end
-        if self.rightProp:getItemId() == 0 or self.rightProp:getItemId() == tonumber(val.propId) then
+        if self.rightProp:getItemId() == 0 then
             self:setRightPropData( self:getPropListFirst())
         end
     end
@@ -982,9 +987,12 @@ function Bag:onSellItem( netData )
 
 end
 
-function Bag:showLayer()
+function Bag:showLayer(propId)
     Bag.super.showLayer(self)
-    self:setRightPropData(self:getPropListFirst())
+    if propId == nil then
+        propId = self:getPropListFirst()
+    end
+    self:setRightPropData(propId)
     --FishGF.setViewListIsShow(self.scroll_bag_list,true,0,0)
 end
 

@@ -13,7 +13,7 @@ require "config"
 require "cocos.init"
 
 --require所有global文件
-require("Other/LoadFile");
+--require("Other/LoadFile");
 
 local xpcallFun
 if DEBUG > 0 then
@@ -56,17 +56,18 @@ local function main()
    -- glview:setDesignResolutionSize(960, 640, cc.ResolutionPolicy.NO_BORDER)
 
     --turn on display FPS
-    --director:setDisplayStats(true)
+    director:setDisplayStats(false)
 
     --set FPS. the default value is 1.0/60 if you don't call this
     director:setAnimationInterval(1.0 / 60)
 
     --require("app.MyApp"):create():run()
-    FishGI.hotScene = require("Update/UpDateScene").create(URLKEY, APP_ID, CHANNEL_ID, HALL_WEB_VERSION)
+    cc.exports.mainInstance = require("MainManager").create();
+    local hotScene = require("Update/UpDateScene").create(URLKEY, APP_ID, CHANNEL_ID, HALL_WEB_VERSION)
     if cc.Director:getInstance():getRunningScene() then
-        cc.Director:getInstance():replaceScene(FishGI.hotScene)
+        cc.Director:getInstance():replaceScene(hotScene)
     else
-        cc.Director:getInstance():runWithScene(FishGI.hotScene)
+        cc.Director:getInstance():runWithScene(hotScene)
     end
     --LuaCppAdapter:getInstance():loadDataBin();
     --FishGI.mainManagerInstance:createLoginManager();

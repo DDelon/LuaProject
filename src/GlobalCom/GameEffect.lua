@@ -8,6 +8,7 @@ end
 
 function GameEffect:init()
     self.playerData = {}
+    self.sid = {}
 end
 
 function GameEffect:initGameEff()
@@ -111,6 +112,28 @@ function GameEffect:initGameEff()
         self.fishGroup.animation:play("fishgroupcome", false);
     end
 
+    --加载潮汐来临
+    local  timelineCome = cc.Director:getInstance():getRunningScene():getChildByName("timelineCome")
+    if timelineCome == nil then
+        local uiTimelineCome = require("ui/battle/friend/uifriendtidecome.lua").create()
+        self.timelineCome = uiTimelineCome.root
+        self.timelineCome.animation = uiTimelineCome["animation"]
+        cc.Director:getInstance():getRunningScene():addChild(self.timelineCome,FishCD.ORDER_LAYER_VIRTUAL)
+        self.timelineCome:setName("timelineCome")
+        self.timelineCome:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+        --self.fishGroup:setVisible(false)
+        self.timelineCome:runAction(uiTimelineCome["animation"])
+        uiTimelineCome["animation"]:clearFrameEventCallFunc() 
+        local function frameEvent( frameEventName)
+            if frameEventName:getEvent() == "moveEnd" then
+                --FishGI.showLayerData:hideGrayBgByLayer()
+                self.timelineCome:setVisible(false)
+            end
+        end
+        uiTimelineCome["animation"]:setFrameEventCallFunc(frameEvent)
+        self.timelineCome.animation:play("fishgroupcome", false);
+    end
+
     --玩家升级特效
     local  levelUp = cc.Director:getInstance():getRunningScene():getChildByName("levelUp")
     if levelUp == nil then
@@ -178,7 +201,9 @@ function GameEffect:closeAllSchedule()
     if self.bossRateCahnge ~= nil then
         self.bossRateCahnge:closeAllSchedule()
     end
-    
+    for k,v in pairs(self.sid) do
+        cc.Director:getInstance():getScheduler():unscheduleScriptEntry(v)
+    end
 end
 --预先播放一次
 function GameEffect:hideEffect()
@@ -197,7 +222,13 @@ function GameEffect:hideEffect()
     local fishGroup = cc.Director:getInstance():getRunningScene():getChildByName("fishGroup")
     if fishGroup ~= nil then
         fishGroup:setVisible(false)
+    end
+
+    local timelineCome = cc.Director:getInstance():getRunningScene():getChildByName("timelineCome")
+    if timelineCome ~= nil then
+        timelineCome:setVisible(false)
     end 
+
     local levelUp = cc.Director:getInstance():getRunningScene():getChildByName("levelUp")
     if levelUp ~= nil then
         levelUp:setVisible(false)
@@ -595,6 +626,20 @@ function GameEffect:fishGroupCome(valTab)
     self.fishGroup:setVisible(true)
 
     self.fishGroup.animation:play("fishgroupcome", false);
+
+end
+
+function GameEffect:timelineComeEffect() 
+    FishGI.AudioControl:playEffect("sound/music_fishgroup.mp3",false)
+
+    local timelineCome = cc.Director:getInstance():getRunningScene():getChildByName("timelineCome")    
+     if timelineCome == nil then
+        --初始化特效
+        FishGI.GameEffect:initGameEff() 
+    end
+    self.timelineCome:setVisible(true)
+
+    self.timelineCome.animation:play("fishgroupcome", false);
 
 end
 
@@ -1003,11 +1048,19 @@ end
 
 --技能文字效果
 function GameEffect.skillWordEffect(picPath, lightPic, pos, callfunc)
-    local wordEffect = cc.Director:getInstance():getRunningScene():getChildByTag(4322);
+    local word = require("ui/battle/friend/uifriendskill").create()
+    local wordEffect = word.root
+    wordEffect.animation = word["animation"]
+    wordEffect:setName("WordEffect")
+    wordEffect:runAction(word["animation"])
+    wordEffect.animation:play("wordani", false);
+    cc.Director:getInstance():getRunningScene():addChild(wordEffect, 1000)
+
     wordEffect:setPosition(pos)
     local function frameEvent( frameEventName)
         if frameEventName:getEvent() == "playeffect" then
             wordEffect:setVisible(false)
+            wordEffect:removeFromParent();
             callfunc()
         end
     end
@@ -1016,9 +1069,9 @@ function GameEffect.skillWordEffect(picPath, lightPic, pos, callfunc)
     wordEffect:getChildByName("text_2"):setTexture(picPath)
     wordEffect:getChildByName("light_1"):setTexture(lightPic)
     wordEffect:getChildByName("light_2"):setTexture(lightPic)
-    wordEffect.animation:stop()
+    --wordEffect.animation:stop()
     wordEffect["animation"]:clearFrameEventCallFunc()
-    wordEffect.animation:play("wordani", false)
+    --wordEffect.animation:play("wordani", false)
     wordEffect["animation"]:setFrameEventCallFunc(frameEvent)
     return wordEffect
 end
@@ -1251,6 +1304,7 @@ function GameEffect:playDropProp(dataTab)
     local isShowCount = dataTab.isShowCount
     local parent = dataTab.parent
     local endPos = dataTab.endPos
+    local Zorder = dataTab.Zorder
 
     local seniorPropData = dataTab.seniorPropData
     if seniorPropData ~= nil and next(seniorPropData) ~= nil then
@@ -1273,8 +1327,11 @@ function GameEffect:createDropProp(dataTab)
     local isShowCount = dataTab.isShowCount
     local dropType = dataTab.dropType
     local parent = dataTab.parent
+    local Zorder = dataTab.Zorder
 
-
+    if Zorder == nil then
+        Zorder = FishCD.ORDER_LAYER_TRUE - 1
+    end
     if parent == nil then
         parent = cc.Director:getInstance():getRunningScene()
         if dataTab.dropType ~= nil and dataTab.dropType == "friend" then
@@ -1283,9 +1340,9 @@ function GameEffect:createDropProp(dataTab)
     end
     local node = cc.Node:create()
     if FishGI.GAME_STATE == 2 then
-        parent:addChild(node,FishCD.ORDER_LAYER_TRUE + 10)
+        parent:addChild(node,Zorder + 10)
     else
-        parent:addChild(node,FishCD.ORDER_GAME_prop)
+        parent:addChild(node,Zorder)
     end
 
     local propname = ""
@@ -1331,11 +1388,13 @@ function GameEffect:jumpingNumber(widget, total_time,count, curCoin, callback)
     local deltCoin = count - curCoin
     local period = 0
     
-    self.sid = cc.Director:getInstance():getScheduler():scheduleScriptFunc(function (dt)
+    local scheduler = cc.Director:getInstance():getScheduler()
+    
+    widget.sid_lo = scheduler:scheduleScriptFunc(function (dt)
         period = period + dt
         if period >= total_time then
             widget:setString(math.floor(count))
-            cc.Director:getInstance():getScheduler():unscheduleScriptEntry(self.sid)
+            cc.Director:getInstance():getScheduler():unscheduleScriptEntry(widget.sid_lo)
             if callback ~= nil then
                 callback()
             end
@@ -1346,6 +1405,7 @@ function GameEffect:jumpingNumber(widget, total_time,count, curCoin, callback)
         local delt = math.floor(deltCoin*percent)
         widget:setString(curCoin + delt)
     end, 0, false)
+    self.sid[#self.sid + 1] = widget.sid_lo
 end
 
 
@@ -1436,6 +1496,30 @@ function GameEffect:propRunAct(dataTab)
 
 end
 
+--播放抽奖中动画
+function GameEffect:playLotteryState(palyerId) 
+    local player = FishGI.gameScene.playerManager:getPlayerByPlayerId(palyerId)
+    local chairId = player.playerInfo.chairId
+    local cannon = player.cannon
+    local pos = FishGI.gameScene.playerManager:getPlayerPos(playerId)
+    local spr = cannon:getChildByName("Lottery")
+    if spr == nil then
+        spr = cc.Sprite:create("battle/lottery/lottery_pic_cjz.png")
+        cannon:addChild(spr,1000)
+        spr:setPosition(cc.p(0,170))
+        if chairId > 2 then
+            spr:setRotation(180)
+        end
+    end
+
+    spr:stopAllActions()
+    spr:setOpacity(255);
+    local RemoveAct = cc.Sequence:create(cc.DelayTime:create(3),cc.RemoveSelf:create())
+    spr:runAction(RemoveAct)
+    local seq1 = cc.Sequence:create(cc.FadeTo:create(0.5,0.75*255),cc.FadeTo:create(0.5,255))
+    local RepeatAct = cc.RepeatForever:create(seq1)
+    spr:runAction(RepeatAct)
+end
 
 
 return GameEffect;

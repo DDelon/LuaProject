@@ -4,16 +4,18 @@ end)
 
 function Player.create(val)
     local player = Player.new();
+    
     player:init(val);
     return player;
 end
 
 function Player:init(val)
+    self.isEnd = true
     self.timelineId = 0
     self.fishArrayId = 0
     self.playerInfo = val.playerInfo
     if self.playerInfo.gradeExp ~= nil then
-        self.playerInfo.grade = FishGMF.getLVByExp(self.playerInfo.gradeExp).level
+        self.playerInfo.grade = FishGI.GameTableData:getLVByExp(self.playerInfo.gradeExp).level
         print(self.playerInfo.playerId.."----self.playerInfo.gradeExp="..self.playerInfo.gradeExp.."------------self.playerInfo.grade="..self.playerInfo.grade)
     end
 
@@ -43,7 +45,7 @@ function Player:init(val)
     --是否使用狂暴
     local effectId = val.playerInfo.effectId;
     if effectId ~= 0 then
-        self.cannon:playEffectAni(effectId);
+        self.cannon:playEffectAni(self, effectId);
     end
 end
 
@@ -56,7 +58,9 @@ function Player:initMyData()
         FishGI.gameScene.net:sendNewGunRate(self.playerInfo.maxGunRate)
         if FishGI.gameScene.uiGunUpGrade ~= nil then
             FishGI.gameScene.uiGunUpGrade:setCurMultiple(self.playerInfo.maxGunRate)
+            -- FishGI.gameScene.uiSkillView.Skill_17:setMaxRate(self.playerInfo.maxGunRate)
             FishGI.gameScene.uiGunUpGrade:setCurCrystal(self.playerInfo.crystal)
+            FishGI.gameScene.uiUnlockCannon:setCurCrystal(self.playerInfo.crystal)
             if self.playerInfo.maxGunRate >= 1000 then
                 FishGI.gameScene:hideGunUpGradePanel()
             end
@@ -89,7 +93,7 @@ function Player:startEffectId(effectId)
     self.playerInfo.effectId = effectId;
 
     if effectId ~= 0 then
-        self.cannon:playEffectAni(effectId);
+        self.cannon:playEffectAni(self, effectId);
     end
 end
 
@@ -100,6 +104,10 @@ function Player:endEffectId()
     self.playerInfo.effectId = 0;
 end
 
+function Player:getEffectId()
+    return self.playerInfo.effectId
+end
+
 function Player:shootByDegree(degree)
     --BreakPoint()
     self.isEnd = false;
@@ -108,6 +116,7 @@ function Player:shootByDegree(degree)
         local degree = degree
         
         local function fire()
+
             if self.isEnd then
                 self.isShoot = false;
                 self:stopAllActions();
@@ -124,14 +133,13 @@ function Player:shootByDegree(degree)
                 dataTab.playerId = self.playerInfo.playerId
                 dataTab.lifeTime = 0
                 dataTab.bulletId = dataTab.playerId..FishGI.bulletCount
-                dataTab.timelineId = self.timelineId
-                dataTab.fishArrayId = self.fishArrayId
+                -- dataTab.timelineId = self.timelineId
+                -- dataTab.fishArrayId = self.fishArrayId
                 dataTab.effectId = self.playerInfo.effectId;
                 dataTab.fireType = 1
 
                 --c++创建子弹，若不成功返回失败，并且自动切换炮倍
                 local backData = FishGMF.myCreateBullet(dataTab)
-                
 
                 --失败类型，0.成功   1.没有玩家  2.子弹数太多 3.切换炮倍  4.当前炮倍大于自己最高炮倍   
                             --5.没钱了 6,当前炮倍大于自己最高炮倍并且炮倍大于1000
@@ -140,12 +148,18 @@ function Player:shootByDegree(degree)
                     return
                 end
                 dataTab.frameId = backData.frameId
+                --print("------------------------------------------------backData.frameId="..backData.frameId)
+                if backData.lockDegree ~= nil then
+                    self.degree = backData.lockDegree
+                    dataTab.degree = self.degree - 90;
+                end
+                
+                dataTab.timelineId = backData.timelineId
+                dataTab.fishArrayId = backData.fishArrayId
                 dataTab.bulletRate = backData.bulletRate
                 FishGI.bulletCount = FishGI.bulletCount +1
                 FishGI.eventDispatcher:dispatch("sendPlayerFire", dataTab);
 
-
-                
             end
         end
         self.degree = degree;
@@ -181,34 +195,12 @@ function Player:isCanShoot(backData)
         return false
     elseif backData.isSucceed == 4 then     --当前炮倍大于自己最高炮倍
         --停止发炮
-        if FishGI.isAutoFire then
-            self.cannon.uiCannonChange:setAutoFire(false)
-            self:endShoot()
-        else
-            self:endShoot()
-        end
-
-        local result = FishGI.gameScene.uiGunUpGrade:isCanGunUpData() 
-        if result and FishGI.gameScene.uiGunUpGrade:isVisible() then
-            local function callback(sender)
-                local tag = sender:getTag()
-                if tag == 2 then
-                    --要发送解锁炮倍消息
-                    FishGI.gameScene.net:sendUpgradeCannon()
-                end
-            end
-            FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000095),callback)
-        else
-            local function callback(sender)
-                local tag = sender:getTag()
-                if tag == 2 then
-                    FishGI.gameScene.uiShopLayer:showLayer()
-                    FishGI.gameScene.uiShopLayer:setShopType(2)
-                end
-            end
-            FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000093),callback)
-        end
-
+        -- if FishGI.isAutoFire then
+        --     self.cannon.uiCannonChange:setAutoFire(false)
+        --     self:endShoot()
+        -- else
+        --     self:endShoot()
+        -- end
         return false
     elseif backData.isSucceed == 5 then     --破产
         --停止发炮
@@ -220,16 +212,59 @@ function Player:isCanShoot(backData)
         end
         return false
     elseif backData.isSucceed == 6 then     --当前炮倍大于自己最高炮倍并且炮倍大于1000
+        --FishGF.showSystemTip(nil,800000208,1)
+        return false
+    end
+    return false
+end
+
+--是否在发炮情况下炮倍被锁住
+function Player:isShootlockRate(nextRate)
+    if self.isShoot then
+       return self:islockRate(nextRate)
+    end
+    return true
+end
+
+--炮倍被锁住
+function Player:islockRate(nextRate)
+    local curRate = self.playerInfo.currentGunRate
+    if nextRate ~= nil then
+        curRate = nextRate
+    end
+    
+    local maxRate = self.playerInfo.maxGunRate
+
+    if curRate <= maxRate then
+        return true
+    end
+
+    if maxRate >= 1000 then
         FishGF.showSystemTip(nil,800000208,1)
         return false
     end
+
+    local function callback(sender)
+        local tag = sender:getTag()
+        if tag == 2 then
+            local result = FishGI.gameScene.uiGunUpGrade:isCanGunUpData() 
+            if result and FishGI.gameScene.uiGunUpGrade:isVisible() then
+                --要发送解锁炮倍消息
+                FishGI.gameScene.net:sendUpgradeCannon()
+            else
+                FishGI.gameScene.uiUnlockCannon:showLayer()
+            end
+            
+        end
+    end
+    FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000095),callback)
     return false
 end
 
 function Player:shoot(pos)
     local degree = FishGF.getRotateDegreeRadians(pos, self.cannon:getRotatePos());
     self:shootByDegree(degree)
-    
+    self:islockRate()
 end
 
 function Player:setRotateByDeg(degree)
@@ -245,21 +280,25 @@ function Player:setRotateByPos(pos)
     if degree >180 or degree < 0 then
         return
     end
+    if not self:islockRate() then
+        return
+    end
     self.degree = degree;
     self.cannon:setCannonRotation(degree-90);
 end
 
 function Player:endShoot()
+    if FishGI.isLock then
+        self.isEnd = false;
+        return
+    end
+    
     if FishGI.isAutoFire then
         self.isEnd = false;
     else
         self.isEnd = true;
+        self.isShoot = false
     end
-end
-
-function Player:setMyAimFish(timelineId,fishArrayId)
-    self.timelineId = timelineId
-    self.fishArrayId = fishArrayId
 end
 
 --玩家信息框弹出

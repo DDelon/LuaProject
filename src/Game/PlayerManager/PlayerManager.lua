@@ -57,6 +57,7 @@ function PlayerManager:playerJoin(valTab)
 	if isSelf then
 		self.selfIndex = valTab.playerInfo.playerId;
 		FishGMF.setMyPlayerId(valTab.playerInfo.playerId)
+		FishGI.gameScene.uiSkillView.Skill_17:setMaxRate(valTab.playerInfo.maxGunRate)
 	end
 
 	if valTab.playerInfo == nil then
@@ -177,10 +178,10 @@ function PlayerManager:onTouchEnded(touch, event)
 end
 
 function PlayerManager:onTouchCancelled(touch, event)
-	local playerSelf = self.playerTab[self.selfIndex];
-    if playerSelf ~= nil then
-        playerSelf:endShoot();
-    end
+	-- local playerSelf = self.playerTab[self.selfIndex];
+    -- if playerSelf ~= nil then
+    --     playerSelf:endShoot();
+    -- end
 end
 
 --通过玩家id获取Cluaplayer的结构体
@@ -290,20 +291,35 @@ end
 function PlayerManager:PlayerNewVIP(valTab)
 	local playerId = valTab.playerId;
 	local vipExp = valTab.vipExp;
-	local backData = FishGMF.getAndSetPlayerData(playerId,true,"vipExp",vipExp)
+	local backData = FishGI.GameTableData:getVIPByCostMoney(vipExp)
+	--local backData = FishGMF.getAndSetPlayerData(playerId,true,"vipExp",vipExp)
 	if backData == nil then
 		print("----PlayerNewVIP----backData == nil------")
 		return
 	end
-
+	backData.vipExp = vipExp
     local vip_level = backData["vip_level"]
     local player = self:getPlayerByPlayerId(playerId)
+	if player == nil then
+		FishGF.print("----PlayerNewVIP----player == nil------"..playerId)
+		return
+	end
+	
     player.playerInfo.vipExp = vipExp
-    player.playerInfo.vip_level = vip_level
+    player.playerInfo.vip_level = backData.vip_level
+    player.playerInfo.extra_sign = backData.extra_sign
+    player.playerInfo.next_All_money = backData.next_All_money
+    player.playerInfo.daily_items_reward = backData.daily_items_reward
 
     if self.selfIndex == nil or self.selfIndex ~= playerId then
     	return
     end
+
+    FishGI.myData.vipExp = costMoney
+    FishGI.myData.vip_level = backData.vip_level
+    FishGI.myData.extra_sign = backData.extra_sign
+    FishGI.myData.next_All_money = backData.next_All_money
+    FishGI.myData.daily_items_reward = backData.daily_items_reward    
 
     --更新商店
     FishGI.gameScene.uiShopLayer:upDataLayer(backData)
@@ -313,6 +329,9 @@ function PlayerManager:PlayerNewVIP(valTab)
     
     --更新换炮层
     FishGI.gameScene.uiSelectCannon:setCurGunType(vip_level,player.playerInfo.gunType)
+
+	--解锁炮倍层
+	FishGI.gameScene.uiUnlockCannon:setCurGunType(vip_level)
 
 end
 
@@ -418,8 +437,10 @@ function PlayerManager:CannonUpgrade(valTab)
 	local newCrystal = valTab.newCrystal
 	local costProps = valTab.costPropsd
 	local dropSeniorProps = valTab.dropSeniorProps
+	local dropProps = valTab.dropProps
 
 	if self.selfIndex == playerId then
+		FishGF.waitNetManager(false,nil,"UpgradeCannon")
 	    local aimCrystal = FishGI.gameScene.uiGunUpGrade:getAimCrystal()
 	    FishGMF.isSurePropData(FishGI.gameScene.playerManager.selfIndex,FishCD.PROP_TAG_02,aimCrystal,true)
 	end
@@ -430,20 +451,6 @@ function PlayerManager:CannonUpgrade(valTab)
 		return
 	end
 
-	local playerSelf = self.playerTab[self.selfIndex]
-	if self.selfIndex == playerId then
-
-	    local propData = FishGMF.getPlayerPropData(playerId,1)
-
-		local data = {};
-	    data.playerId = playerId
-	    data.chairId = FishGI.gameScene.playerManager:getPlayerChairId(valTab.playerId)
-	    data.moneyCount = valTab.newFishIcon - propData.realCount
-	    --显示得到多少特效
-	    data.showType = "gunUpGrade"
-	    FishGI.GameEffect:playGunUpGrade(data)
-	end
-
 	--更新鱼币水晶
 	FishGMF.CannonUpgrade(playerId,valTab.newFishIcon,valTab.newCrystal)
 
@@ -451,18 +458,33 @@ function PlayerManager:CannonUpgrade(valTab)
 		local playerSelf =  FishGI.gameScene.playerManager:getMyData()
 
 		--根据自己的最高炮倍得到下一个炮倍
-	    local nextRate = FishGMF.getNextRateBtType(4)
+	    --local nextRate = FishGMF.getNextRateBtType(4)
+		local nextData = FishGI.GameTableData:getNextCannon(playerSelf.playerInfo.maxGunRate)
+		if nextData == nil then
+			print("-----rate is no exist--------")
+			return 
+		end
+		local nextRate = nextData.times
+		local addCoin = nextData.unlock_award
 
+		local data = {};
+	    data.playerId = playerId
+	    data.chairId = FishGI.gameScene.playerManager:getPlayerChairId(playerId)
+	    data.moneyCount = addCoin
+	    --显示得到多少特效
+	    data.showType = "gunUpGrade"
+		FishGI.GameEffect:playGunUpGrade(data)
+		
         --保存lua玩家最高炮倍
         playerSelf.playerInfo.currentGunRate = nextRate
         playerSelf.playerInfo.maxGunRate = nextRate
 		playerSelf.cannon:setMultiple(nextRate)
-
 		FishGMF.changeGunRate(nil,nextRate,nextRate)
 		
 		--发送切换炮倍
 		FishGI.gameScene.net:sendNewGunRate(nextRate)
-
+		FishGI.gameScene.uiSkillView.Skill_17:GunUpgrade(nextRate)
+		
 		--隐藏面板
 		if nextRate >= 1000 then
 			print("----000-curMaxRate="..nextRate)
@@ -479,6 +501,62 @@ function PlayerManager:CannonUpgrade(valTab)
 		end
 	end
 
+	--其他人获得道具
+	if self.selfIndex ~= playerId then
+		--更新增加道具
+		for k,val in pairs(dropProps) do
+			FishGMF.addTrueAndFlyProp(playerId,val.propId,val.propCount,true)
+		end
+		if dropSeniorProps ~= nil then
+			for k,val in pairs(dropSeniorProps) do
+				FishGMF.refreshSeniorPropData(playerId,val,1,0)
+			end
+		end
+		return 
+	end
+
+    --普通道具
+    for k,val in pairs(dropProps) do
+		if val.propCount <=0 then
+			FishGMF.addTrueAndFlyProp(playerId,val.propId,val.propCount,true)
+		else
+			FishGMF.addTrueAndFlyProp(playerId,val.propId,val.propCount,false)
+			FishGMF.setAddFlyProp(playerId,val.propId,val.propCount,false)
+			local propTab = {}
+			propTab.playerId = playerId
+			propTab.propId = val.propId
+			propTab.propCount = val.propCount
+			propTab.isRefreshData = true
+			propTab.isJump = false
+			propTab.Zorder = FishCD.ORDER_SCENE_UI + 1
+			propTab.firstPos = FishGI.gameScene.uiGunUpGrade:getPropStartPos()
+			propTab.endPos = FishGI.gameScene.uiGunUpGrade:getPropEndPos(val.propId)
+			propTab.dropType = "normal"
+			propTab.isShowCount = false
+			FishGI.GameEffect:playDropProp(propTab)
+		end    
+    end
+
+    --高级道具
+    for k,val in pairs(dropSeniorProps) do
+        FishGMF.refreshSeniorPropData(playerId,val,8,0)
+        local propTab = {}
+        propTab.playerId = playerId
+        propTab.propId = val.propId
+        propTab.propCount = 1
+        propTab.isRefreshData = true
+        propTab.isJump = false
+		propTab.Zorder = FishCD.ORDER_SCENE_UI + 1
+		propTab.firstPos = FishGI.gameScene.uiGunUpGrade:getPropStartPos()
+		propTab.endPos = FishGI.gameScene.uiGunUpGrade:getPropEndPos(val.propId)
+        propTab.dropType = "normal"
+        propTab.isShowCount = false
+        propTab.seniorPropData = val
+        FishGI.GameEffect:playDropProp(propTab)
+
+    end
+
+
 end
 
 --通过playerId 更新数据
@@ -494,7 +572,7 @@ function PlayerManager:OnGetPlayerInfo(valTab)
 	local player = self:getPlayerByPlayerId(playerId)
 
 	playerInfo.vip_level = FishGI.GameTableData:getVIPByCostMoney(playerInfo.vipExp).vip_level
-	playerInfo.grade = FishGMF.getLVByExp(playerInfo.gradeExp).level
+	playerInfo.grade = FishGI.GameTableData:getLVByExp(playerInfo.gradeExp).level
 
     local data = {}
     data.nickName = playerInfo.nickName      

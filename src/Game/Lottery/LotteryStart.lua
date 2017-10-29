@@ -324,6 +324,7 @@ function LotteryStart:drawResult(val)
 
     else
         FishGMF.addTrueAndFlyProp(playerId,propId,propCount,true)
+        FishGI.GameEffect:playLotteryState(playerId)
     end
 
 end

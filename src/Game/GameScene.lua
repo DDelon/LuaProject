@@ -191,7 +191,6 @@ function GameScene:initUILayer()
     self.uiAddFishCoin:runAction(AddFishCoin.animation)
     self.uiAddFishCoin.animation:play("nojump", false)
 
-
     --右边按键面板
     self.uiSetButton = require("Game/SetButton").create()
     self.uiSetButton:setPosition(cc.p(cc.Director:getInstance():getWinSize().width,cc.Director:getInstance():getWinSize().height/2))
@@ -200,13 +199,13 @@ function GameScene:initUILayer()
 
     --炮台升级 小于1000才创建升炮面板
     self.uiGunUpGrade = require("Game/GunUpGrade").create()
-    self.uiGunUpGrade:setPosition(cc.p(0,512.94*self.scaleY_))
+    self.uiGunUpGrade:setPosition(cc.p(0,532.94*self.scaleY_))
     self:addChild(self.uiGunUpGrade,FishCD.ORDER_SCENE_UI)
     self.uiGunUpGrade:setScale(self.scaleMin_)
 
     --抽奖面板
     self.uiLotteryPanel = require("Game/Lottery/LotteryPanel").create()
-    self.uiLotteryPanel:setPosition(cc.p(0,390.56*self.scaleY_))
+    self.uiLotteryPanel:setPosition(cc.p(0,415.56*self.scaleY_))
     self:addChild(self.uiLotteryPanel,FishCD.ORDER_SCENE_UI)
     self.uiLotteryPanel:setScale(self.scaleMin_)
 
@@ -217,10 +216,14 @@ function GameScene:initUILayer()
         self.playerInfoLayer[i]:setPosByChairid(i)
         self:addChild(self.playerInfoLayer[i],FishCD.ORDER_LAYER_VIRTUAL+10);
         self.playerInfoLayer[i]:setVisible(false)
+
+        if i == 1 then
+            self.playerInfoLayer[i]:registPropEvent()
+        end
     end
 
     self.uiNewbieTask = require("Game/NewbieTask/NewbieTask").create()
-    self.uiNewbieTask:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height+70*self.scaleMin_))
+    self.uiNewbieTask:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height+60*self.scaleMin_))
     self:addChild(self.uiNewbieTask,FishCD.ORDER_GAME_player)
     self.uiNewbieTask:setScale(self.scaleMin_)
     self.uiNewbieTask:setVisible(false)
@@ -263,28 +266,12 @@ function GameScene:initUILayer()
     self.uiSelectCannon:setScale(self.scaleMin_)
     self.uiSelectCannon:setVisible(false)
 
-    --商店
-    self.uiShopLayer = require("Shop/Shop").create()
-    self.uiShopLayer:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiShopLayer,FishCD.ORDER_LAYER_TRUE)
-    self.uiShopLayer:setVisible(false)   
-    self.uiShopLayer:setScale(self.scaleMin_)
-
-    --VIP特权
-    self.uiVipRight = require("VipRight/VipRight").create()
-    self.uiVipRight:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
-    self:addChild(self.uiVipRight,FishCD.ORDER_LAYER_TRUE)
-    self.uiVipRight:setVisible(false)
-    self.uiVipRight:setScale(self.scaleMin_)
-
-    if not FishGI.isGetMonthCard then      
-        --月卡
-        self.uiMonthcard = require("hall/Monthcard/Monthcard").create()
-        self.uiMonthcard:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,330*self.scaleY_))
-        self:addChild(self.uiMonthcard,FishCD.ORDER_LAYER_TRUE)
-        self.uiMonthcard:setVisible(false)
-        self.uiMonthcard:setScale(self.scaleMin_)
-    end
+    --解锁炮倍层
+    self.uiUnlockCannon = require("Game/UnlockCannon/UnlockCannon").create()
+    self.uiUnlockCannon:setPosition(cc.p(cc.Director:getInstance():getWinSize().width/2,cc.Director:getInstance():getWinSize().height/2))
+    self:addChild(self.uiUnlockCannon,FishCD.ORDER_LAYER_TRUE)
+    self.uiUnlockCannon:setScale(self.scaleMin_)
+    self.uiUnlockCannon:setVisible(false)
 
 end
 
@@ -315,17 +302,18 @@ end
 
 function GameScene:onEnter( )
     print("------GameScene:onEnter--")
+    FishGI.CommonLayer:addLayerToParent(self)
+
+    FishGI.GameTableData:clearGameTable(2)
     FishGMF.setGameType(0)
     LuaCppAdapter:getInstance():exitGame()
     FishGMF.setGameState(3)
     FishGI.SERVER_STATE = 0
-
+    FishGI.isLock = false
     FishGI.FRIEND_ROOM_STATUS = 0
     FishGI.FRIEND_ROOMID = nil
-
-	FishGI.shop = self.uiShopLayer;
-    local keyID = tostring(FishGI.curGameRoomID + 910000000)
-    local musicName = tostring(FishGI.GameConfig:getConfigData("room", keyID, "bg_music"));
+    self.uiSkillView:initSkill()
+	
     FishGI.hallScene.net.isEnterRoom = false;
 
     self:startLoad()
@@ -339,25 +327,29 @@ function GameScene:onEnter( )
 end
 
 function GameScene:onExit( )
-
-    -- local data =  {}
-    -- data.funName = "setFishState"
-    -- data.state = 1
-    -- LuaCppAdapter:getInstance():luaUseCppFun(data);
-    
-    --FishGI.myData.props = nil
-
-    
     print("GameScene:onExit( )")
+    FishGI.lockCount = 0;
     FishGI.isAutoFire = false
+    FishGI.isLock = false
     FishGMF.clearRefreshData()
     FishGI.AudioControl:pauseMusic()
     FishGI.AudioControl:stopAllEffects()
     self:exitGame()
     --移除监听器
     FishGI.eventDispatcher:removeAllListener();
+    self:removeListener()
 
-    FishGF.waitNetManager(true,nil,"exitGame")
+    FishGF.waitNetManager(true,nil,"exitGame",0)
+
+end
+
+function GameScene:removeListener()
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("startMyLock");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("startOtherLock");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("bulletTargetChange");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("sendChangeAimFish");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("ViolentTimeOut");
+    cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("UseViolentResult");
 end
 
 function GameScene:startGame(data)
@@ -373,7 +365,7 @@ function GameScene:startGame(data)
     local killedFishTab = data.killedFishes;
     --call fish 
     local calledFishesTab = data.calledFishes;
-    if calledFishesTab == {} then calledFishesTab = nil end
+    --if calledFishesTab == {} then calledFishesTab = nil end
     
     local isInFreeze = data.isInFreeze
     local fishGroupComing = data.fishGroupComing
@@ -420,11 +412,12 @@ function GameScene:startGame(data)
     end);
 
     FishGI.eventDispatcher:registerCustomListener("FishGroupCome", self, function(valTab) 
-        self.isFishCome = true;
+        self.isFishCome = true;  --鱼潮来临了
         LuaCppAdapter:getInstance():fishGroupCome(valTab);
     end);
 
     FishGI.eventDispatcher:registerCustomListener("TimeLineCome", self, function(valTab) 
+        self.isFishCome = false;
         LuaCppAdapter:getInstance():fishTimeLineCome(valTab);
     end);
 
@@ -502,7 +495,6 @@ function GameScene:startGame(data)
 
     --鱼潮是否要来临
     if isGroup == false and fishGroupComing == true then
-        FishGI.isFishGroupCome = true
         local  message = FishGF.getChByIndex(800000085)
         FishGF.showSystemTip(message)
         local delayTime = 0;
@@ -518,8 +510,6 @@ function GameScene:startGame(data)
             LuaCppAdapter:getInstance():fishAccelerateOut();
         end
         FishGF.delayExcute(delayTime, clearFunc)
-    else
-        FishGI.isFishGroupCome = false
     end
 
 
@@ -533,7 +523,7 @@ function GameScene:startGame(data)
                 playerAimTab[buttle.playerId] = {}
                 playerAimTab[buttle.playerId].timelineId = buttle.timelineId
                 playerAimTab[buttle.playerId].fishArrayId = buttle.fishArrayId
-                FishGMF.setCppAimFish(buttle.playerId, buttle.timelineId,buttle.fishArrayId)
+                FishGMF.setLockData(buttle.playerId,3,buttle.timelineId,buttle.fishArrayId)
             end
         end
     end
@@ -649,7 +639,7 @@ function GameScene:exitGame()
     self:closeAllSchedule();
     LuaCppAdapter:getInstance():exitGame();
     FishGI.isPlayerFlip = false;
-    FishGI.isLogin = true
+    FishGI.isLock = false
     print("------GameScene---exitGame-----2-----")
 end
 

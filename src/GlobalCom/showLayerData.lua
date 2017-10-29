@@ -195,7 +195,9 @@ function showLayerData:showGrayBgByLayer(layer,opacity)
         return
     end
     local parent = layer:getParent()
-
+    if parent == nil then
+        return 
+    end
     local gray_bg = parent:getChildByName("gray_bg")
     if gray_bg ~= nil  then
         gray_bg:setVisible(true)
@@ -219,6 +221,9 @@ end
 
 function showLayerData:hideGrayBgByLayer(layer)
     local parent = layer:getParent()
+    if parent == nil then
+        return 
+    end
     local gray_bg = parent:getChildByName("gray_bg")
     if gray_bg ~= nil  then
         gray_bg:setVisible(false)

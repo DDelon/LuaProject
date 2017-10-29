@@ -94,6 +94,12 @@ function FishGMF.CppToLua(valTab)
         end 
     elseif typeName == "playBossRateChange" then
         FishGI.GameEffect:bossRateChange( dataTab)
+    elseif typeName == "sendChangeAimFish" then
+        --FishGI.gameScene.uiSkillView.Skill_4:sendChangeAimFish(dataTab.timelineId, dataTab.fishArrayId)
+        local event = cc.EventCustom:new("sendChangeAimFish")
+        event._userdata = dataTab
+        cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)    
+
     end
 
 end
@@ -331,6 +337,14 @@ function FishGMF.changeGunRate(playerId,newCannonRate,maxGunRate)
 
 end
 
+--设置鱼的状态
+function FishGMF.setFishState(state)
+    local data =  {}
+    data.funName = "setFishState"
+    data.state = state
+    LuaCppAdapter:getInstance():luaUseCppFun(data);
+end
+
 --通过type得到想要的炮倍
 function FishGMF.getNextRateBtType(type)
     local myData = FishGI.gameScene.playerManager:getMyData()
@@ -422,26 +436,6 @@ function FishGMF.getGunChangeData(id)
     return gunData
 end
 
---设置当前锻造数据
-function FishGMF.setForgedChange(id)
-    local dataTab = {}
-    dataTab.funName = "setForgedChange"
-    dataTab.id = tostring(id)
-    LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
-end
-
---获取当前锻造数据
-function FishGMF.getForgedChangeData(id, endId)
-    local dataTab = {}
-    dataTab.funName = "getForgedChangeData"
-    dataTab.id = tostring(id)
-    if endId ~= nil then
-        dataTab.endId = tostring(endId)
-    end
-    local gunData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab);
-    return gunData
-end
-
 --设置玩家当前所在状态
 function FishGMF.setGameState(gameState)
     FishGI.GAME_STATE = gameState
@@ -459,34 +453,6 @@ function FishGMF.setGameType(gameType)
     dataTab.gameType = gameType
     LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
     
-end
-
---得到等級
-function FishGMF.getLVByExp(gradeExp)
-    local dataTab = {}
-    dataTab.funName = "getLVByExp"
-    dataTab.gradeExp = gradeExp
-    local gradeData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
-    return gradeData
-end
-
---得到VIP
-function FishGMF.getVIPByCostMoney(costMoney)
-    local dataTab = {}
-    dataTab.funName = "getVIPByCostMoney"
-    dataTab.costMoney = costMoney
-    local gradeData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
-    return gradeData
-end
-
---设置c++方面的目标鱼
-function FishGMF.setCppAimFish(playerId, timelineId,fishArrayId)
-    local dataTab = {}
-    dataTab.funName = "setAimFish"
-    dataTab.playerId = playerId
-    dataTab.timelineId = timelineId
-    dataTab.fishArrayId = fishArrayId
-    LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
 end
 
 --播放c++方面的特效   1.爆炸   2.爆金币   3.爆光圈   4.背景震动
@@ -517,15 +483,17 @@ function FishGMF.showGainCoinEffect(playerId, chairId,propId,propCount,dropCount
     LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
 end
 
---得到item数据
-function FishGMF.getItemData(propId)
+--设置锁定数据
+function FishGMF.setLockData(playerId,setType,timelineId,fishArrayId)
     local dataTab = {}
-    dataTab.funName = "getItemData"
-    dataTab.itemID = propId + 200000000
-    local itemData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
-    return itemData
+    dataTab.funName = "setLockData"
+    dataTab.playerId = playerId
+    dataTab.setType = setType
+    dataTab.timelineId = timelineId
+    dataTab.fishArrayId = fishArrayId
+    local backData = LuaCppAdapter:getInstance():luaUseCppFun(dataTab)
+    return backData
 end
-
 
       
 

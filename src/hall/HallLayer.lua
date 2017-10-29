@@ -15,8 +15,10 @@ HallLayer.RESOURCE_BINDING  = {
     ["btn_option_exit"]    = { ["varname"] = "btn_option_exit" ,    ["events"]={["event"]="click",["method"]="onClickexit"}}, 
     ["btn_option_service"] = { ["varname"] = "btn_option_service" , ["events"]={["event"]="click",["method"]="onClickservice"}}, 
     ["btn_mail"]           = { ["varname"] = "btn_mail" ,           ["events"]={["event"]="click",["method"]="onClickmail"}}, 
-    
-    
+    ["btn_real_name"]      = { ["varname"] = "btn_real_name" ,      ["events"]={["event"]="click",["method"]="onClickreal_name"}},   
+    ["image_real_name_bg"] = { ["varname"] = "image_real_name_bg"} ,   
+    ["text_real_name_award"]           = { ["varname"] = "text_real_name_award"} , 
+
     ["image_coin_bg"]      = { ["varname"] = "image_coin_bg" }, 
     ["image_diamond_bg"]   = { ["varname"] = "image_diamond_bg" }, 
     ["btn_addcoin"]        = { ["varname"] = "btn_addcoin" ,        ["events"]={["event"]="click",["method"]="onClickcoin"}},
@@ -39,7 +41,6 @@ HallLayer.RESOURCE_BINDING  = {
 
 --背包     = node_btn_1
 --任务     = node_btn_2
---签到     = node_btn_3
 --排行榜   = node_btn_4
 --vip转盘  = node_btn_5
 --救济金   = node_btn_6
@@ -49,22 +50,21 @@ HallLayer.RESOURCE_BINDING  = {
 --月卡     = node_btn_9
 --商店     = node_btn_10
 --朋友场   = node_btn_11
---赛狗     = node_btn_12
+--赛狗     = node_btn_3
 
 --按键 --用于更换按键图片和绑定函数
 HallLayer.HALL_BTN_ARR   = {
-    ["node_btn_1"]  = { ["varname"] = "node_btn_1" ,["filename"] = "hall_btn_bag" ,["events"]={["event"]="click",["method"]="onClickbag"}}, 
-    ["node_btn_3"]  = { ["varname"] = "node_btn_3" ,["filename"] = "hall_btn_mrqd" , ["events"]={["event"]="click",["method"]="onClickcheck"}}, 
-    ["node_btn_4"]  = { ["varname"] = "node_btn_4" ,["filename"] = "hall_btn_phb" , ["events"]={["event"]="click",["method"]="onClickrank"}}, 
-    ["node_btn_5"]  = { ["varname"] = "node_btn_5" ,["filename"] = "hall_btn_dailvip" , ["events"]={["event"]="click",["method"]="onClickdailvip"}}, 
-    ["node_btn_6"]  = { ["varname"] = "node_btn_6" ,["filename"] = "hall_btn_jjj" , ["events"]={["event"]="click",["method"]="onClickAlm"}}, 
-    ["node_btn_7"]  = { ["varname"] = "node_btn_7" ,["filename"] = "hall_btn_dz" , ["events"]={["event"]="click",["method"]="onClickdz"}}, 
-    ["node_btn_8"]  = { ["varname"] = "node_btn_8" ,["filename"] = "hall_btn_vip" , ["events"]={["event"]="click",["method"]="onClickvip"}}, 
-    ["node_btn_9"]  = { ["varname"] = "node_btn_9" ,["filename"] = "hall_btn_yklb" , ["events"]={["event"]="click",["method"]="onClickYklb"}}, 
-    ["node_btn_10"] = { ["varname"] = "node_btn_10" ,["filename"]= "hall_btn_shop" , ["events"]={["event"]="click",["method"]="onClickshop"}}, 
-    ["node_btn_2"]  = { ["varname"] = "node_btn_2" ,["filename"]= "hall_btn_rcrw" , ["events"]={["event"]="click",["method"]="onClicktask"}}, 
-    ["node_btn_11"] = { ["varname"] = "node_btn_11" ,["filename"]= "hall_btn_pyc" , ["events"]={["event"]="click",["method"]="onClickfriend"}}, 
-    ["node_btn_12"] = { ["varname"] = "node_btn_12" ,["filename"]= "hall_btn_game_1" , ["events"]={["event"]="click",["method"]="onClickgame1"}}, 
+    ["node_btn_1"]  = { ["varname"] = "node_btn_1" ,    ["filename"] = "hall_btn_bag" ,     ["events"]={["event"]="click",["method"]="onClickbag"}}, 
+    ["node_btn_3"]  = { ["varname"] = "node_btn_3" ,    ["filename"] = "hall_btn_game_1" ,  ["events"]={["event"]="click",["method"]="onClickgame1"}}, 
+    ["node_btn_4"]  = { ["varname"] = "node_btn_4" ,    ["filename"] = "hall_btn_phb" ,     ["events"]={["event"]="click",["method"]="onClickrank"}}, 
+    ["node_btn_5"]  = { ["varname"] = "node_btn_5" ,    ["filename"] = "hall_btn_dailvip" , ["events"]={["event"]="click",["method"]="onClickdailvip"}}, 
+    ["node_btn_6"]  = { ["varname"] = "node_btn_6" ,    ["filename"] = "hall_btn_jjj" ,     ["events"]={["event"]="click",["method"]="onClickAlm"}}, 
+    ["node_btn_7"]  = { ["varname"] = "node_btn_7" ,    ["filename"] = "hall_btn_dz" ,      ["events"]={["event"]="click",["method"]="onClickdz"}}, 
+    ["node_btn_8"]  = { ["varname"] = "node_btn_8" ,    ["filename"] = "hall_btn_vip" ,     ["events"]={["event"]="click",["method"]="onClickvip"}}, 
+    ["node_btn_9"]  = { ["varname"] = "node_btn_9" ,    ["filename"] = "hall_btn_yklb" ,    ["events"]={["event"]="click",["method"]="onClickYklb"}}, 
+    ["node_btn_10"] = { ["varname"] = "node_btn_10" ,   ["filename"]= "hall_btn_shop" ,     ["events"]={["event"]="click",["method"]="onClickshop"}}, 
+    ["node_btn_2"]  = { ["varname"] = "node_btn_2" ,    ["filename"]= "hall_btn_rcrw" ,     ["events"]={["event"]="click",["method"]="onClicktask"}}, 
+    ["node_btn_11"] = { ["varname"] = "node_btn_11" ,   ["filename"]= "hall_btn_pyc" ,      ["events"]={["event"]="click",["method"]="onClickfriend"}}, 
 }
 
 --根据key值排序，更新底部按键位置 
@@ -72,11 +72,10 @@ HallLayer.HALL_DOWN_BTN  = {
     [1]  = { ["varname"] = "node_btn_1"}, 
     [2]  = { ["varname"] = "node_btn_4"}, 
     [3]  = { ["varname"] = "node_btn_5"},
-    [4]  = { ["varname"] = "node_btn_3"}, 
-    [5]  = { ["varname"] = "node_btn_2"}, 
-    [6]  = { ["varname"] = "node_btn_7"},   
-    [7]  = { ["varname"] = "node_btn_11"}, 
-    [8]  = { ["varname"] = "node_btn_12"},   
+    [4]  = { ["varname"] = "node_btn_2"}, 
+    [5]  = { ["varname"] = "node_btn_7"},   
+    [6]  = { ["varname"] = "node_btn_11"},  
+    [7]  = { ["varname"] = "node_btn_3"},
 }
 
 --左边的按键
@@ -112,6 +111,8 @@ function HallLayer:onCreate( ... )
     self.spr_head_edge:setLocalZOrder(node:getLocalZOrder() + 1)
 
     self:openTouchEventListener()
+
+    FishGI.eventDispatcher:registerCustomListener("onUserInit", self, function(valTab) self:onUserInit(valTab) end)
 end
 
 --初始化背景
@@ -126,6 +127,9 @@ function HallLayer:initBg()
     local emitter2 = FishGI.GameEffect.createBubble(1) 
     emitter2:setPosition(cc.p(967.39*self.scaleX_,-35.27*self.scaleY_))
     self.node_bg:addChild(emitter2,0)
+    local dataStr = FishGI.GameConfig:getConfigData("config",tostring(990000102), "data")
+    local val = string.split(dataStr,",")
+    self.text_real_name_award:setString(val[2])
 
 end
 
@@ -167,7 +171,7 @@ function HallLayer:initBtnArr()
 
     --添加底部按键
     self.downBtnArr = {}
-    for key,val in pairs(self.HALL_DOWN_BTN) do
+    for key,val in ipairs(self.HALL_DOWN_BTN) do
         self.downBtnArr[tonumber(key)] = self[val.varname]
     end
     self["node_btn_7"]:setVisible(false)
@@ -371,7 +375,7 @@ function HallLayer:onClickAlm( sender )
 end
 
 function HallLayer:onClickcheck( sender )
-    FishGI.hallScene.uiCheck:showLayer() 
+    --FishGI.hallScene.uiCheck:showLayer() 
 end
 
 function HallLayer:onClickrank( sender )
@@ -398,15 +402,29 @@ end
 function HallLayer:onClickfriend( sender )
     print("-----HallLayer:onClickfriend-------")
         --朋友场
-    if FishGI.hallScene.uiAllRoomView:isFriendCanOpen() then
-        FishGI.hallScene:setIsToFriendRoom(true)
-    else
+    if not FishGI.hallScene.uiAllRoomView:isFriendCanOpen() then
         FishGF.showToast(FishGF.getChByIndex(800000298))
+        return     
     end
+
+    --判断玩家是否手机激活
+    if true and (not FishGI.WebUserData:isActivited()) then
+        local function callback(sender)
+            local tag = sender:getTag()
+            if tag == 2 then --ok
+                FishGI.hallScene.uiPhoneAct:showLayer() 
+            end
+        end
+        FishGF.showMessageLayer(FishCD.MODE_MIDDLE_OK_CLOSE,FishGF.getChByIndex(800000331),callback, nil)
+        return 
+    end
+    FishGI.hallScene:setIsToFriendRoom(true)
+
 end
 
 function HallLayer:onClickgame1( sender )
     print("-----HallLayer:onClickgame1-------")
+    FishGF.waitNetManager(true,nil,"enteringChildGame")
     FishGF.checkUpdate("gtsp")
 end
 
@@ -441,5 +459,49 @@ function HallLayer:getBtnPosByIndex( index )
     print("-------node_btn------pos.x="..pos.x.."---------pos.y="..pos.y)
     return pos
 end
+
+--大厅中通过id得到道具的目标点 
+function HallLayer:getHallPropAimByID(propId)
+    local pos = cc.p(0,0)
+    local child = nil
+    local spr = nil
+    if propId == 1 then
+        spr = self.fnt_coin
+        child = self.image_coin_bg
+    elseif propId == 2 then
+        spr = self.fnt_diamond
+        child = self.image_diamond_bg
+    else
+        spr = self.node_btn_1
+        child = self.node_btn_1:getParent()
+    end
+    if child == nil then
+        return nil
+    end 
+    local pos = cc.p(spr:getPositionX(),spr:getPositionY())
+    pos = child:convertToWorldSpace(pos)
+    return pos
+end
+
+function HallLayer:onClickreal_name( sender )
+    print("-----HallLayer:onClickreal_name-------")
+    FishGI.hallScene.uiRealName:showLayer()
+    local function callback()
+        self.image_real_name_bg:setVisible(false)
+        self.btn_real_name:setVisible(false)
+    end
+    FishGI.hallScene.uiRealName:setCallback(callback) 
+end
+
+function HallLayer:onUserInit( valTab )
+    if FishGI.WebUserData:isVerifyRealName() then
+        self.image_real_name_bg:setVisible(false)
+        self.btn_real_name:setVisible(false)
+    else
+        self.image_real_name_bg:setVisible(true)
+        self.btn_real_name:setVisible(true)
+    end
+end
+
 
 return HallLayer;

@@ -28,11 +28,7 @@ function FriendPropItem:initView( )
     self.spr_prop:addChild(self.progressTime) 
     self.spr_prop_grey:setVisible(false)
     self.progressTime:setVisible(false)
-end
-
-function FriendPropItem:resetData( iPropId, iCount )
-    self:setPropId(iPropId)
-    self:setPropCount(iCount)
+    self:setPropCount(0)
 end
 
 function FriendPropItem:setPropId(iPropId)

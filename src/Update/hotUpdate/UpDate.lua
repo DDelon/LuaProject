@@ -37,7 +37,6 @@ function UpDate:onCreate( ... )
 end
 
 function UpDate:onEnter( )
-    FishGF.print("------UpDate:onEnter--")
     --FishGMF.setGameState(0)
 end
 

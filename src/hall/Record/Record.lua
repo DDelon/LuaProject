@@ -19,6 +19,8 @@ Record.RESOURCE_BINDING  = {
 
 }
 
+local socket = require "socket"
+
 function Record:onCreate( ... )
     --初始化
     self:init()
@@ -26,20 +28,64 @@ function Record:onCreate( ... )
 end
 
 function Record:init()   
-    
+    --self:initRecordItemPool()
     self.panel:setSwallowTouches(false)
     self.scroll_list:setScrollBarEnabled(false)
 
     self.text_notice:setString(FishGF.getChByIndex(800000239))
-    self:child("text_word_time"):setString(FishGF.getChByIndex(800000240))
-    self:child("text_word_no"):setString(FishGF.getChByIndex(800000241))
-    self:child("text_word_name"):setString(FishGF.getChByIndex(800000242))
-
     self.RecordListView = {}
     self:initView()
 
     self:openTouchEventListener()
     
+end
+
+function Record:loadNode()
+    if self.itemPool == nil then
+        self.itemPool = {}
+    end
+    if #self.itemPool >= 20 then
+        return
+    end
+    local item = require("hall/Record/RecordItem").create()
+    item:retain()
+    item.isUsed = false
+    table.insert( self.itemPool, item )
+    print("---------Record:loadNode--------")
+end
+
+function Record:initRecordItemPool()
+    if self.itemPool == nil then
+        self.itemPool = {}
+        for i=1,20 do
+            local item = require("hall/Record/RecordItem").create()
+            item:retain()
+            item.isUsed = false
+            table.insert( self.itemPool, item )
+        end
+    end
+end
+
+function Record:getRecordItemPool()  
+    if self.itemPool == nil then
+        return 
+    end
+    for i,v in ipairs(self.itemPool) do
+        if v.isUsed == false then
+            return v
+        end
+    end
+end
+
+function Record:clearRecordItemPool()  
+    if self.itemPool == nil then
+        return 
+    end
+    for i,v in ipairs(self.itemPool) do
+        if v:getParent() == nil then
+            v:release()
+        end
+    end
 end
 
 function Record:initView()
@@ -98,25 +144,27 @@ function Record:loadRecord(  )
         self.spr_words_norecord:setVisible(false)
     end
 
+    FishGF.waitNetManager(true,nil,"loadRecord")
     local index = 1
     local function loadRecordscheduler()
+        local begin = socket.gettime()
         local val  = RecordList[index]
         if val == nil then
             if index >= #RecordList then
-                self:closeAllSchedule()
-                self:upDataRecordList()
+                self:endScheduler()
                 return
             end
             index = index + 1
             return
         end
         local friendGameId = val.friendGameId
+        local time2 = socket.gettime()
         local RecordItem,key = self:getRecordByid( friendGameId )
         if not RecordItem then
-            --print("--loadUnreadRecord--createRecordItem------")
             -- 创建新的
             RecordItem = self:createRecordItem(val)
             self.scroll_list:addChild( RecordItem)
+            RecordItem.isUsed = true
             -- 加入视图列表
             table.insert(self.RecordListView,RecordItem)
         else
@@ -125,14 +173,20 @@ function Record:loadRecord(  )
         end   
 
         if index >= #RecordList then
-            self:closeAllSchedule()
-            self:upDataRecordList()
+            self:endScheduler()
             return
         end
         index = index +1
     end
-    self.schedulerID = cc.Director:getInstance():getScheduler():scheduleScriptFunc(loadRecordscheduler, 0.01, false);
+    self.schedulerID = cc.Director:getInstance():getScheduler():scheduleScriptFunc(loadRecordscheduler, 0.02, false);
 
+end
+
+function Record:endScheduler( )
+    FishGF.sortByKey(self.RecordListView,"friendGameId",1)
+    self:showLayer()
+    self:closeAllSchedule()
+    self:upDataRecordList()
 end
 
 function Record:removeRecord( id )
@@ -184,7 +238,11 @@ function Record:getRecordByid( friendGameId )
 end
 
 function Record:createRecordItem(val)
-    local RecordItem = require("hall/Record/RecordItem").create()
+    local RecordItem = self:getRecordItemPool()
+    if RecordItem == nil then
+        print("---time5----RecordItem == nil:")
+        RecordItem = require("hall/Record/RecordItem").create()
+    end
     RecordItem:setItemData(val)
     return RecordItem
 end
@@ -202,8 +260,8 @@ function Record:upDataRecordList(  )
     local newViewList = {}
     -- 找到对应视图
     for k ,val in ipairs( RecordList ) do
-        local id = val.id
-        local RecordItem,key = self:getRecordByid( id )
+        local friendGameId = val.friendGameId
+        local RecordItem,key = self:getRecordByid( friendGameId )
         if not RecordItem then
             -- 创建新的
             RecordItem = self:createRecordItem(val)
@@ -254,6 +312,7 @@ function Record:upDataRecordPos(  )
 end
 
 function Record:closeAllSchedule()
+    FishGF.waitNetManager(false,nil,"loadRecord")
     if self.schedulerID ~= nil then
         cc.Director:getInstance():getScheduler():unscheduleScriptEntry(self.schedulerID )
         self.schedulerID = nil

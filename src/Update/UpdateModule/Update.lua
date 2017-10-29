@@ -1,5 +1,5 @@
 --[[
-
+    *设置是否内网
     *派发startUpdate事件启动热更新模块 参数:{url = *** }
     *派发cleanUpdate事件清除热更新任务 参数:无
     *在外部注册updateComplete监听器 接收更新模块结束事件
@@ -8,7 +8,7 @@
     *在外部注册updateError监听器 接收版本检测失败的事件
     *在外部注册beginDownload监听器 接收开始下载的事件
 ]]
-
+local IS_LOCAL_NET_TEST = false
 local Update = class("Update")
 
 function Update.create()
@@ -20,6 +20,7 @@ end
 function Update:init()
     self.constant = require("Update/UpdateModule/UpdateConstant")
     self.commandQueue = {}
+    self.dataTab = {}
     
     print("update init")
 
@@ -28,6 +29,10 @@ function Update:init()
 
     local cleanUpdateListener=cc.EventListenerCustom:create("cleanUpdate",handler(self, self.cleanup))  
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithFixedPriority(cleanUpdateListener, 1)
+end
+
+function Update:isLocalNetTest()
+    return IS_LOCAL_NET_TEST
 end
 
 function Update:createCommand(commandData)
@@ -134,6 +139,14 @@ function Update:updateComplete()
     cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("startUpdate");
 	cc.Director:getInstance():getEventDispatcher():removeCustomEventListeners("cleanUpdate");
 
+end
+
+function Update:addPairToDataTab(key, val)
+    self.dataTab[key] = val;
+end
+
+function Update:getData(key)
+    return self.dataTab[key];
 end
 
 

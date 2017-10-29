@@ -76,7 +76,7 @@ end
 function GameFriendNet:OnJMsg(msg)
     local ptr = msg:ReadData(0)
     local data, typeName = jmsg.decodeBinary(proto, ptr)
-    if self.isWaitLoaded ~= nil and self.isWaitLoaded == true and  typeName ~= "MSGS2CFriendGameLoaded" then
+    if self.isWaitLoaded == nil and  typeName ~= "MSGS2CFriendGameLoaded" then
         return
     end
     self.isWaitLoaded = false
@@ -130,6 +130,8 @@ function GameFriendNet:OnJMsg(msg)
         self:OnBulletTargetChange(data);
     elseif typeName == "MSGS2CGetVipDailyReward" then
         FishGI.eventDispatcher:dispatch("GetVipDailyReward", data);
+    elseif typeName == "MSGS2CFriendStartTimeline" then
+        self:onFriendStartTimeline(data);
     end
 
     return true;
@@ -375,7 +377,7 @@ function GameFriendNet:OnPlayerShoot(data)
     skillDataTab.playerId = data.playerId;
     skillDataTab.effects = data.effects;
     local event = cc.EventCustom:new("OnPlayerShoot")
-    event._usedata = skillDataTab
+    event._userdata = skillDataTab
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
 
     --自己确认发射成功，真的减钱
@@ -558,13 +560,13 @@ end
 
 function GameFriendNet:OnUsePropSkill(data)
     local event = cc.EventCustom:new("UseFriendSKillResponse")
-    event._usedata = data
+    event._userdata = data
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
 end
 
 function GameFriendNet:OnUpdateSkillEffect(data)
     local event = cc.EventCustom:new("UpdateSkillResponse")
-    event._usedata = data
+    event._userdata = data
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
 end
 
@@ -588,9 +590,15 @@ end
 
 --子弹转换目标
 function GameFriendNet:OnBulletTargetChange(data)
-    local event = cc.EventCustom:new("BulletTargetChange")
+    local event = cc.EventCustom:new("bulletTargetChange")
     event._userdata = data
     cc.Director:getInstance():getEventDispatcher():dispatchEvent(event)
+end
+
+function GameFriendNet:onFriendStartTimeline(data)
+    FishGI.GameEffect:timelineComeEffect()
+    data.index = data.timelineId;
+    LuaCppAdapter:getInstance():fishTimeLineCome(data);
 end
 
 
@@ -615,7 +623,6 @@ end
 客户端准备就绪
 ]]
 function  GameFriendNet:sendClientGameLoadedMessage()
-    self.isWaitLoaded = true
     self:sendJMsg("MSGC2SFriendGameLoaded", {})
 end
 
@@ -650,7 +657,6 @@ end
 
 --锁定变换目标
 function GameFriendNet:sendBulletTargetChange(data)
-    FishGF.print("-0-sendBulletTargetChange----")
     if data == nil then
         return
     end

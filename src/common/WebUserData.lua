@@ -106,6 +106,8 @@ local function onuserinit_(data)
         if isBindPhone then
             print("已经绑定");
         end
+
+        FishGI.eventDispatcher:dispatch("onUserInit", data)
     else     
         if DEBUG>0 then
              FishGF.print("Web接口初始化失败，请联系东海！")
@@ -125,7 +127,7 @@ local function lazyInit_()
     userWebData.status=checkint(userWebData.status)
     if userWebData.status>1 then
         userWebData.status=1
-        FishGF.waitNetManager(true,nil,"web")
+        FishGF.waitNetManager(true,nil,"web",0)
         FishGI.Dapi:UserInit(onuserinit_)
     elseif userWebData.status==1 then
      --todo 拉取数据中。。
@@ -281,6 +283,11 @@ end
 function UserData:isActivited()
     lazyInit_()
    return  checkint(userWebData.attr)>0
+end
+
+function UserData:isVerifyRealName()
+    lazyInit_()
+    return userWebData.is_card == 1 and true or false
 end
 
 --手机激活

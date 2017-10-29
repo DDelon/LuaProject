@@ -140,7 +140,7 @@ function SelectCannon:propCountChange( data )
         return 
     end
     local seniorData = data.seniorData
-    local data = FishGMF.getItemData(propId)
+    local data = FishGI.GameTableData:getItemTable(propId)
     local use_outlook = tonumber(data["use_outlook"])
 
     for k,v in pairs(self.gunCardArr) do
@@ -169,7 +169,7 @@ function SelectCannon:onUsePropCannon( netData )
     FishGMF.refreshSeniorPropData(playerId,propInfo,1,0)
 
     --换炮身
-    local data = FishGMF.getItemData(propInfo.propId)
+    local data = FishGI.GameTableData:getItemTable(propInfo.propId)
     local use_outlook = tonumber(data["use_outlook"])
     if use_outlook < 0  then
         print("-----use_outlook < 0 --------")

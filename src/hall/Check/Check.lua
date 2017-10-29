@@ -22,6 +22,7 @@ function Check:onCreate( ... )
     --初始化
     self:init()
 
+
 end
 
 --游戏初始化

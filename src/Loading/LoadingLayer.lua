@@ -74,7 +74,15 @@ function LoadingLayer:preloadRes(callBack)
     self.index = 1
     self.messageIndex = 0
     if not FishGI.ISLOADING_END then
-        self:preload(require("luaconfig/preloadData"))
+        local loadList = require("luaconfig/preloadData")
+        -- for i=1,20 do
+        --     local record = {}
+        --     record.loadtype = "loadNode"
+        --     record.scenename = "hall"
+        --     record.nodeName = "uiRecord"
+        --     table.insert( loadList,record )
+        -- end
+        self:preload(loadList)
     else
         self.preloadData = {};
         for i=1,100 do
@@ -85,6 +93,7 @@ function LoadingLayer:preloadRes(callBack)
     end
     print("-----------------------preloadRes--------------------")
     self:starPreload(callBack)
+
 end
 
 function LoadingLayer:preloadResNil(callBack)
@@ -158,13 +167,6 @@ function LoadingLayer:starPreload( callBacl )
             if value.loadtype == "plist" then
                 cc.SpriteFrameCache:getInstance():addSpriteFrames(value.prepath.."."..value.loadtype);
                 self.index =  self.index +1
-            elseif value.loadtype == "lua" then
-                local nametable = FishGF.strSplit(value.prepath.."/","/")
-                local tablename = nametable[#nametable]
-                if FishGI[tablename] == nil  then
-                    FishGI[tablename] = require(value.prepath).create();
-                end
-                self.index =  self.index +1
             elseif value.loadtype == "effect" then
                 FishGI.AudioControl:preloadEffect(value.prepath)
                 self.index =  self.index +1
@@ -177,6 +179,9 @@ function LoadingLayer:starPreload( callBacl )
                 self.index =  self.index +1
             elseif value.loadtype == "png" then
                 cc.Director:getInstance():getTextureCache():addImage(value.prepath.."."..value.loadtype);
+                self.index =  self.index +1
+            elseif value.loadtype == "loadNode" then
+                self:loadNode(value)
                 self.index =  self.index +1
             elseif value.loadtype == "nil" then
                 self.index =  self.index +1
@@ -220,7 +225,19 @@ function LoadingLayer:starPreload( callBacl )
                 end
             end
         end
-    end,0.02,false)    
+    end,0.01,false)    
+end
+
+function LoadingLayer:loadNode(data)
+    local curScene = cc.Director:getInstance():getRunningScene();
+    local sceneName = curScene.sceneName
+    if sceneName ~= data.scenename then
+        return 
+    end
+    if sceneName == "hall" then
+        FishGI.hallScene:loadNode(data.nodeName)
+    elseif sceneName == "game" then
+    end    
 end
 
 function LoadingLayer:updataSliderLight()

@@ -48,8 +48,19 @@ function FriendPlayer:onCreate( ... )
     self.scaleX_,self.scaleY_,self.scaleMin_  = FishGF.getCurScale()
     self.iChairId = 0
 
+    self:runAction(self.node_fun_promote_ani["animation"])
 
-    local dataStr = tostring(FishGI.GameConfig:getConfigData("config", tostring(990000079), "data"))
+end
+
+--设置炮倍数据
+function FriendPlayer:setRateData(roomDurationType )
+    local key = 0
+    if roomDurationType == 0 then  --8分钟
+        key = 990000079
+    elseif roomDurationType == 1 then  --24分钟
+        key = 990000099
+    end
+    local dataStr = tostring(FishGI.GameConfig:getConfigData("config", tostring(key), "data"))
     self.RateData = {}
     local tab = string.split(dataStr,";")
     for i,val in ipairs(tab) do
@@ -58,9 +69,8 @@ function FriendPlayer:onCreate( ... )
         table.insert( self.RateData, data )
     end
 
-    self:runAction(self.node_fun_promote_ani["animation"])
-
 end
+
 
 function FriendPlayer:onTouchBegan(touch, event)
     return false
@@ -111,7 +121,7 @@ function FriendPlayer:initWithData(val)
 
 
 	self.playerInfo.vip_level = FishGI.GameTableData:getVIPByCostMoney(self.playerInfo.vipExp).vip_level
-	self.playerInfo.grade = FishGMF.getLVByExp(self.playerInfo.gradeExp).level
+	self.playerInfo.grade = FishGI.GameTableData:getLVByExp(self.playerInfo.gradeExp).level
 
     self.cannon:setMultiple(self.playerInfo.currentGunRate)
     self:setScore(self.playerInfo.score)
@@ -119,8 +129,7 @@ function FriendPlayer:initWithData(val)
     for k,val in pairs(self.playerInfo.friendProps) do
         if val.propId == 7 then 
             self:setBullet(val.propCount)
-        elseif self.isSelf then 
-            FishGI.gameScene.uiMainLayer:setPropCount(val.propId,val.propCount)
+            break
         end 
     end
 
@@ -324,6 +333,13 @@ function FriendPlayer:shootByDegree(degree)
                 end
 
                 dataTab.frameId = backData.frameId
+                if backData.lockDegree ~= nil then
+                    self.degree = backData.lockDegree
+                    dataTab.degree = self.degree - 90;
+                end
+                dataTab.timelineId = backData.timelineId
+                dataTab.fishArrayId = backData.fishArrayId
+
                 dataTab.bulletRate = backData.bulletRate
                 FishGI.bulletCount = FishGI.bulletCount +1
                 FishGI.eventDispatcher:dispatch("sendPlayerFire", dataTab);
@@ -370,7 +386,7 @@ end
 
 --是否切换炮倍
 function FriendPlayer:isChangeRate(usedBulletShowCount,bulletRate)
-    local datatab = self.RateData
+    local datatab = FishGI.gameScene.uiMainLayer:getRateData()
     local count = #datatab
     local rate = tonumber(datatab[count].Rate)
     for i = 1,count do
@@ -426,6 +442,11 @@ function FriendPlayer:setRotateByPos(pos)
 end
 
 function FriendPlayer:endShoot()
+    if FishGI.isLock then
+        self.isEnd = false;
+        return
+    end
+    
     if FishGI.isAutoFire then
         self.isEnd = false;
     else

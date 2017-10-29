@@ -136,7 +136,7 @@ end
 function HallNet:enterRoom(roomLv)
     print("-HallNet-enterRoom----")
     FishGF.waitNetManager(false,nil,"startConnect")
-    FishGI.isLogin = false
+
     --进入房间
     local room = nil
     local roomId = self.roomId
@@ -170,6 +170,7 @@ function HallNet:enterRoom(roomLv)
     end
 
     self.roomId = roomId
+    FishGF.print("enter room id:"..self.roomId)
     if room and self:joinGame(room.gameid) then
         FishGF.waitNetManager(true,FishGF.getChByIndex(800000163),"joinGame")
 		self:joinRoom(room.id);
@@ -236,6 +237,9 @@ function evt.OnSocketClose( obj,nErr )
         FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000036),"hallOnSocketClose")
     elseif sceneName == "game" then
         FishGF.doMyLeaveGame(9)
+    elseif sceneName == "login" then
+        FishGF.createCloseSocketNotice(FishGF.getChByIndex(800000036),"LoginOnSocketClose")
+        FishGF.clearSwallowLayer({})
     end
     
     print("与大厅服务器连接断开，请重新登录0")
@@ -302,7 +306,6 @@ end
 function evt.OnJoinHallFailed( hall,result )
     print("hall OnJoinHallFailed");
     FishGF.waitNetManager(false,nil,"startConnect")
-    FishGI.isLogin = false
     
     local str = nil
     if result == 1 then
@@ -346,8 +349,8 @@ function evt.OnMsgJoinRoom(hall,result,lockedroomid)
             FishGI.hallScene:firstInit()
             cc.Director:getInstance():pushScene(FishGI.hallScene);
             FishGI.hallScene:release();
-            hall.roommanager:sendDataGetInfo();
-            
+            --hall.roommanager:sendDataGetInfo();
+            FishGI.exitType = nil
         elseif FishGI.FRIEND_ROOM_STATUS == 4 then
             hall.roommanager:sendDataGetInfo();
         end
